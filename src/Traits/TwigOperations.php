@@ -5,7 +5,7 @@ namespace Snawbar\InvoiceTemplate\Traits;
 use Twig\Environment;
 use Twig\Loader\ArrayLoader;
 
-trait PlaceholderOperations
+trait TwigOperations
 {
     private static $headerTemplate;
 
@@ -38,7 +38,9 @@ trait PlaceholderOperations
             'footer' => $template->footer,
         ]);
 
-        $twigEnvironment = new Environment($arrayLoader);
+        $twigEnvironment = new Environment($arrayLoader, [
+            'auto_reload' => TRUE,
+        ]);
 
         if ($extension = self::getExtension()) {
             array_map([$twigEnvironment, 'addExtension'], $extension);
