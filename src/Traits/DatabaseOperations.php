@@ -7,9 +7,11 @@ use Illuminate\Support\Facades\DB;
 
 trait DatabaseOperations
 {
-    public static function create(Request $request)
+    public static function create(Request $request, $templateId = NULL)
     {
-        return DB::table(self::getTableName())->updateOrInsert(['route' => $request->route, 'lang' => $request->lang], [
+        return DB::table(self::getTableName())->updateOrInsert(['id' => $templateId], [
+            'page' => $request->input('page'),
+            'lang' => $request->input('lang'),
             'header' => $request->input('header', ''),
             'content' => $request->input('content', ''),
             'footer' => $request->input('footer', ''),
@@ -19,6 +21,7 @@ trait DatabaseOperations
             'margin_right' => $request->input('margin_right'),
             'header_space' => $request->input('header_space'),
             'footer_space' => $request->input('footer_space'),
+            'is_active' => $request->input('is_active', TRUE),
         ]);
     }
 
