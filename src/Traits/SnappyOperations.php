@@ -12,13 +12,12 @@ trait SnappyOperations
         $template = self::getTemplate();
 
         return self::generate()
-            ->marginTop($template->margin_top)
-            ->marginRight($template->margin_right)
-            ->marginLeft($template->margin_left)
-            ->headerSpacing($template->header_space)
-            ->mediumQuality()
-            ->footerSpacing($template->footer_space)
-            ->marginBottom($template->margin_bottom)
+            ->setOption('margin-top', $template->margin_top)
+            ->setOption('margin-right', $template->margin_right)
+            ->setOption('margin-left', $template->margin_left)
+            ->setOption('header-spacing', $template->header_space)
+            ->setOption('footer-spacing', $template->footer_space)
+            ->setOption('margin-bottom', $template->margin_bottom)
             ->inline(self::generateSecureFilename());
     }
 
@@ -31,13 +30,12 @@ trait SnappyOperations
         $fullPath = sprintf('%s/%s', self::generatePath(), self::generateSecureFilename());
 
         self::generate()
-            ->marginTop($template->margin_top)
-            ->marginRight($template->margin_right)
-            ->marginLeft($template->margin_left)
-            ->headerSpacing($template->header_space)
-            ->mediumQuality()
-            ->footerSpacing($template->footer_space)
-            ->marginBottom($template->margin_bottom)
+            ->setOption('margin-top', $template->margin_top)
+            ->setOption('margin-right', $template->margin_right)
+            ->setOption('margin-left', $template->margin_left)
+            ->setOption('header-spacing', $template->header_space)
+            ->setOption('footer-spacing', $template->footer_space)
+            ->setOption('margin-bottom', $template->margin_bottom)
             ->save($fullPath);
 
         return $fullPath;
