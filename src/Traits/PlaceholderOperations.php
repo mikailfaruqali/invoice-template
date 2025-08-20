@@ -2,15 +2,16 @@
 
 namespace Snawbar\InvoiceTemplate\Traits;
 
+use Twig\Environment;
+use Twig\Loader\ArrayLoader;
+
 trait PlaceholderOperations
 {
-    protected static $placeholderData = [];
+    private static $headerTemplate;
 
-    protected static $headerTemplate;
+    private static $contentTemplate;
 
-    protected static $contentTemplate;
-
-    protected static $footerTemplate;
+    private static $footerTemplate;
 
     private static function getHeaderTemplate()
     {
@@ -31,25 +32,29 @@ trait PlaceholderOperations
     {
         $template = self::getTemplate(self::getRouteName(), $lang);
 
-        self::$headerTemplate = self::replacePlaceholders($template->header);
-        self::$contentTemplate = self::replacePlaceholders($template->content);
-        self::$footerTemplate = self::replacePlaceholders($template->footer);
+        $arrayLoader = new ArrayLoader([
+            'header' => $template->header,
+            'content' => $template->content,
+            'footer' => $template->footer,
+        ]);
+
+        $twigEnvironment = new Environment($arrayLoader, [
+            'cache' => FALSE,
+            'auto_reload' => TRUE,
+        ]);
+
+        $data = self::preparePlaceholders();
+
+        self::$headerTemplate = $twigEnvironment->render('header', $data);
+        self::$contentTemplate = $twigEnvironment->render('content', $data);
+        self::$footerTemplate = $twigEnvironment->render('footer', $data);
     }
 
-    private static function replacePlaceholders($htmlPart)
+    private static function preparePlaceholders()
     {
-        foreach (static::$placeholderData as $key => $value) {
-            $htmlPart = str_replace(sprintf('{%s}', $key), $value, $htmlPart);
-        }
-
-        if ($direction = self::getLocaleDirection()) {
-            $htmlPart = str_replace('{direction}', $direction, $htmlPart);
-        }
-
-        if ($font = self::getFont()) {
-            $htmlPart = str_replace('{font}', $font, $htmlPart);
-        }
-
-        return $htmlPart;
+        return array_merge(self::getPlaceholderData(), array_filter([
+            'direction' => self::getLocaleDirection(),
+            'font' => self::getFont(),
+        ]));
     }
 }

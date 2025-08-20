@@ -14,11 +14,11 @@ class InvoiceTemplate
     use SnappyOperations;
     use SnappyOptions;
 
-    protected static $routeName;
+    private static $routeName;
 
-    protected static $placeholderData = [];
+    private static $placeholderData = [];
 
-    public static function route(string $routeName): self
+    public static function route($routeName)
     {
         static::$routeName = $routeName;
 
@@ -32,8 +32,13 @@ class InvoiceTemplate
         return new static;
     }
 
-    protected static function getRouteName(): string
+    private static function getRouteName()
     {
         return static::$routeName ?? request()->route()->getName();
+    }
+
+    private static function getPlaceholderData()
+    {
+        return static::$placeholderData;
     }
 }

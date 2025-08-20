@@ -45,7 +45,7 @@ trait SnappyOperations
         return public_path(sprintf('files/%s/pdf', request()->getHost()));
     }
 
-    private static function generateSecureFilename(): string
+    private static function generateSecureFilename()
     {
         return sprintf('%s_%s.pdf', self::getRouteName(), now()->format('Y-m-d_H-i-s'));
     }

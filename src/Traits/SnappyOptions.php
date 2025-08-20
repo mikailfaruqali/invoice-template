@@ -4,7 +4,7 @@ namespace Snawbar\InvoiceTemplate\Traits;
 
 trait SnappyOptions
 {
-    protected static $options = [];
+    private static $options = [];
 
     public static function setOption($option, $value)
     {
