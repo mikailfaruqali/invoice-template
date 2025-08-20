@@ -1,387 +1,152 @@
 # Laravel Invoice Template Generator
 
-A powerful and flexible invoice template system for Laravel applications. Generate beautiful PDF invoices with customizable templates, automatic placeholder replacement, and email integration. This package provides a clean API for creating, managing, and generating professional invoices.
+A Laravel package for generating PDF invoices with customizable templates. Features header/footer support via Snappy PDF generator and database-driven content management.
 
 ## Features
 
 - **Template Management**: Create and manage multiple invoice templates via database
 - **Smart Placeholders**: Automatic system placeholders (date, time, user) + custom data
 - **PDF Generation**: High-quality PDF output with header, content, and footer sections
-- **Email Integration**: Generate PDFs for email attachments with auto-cleanup
 - **Flexible Layouts**: Support for A4, A5, Letter, Legal, and custom page sizes
 - **Security First**: Secure storage paths, not publicly accessible
-- **Easy Configuration**: Configurable binary paths, storage locations, and PDF options
-- **Auto-Cleanup**: Automatic deletion of temporary files after email sending
-- **Quality Options**: High, medium, and low quality presets for different use cases
+- **Quality Options**: High, medium, and low quality presets
 
 ## Installation
 
-You can install the package via Composer:
+Install the package via Composer:
 
 ```bash
-composer require snawbar/invoice-template
+composer require mikailfaruqali/invoice-template
 ```
 
-### Publish Configuration
-
-Publish the configuration file:
+Publish configuration and migrate:
 
 ```bash
 php artisan vendor:publish --provider="Snawbar\InvoiceTemplate\InvoiceTemplateServiceProvider" --tag="config"
-```
-
-### Database Migration
-
-Publish and run the migration to create the templates table:
-
-```bash
 php artisan vendor:publish --provider="Snawbar\InvoiceTemplate\InvoiceTemplateServiceProvider" --tag="migrations"
 php artisan migrate
 ```
 
-## Configuration
-
-The package comes with sensible defaults, but you can customize everything in `config/snawbar-invoice-template.php`:
-
-```php
-return [
-    // Database table name for storing templates
-    'table' => 'invoice_templates',
-
-    // Storage configuration
-    'storage' => [
-        'path' => 'invoices', // storage/app/invoices/
-    ],
-
-    // Binary paths for wkhtmltopdf
-    'binary' => [
-        'windows' => '"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"',
-        'linux' => '/usr/local/bin/wkhtmltopdf',
-        'darwin' => '/usr/local/bin/wkhtmltopdf'
-    ],
-
-    // Default PDF options
-    'options' => [
-        'page-size' => 'A4',
-        'orientation' => 'Portrait',
-        'margin-top' => '10mm',
-        'margin-bottom' => '10mm',
-        'margin-left' => '10mm',
-        'margin-right' => '10mm',
-        'encoding' => 'UTF-8',
-        'enable-local-file-access' => true,
-        'header-spacing' => 10,
-        'footer-spacing' => 10,
-    ],
-];
-```
-
 ## Requirements
 
-Install wkhtmltopdf on your system:
+Install wkhtmltopdf:
 
-**Ubuntu/Debian:**
-```bash
-sudo apt-get install wkhtmltopdf
-```
+**Ubuntu/Debian:** `sudo apt-get install wkhtmltopdf`
+**Windows:** Download from https://wkhtmltopdf.org/downloads.html
 
-**CentOS/RHEL:**
-```bash
-sudo yum install wkhtmltopdf
-```
+## Quick Start
 
-**Windows:**
-Download from: https://wkhtmltopdf.org/downloads.html
-
-**macOS:**
-```bash
-brew install wkhtmltopdf
-```
-
-## Usage
-
-### Creating Templates
-
-First, create a template in your database with header, content, and footer sections:
+### 1. Create a Template
 
 ```php
 use Snawbar\InvoiceTemplate\InvoiceTemplate;
-use Illuminate\Http\Request;
 
-// Create a new template
 $request = new Request([
     'route' => 'client-invoice',
     'name' => 'Client Invoice Template',
-    'header' => '
-        <div style="text-align: center; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
-            <h1>{{company_name}}</h1>
-            <p>Generated on: {{formatted_datetime}} by {{current_user}}</p>
-        </div>
-    ',
+    'header' => '<h1>{{company_name}}</h1><p>{{formatted_datetime}}</p>',
     'content' => '
-        <div style="margin: 20px 0;">
-            <h2>Invoice #{{invoice_number}}</h2>
-            <p><strong>Client:</strong> {{client_name}}</p>
-            <p><strong>Amount:</strong> {{total_amount}}</p>
-            <p><strong>Date:</strong> {{current_date}}</p>
-            
-            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-                <tr style="background-color: #f8f9fa;">
-                    <th style="border: 1px solid #ddd; padding: 8px;">Description</th>
-                    <th style="border: 1px solid #ddd; padding: 8px;">Amount</th>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #ddd; padding: 8px;">{{service_description}}</td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">{{service_amount}}</td>
-                </tr>
-            </table>
-        </div>
+        <h2>Invoice #{{invoice_number}}</h2>
+        <p><strong>Client:</strong> {{client_name}}</p>
+        <p><strong>Amount:</strong> {{total_amount}}</p>
+        <p><strong>Date:</strong> {{current_date}}</p>
     ',
-    'footer' => '
-        <div style="text-align: center; border-top: 1px solid #ddd; padding-top: 10px; font-size: 12px;">
-            <p>Thank you for your business!</p>
-            <p>Generated by {{current_user}} on {{current_datetime}}</p>
-        </div>
-    '
+    'footer' => '<p>Thank you! Generated by {{current_user}}</p>'
 ]);
 
 InvoiceTemplate::create($request);
 ```
 
-### Generating PDFs
-
-#### Display Inline in Browser
+### 2. Generate PDF
 
 ```php
-use Snawbar\InvoiceTemplate\InvoiceTemplate;
-
-// Current Date and Time (UTC - YYYY-MM-DD HH:MM:SS formatted): 2025-08-20 13:22:41
-// Current User's Login: mikailfaruqali
-
+// Display inline in browser
 return InvoiceTemplate::route('client-invoice')
     ->withData([
         'company_name' => 'mikailfaruqali Solutions',
         'client_name' => 'John Doe',
         'invoice_number' => 'INV-2025-001',
-        'total_amount' => '$1,500.00',
-        'service_description' => 'Web Development Services',
-        'service_amount' => '$1,500.00'
+        'total_amount' => '$1,500.00'
     ])
     ->a4()
     ->portrait()
-    ->highQuality()
-    ->inline(); // Shows in browser: invoice_client-invoice_mikailfaruqali_2025-08-20_13-22-41.pdf
-```
+    ->inline();
 
-#### Save for Email with Auto-Cleanup
-
-```php
-use Illuminate\Support\Facades\Mail;
-
-InvoiceTemplate::route('client-invoice')
+// Save to storage and get path
+$path = InvoiceTemplate::route('client-invoice')
     ->withData([
         'company_name' => 'mikailfaruqali Solutions',
         'client_name' => 'Jane Smith',
-        'invoice_number' => 'INV-2025-002',
-        'total_amount' => '$2,500.00'
+        'invoice_number' => 'INV-2025-002'
     ])
-    ->a4()
-    ->mediumQuality()
-    ->saveForEmail(function($pdfPath) {
-        Mail::send('emails.invoice', [], function($message) use ($pdfPath) {
-            $message->to('client@example.com')
-                    ->subject('Invoice from mikailfaruqali Solutions')
-                    ->attach($pdfPath, [
-                        'as' => 'invoice_client-invoice_mikailfaruqali_2025-08-20_13-22-41.pdf',
-                        'mime' => 'application/pdf'
-                    ]);
-        });
-    });
-// PDF automatically deleted after email sent!
-```
-
-#### Download PDF
-
-```php
-return InvoiceTemplate::route('client-invoice')
-    ->withData(['company_name' => 'Download Corp'])
-    ->a4()
-    ->download('invoice-download.pdf');
-```
-
-#### Save Permanently
-
-```php
-$savedPath = InvoiceTemplate::route('permanent-invoice')
-    ->withData(['company_name' => 'Permanent Corp'])
     ->a4()
     ->save();
 
-// Returns: /storage/app/temp/invoices/localhost/invoice_permanent-invoice_mikailfaruqali_2025-08-20_13-22-41.pdf
+// Returns: /path/to/storage/invoice_client-invoice_mikailfaruqali_2025-08-20_13-27-39.pdf
 ```
 
-### Available System Placeholders
-
-The package automatically provides these system placeholders in all templates:
+## Available System Placeholders
 
 ```html
-{{current_datetime}}    <!-- 2025-08-20 13:22:41 -->
+{{current_datetime}}    <!-- 2025-08-20 13:27:39 -->
 {{current_user}}        <!-- mikailfaruqali -->
 {{current_date}}        <!-- 2025-08-20 -->
-{{current_time}}        <!-- 13:22:41 -->
-{{current_year}}        <!-- 2025 -->
-{{current_month}}       <!-- 08 -->
-{{current_day}}         <!-- 20 -->
-{{formatted_datetime}}  <!-- August 20, 2025 01:22 PM -->
+{{current_time}}        <!-- 13:27:39 -->
+{{formatted_datetime}}  <!-- August 20, 2025 01:27 PM -->
 ```
 
-### PDF Configuration Options
-
-#### Page Sizes
+## PDF Options
 
 ```php
 InvoiceTemplate::route('my-invoice')
-    ->a4()        // A4 size
-    ->a5()        // A5 size  
-    ->a3()        // A3 size
-    ->letter()    // Letter size
-    ->legal()     // Legal size
-    ->width('210mm')  // Custom width
-    ->height('297mm') // Custom height
+    ->a4()              // Page size: a4, a5, letter, legal
+    ->portrait()        // Orientation: portrait, landscape  
+    ->highQuality()     // Quality: high, medium, low
+    ->marginTop('15mm') // Custom margins
+    ->headerSpacing(5)  // Header/footer spacing
+    ->inline();
 ```
 
-#### Orientation & Quality
+## Configuration
+
+Customize in `config/snawbar-invoice-template.php`:
 
 ```php
-InvoiceTemplate::route('my-invoice')
-    ->portrait()     // Portrait orientation
-    ->landscape()    // Landscape orientation
-    ->highQuality()  // 300 DPI, best quality
-    ->mediumQuality() // 150 DPI, balanced
-    ->lowQuality()   // 72 DPI, smallest size
+return [
+    'table' => 'invoice_templates',
+    'storage' => ['path' => 'invoices'],
+    'binary' => [
+        'windows' => '"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"',
+        'linux' => '/usr/local/bin/wkhtmltopdf',
+    ],
+    'options' => [
+        'page-size' => 'A4',
+        'orientation' => 'Portrait',
+        'margin-top' => '10mm',
+    ],
+];
 ```
 
-#### Margins & Spacing
+## Template Management
 
 ```php
-InvoiceTemplate::route('my-invoice')
-    ->marginTop('15mm')
-    ->marginBottom('15mm')
-    ->marginLeft('20mm')
-    ->marginRight('20mm')
-    ->headerSpacing(5)
-    ->footerSpacing(5)
-    ->headerLine()      // Add line under header
-    ->footerLine()      // Add line above footer
-```
+// Get template
+$template = InvoiceTemplate::getTemplate('route-name');
 
-### Template Management
-
-#### Create Template
-
-```php
-$request = new Request([
-    'route' => 'new-template',
-    'name' => 'My Template',
-    'header' => '<div>Header HTML</div>',
-    'content' => '<div>Content HTML with {{placeholders}}</div>',
-    'footer' => '<div>Footer HTML</div>'
-]);
-
-InvoiceTemplate::create($request);
-```
-
-#### Delete Template
-
-```php
-InvoiceTemplate::deleteTemplate('template-route-name');
-```
-
-#### Get Template
-
-```php
-$template = InvoiceTemplate::getTemplate('template-route-name');
-```
-
-### Debugging & Utilities
-
-#### Preview HTML
-
-```php
-$htmlPreview = InvoiceTemplate::route('my-template')
-    ->withData(['test' => 'value'])
-    ->previewHtml();
-
-// Returns HTML with highlighted header, content, and footer sections
-```
-
-#### Get Template Info
-
-```php
-$info = InvoiceTemplate::route('my-template')
-    ->withData(['test' => 'value'])
-    ->a4()
-    ->getTemplateInfo();
-
-// Returns: ['route', 'placeholders', 'pdf_options', 'created_by', 'created_at']
-```
-
-#### Clean Up Old Files
-
-Add to your `app/Console/Kernel.php`:
-
-```php
-protected function schedule(Schedule $schedule)
-{
-    // Clean up temp files daily at 2 AM
-    $schedule->call(function () {
-        $deletedCount = InvoiceTemplate::cleanupTempFiles(24); // Delete files older than 24 hours
-        \Log::info("Cleaned up {$deletedCount} old invoice temp files");
-    })->dailyAt('02:00');
-}
+// Delete template  
+InvoiceTemplate::deleteTemplate('route-name');
 ```
 
 ## Security
 
-- **Secure Storage**: PDFs are stored in `storage/app/` (not publicly accessible)
-- **Auto-Cleanup**: Temporary files automatically deleted after email sending
-- **Safe Placeholders**: All user input is safely replaced in templates
-- **Access Control**: Configure middleware for template management routes
-
-### Recommended Security Setup
-
-```php
-// In your routes or middleware
-Route::middleware(['auth', 'can:manage-invoices'])->group(function () {
-    // Your invoice generation routes
-});
-```
-
-## File Structure
-
-```
-storage/app/temp/invoices/
-├── localhost/
-│   ├── invoice_client-invoice_mikailfaruqali_2025-08-20_13-22-41.pdf
-│   └── invoice_email-invoice_mikailfaruqali_2025-08-20_13-22-41.pdf (auto-deleted)
-├── example.com/
-└── app.domain.com/
-```
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
+- PDFs stored in `storage/app/` (not publicly accessible)
+- Safe placeholder replacement
+- Configure access control as needed
 
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
 
-## Support
-
-If you encounter any issues or have questions, please [open an issue](https://github.com/mikailfaruqali/invoice-template/issues) on GitHub.
-
 ---
 
-**Package created by:** mikailfaruqali  
-**Current Version:** 1.0.0  
-**Last Updated:** 2025-08-20 13:22:41 UTC
+**Created by:** Mikail Faruq Ali | **Version:** 1.0.0
