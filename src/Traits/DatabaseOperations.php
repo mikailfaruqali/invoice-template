@@ -9,6 +9,13 @@ trait DatabaseOperations
 {
     public static function create(Request $request, $templateId = NULL)
     {
+        if ($request->boolean('is_active', TRUE) && self::templateExists($request->input('page'), $request->input('lang'))) {
+            DB::table(self::getTableName())
+                ->where('page', $request->input('page'))
+                ->where('lang', $request->input('lang'))
+                ->update(['is_active' => FALSE]);
+        }
+
         return DB::table(self::getTableName())->updateOrInsert(['id' => $templateId], [
             'page' => $request->input('page'),
             'lang' => $request->input('lang'),
@@ -21,7 +28,7 @@ trait DatabaseOperations
             'margin_right' => $request->input('margin_right'),
             'header_space' => $request->input('header_space'),
             'footer_space' => $request->input('footer_space'),
-            'is_active' => $request->input('is_active', TRUE),
+            'is_active' => $request->boolean('is_active', TRUE),
         ]);
     }
 
@@ -41,7 +48,9 @@ trait DatabaseOperations
 
     public static function getAllTemplates()
     {
-        return DB::table(self::getTableName())->get();
+        return DB::table(self::getTableName())
+            ->orderByDesc('id')
+            ->get();
     }
 
     private static function getTemplateFromDatabase($page)
@@ -51,6 +60,15 @@ trait DatabaseOperations
             ->where('is_active', TRUE)
             ->where('page', $page)
             ->firstOrFail();
+    }
+
+    private static function templateExists($page, $lang)
+    {
+        return DB::table(self::getTableName())
+            ->where('page', $page)
+            ->where('lang', $lang)
+            ->where('is_active', TRUE)
+            ->exists();
     }
 
     private static function getTableName()
