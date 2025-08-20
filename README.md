@@ -1,81 +1,387 @@
-# Laravel Log Viewer
+# Laravel Invoice Template Generator
 
-A simple and clean log viewer for Laravel applications. Easily view, manage, and delete your log files through a straightforward web interface. This package is designed to be lightweight and easy to integrate into any Laravel project.
-
-![Screenshot of Laravel Log Viewer](https://user-images.githubusercontent.com/your-id/your-image.png)
-*(You can add a screenshot here after you have it running)*
+A powerful and flexible invoice template system for Laravel applications. Generate beautiful PDF invoices with customizable templates, automatic placeholder replacement, and email integration. This package provides a clean API for creating, managing, and generating professional invoices.
 
 ## Features
 
-- **Simple Interface**: Clean, single-page view for your logs.
-- **File Selection**: Easily switch between different log files.
-- **File Deletion**: Clean up old log files directly from the UI.
-- **Easy Installation**: Get up and running in minutes.
-- **Configurable**: Publish the config file to customize the route and middleware.
-- **Zero Dependencies**: No external CSS or JS frameworks required.
+- **Template Management**: Create and manage multiple invoice templates via database
+- **Smart Placeholders**: Automatic system placeholders (date, time, user) + custom data
+- **PDF Generation**: High-quality PDF output with header, content, and footer sections
+- **Email Integration**: Generate PDFs for email attachments with auto-cleanup
+- **Flexible Layouts**: Support for A4, A5, Letter, Legal, and custom page sizes
+- **Security First**: Secure storage paths, not publicly accessible
+- **Easy Configuration**: Configurable binary paths, storage locations, and PDF options
+- **Auto-Cleanup**: Automatic deletion of temporary files after email sending
+- **Quality Options**: High, medium, and low quality presets for different use cases
 
 ## Installation
 
 You can install the package via Composer:
 
 ```bash
-composer require mikailfaruqali/log-viewer
+composer require snawbar/invoice-template
+```
+
+### Publish Configuration
+
+Publish the configuration file:
+
+```bash
+php artisan vendor:publish --provider="Snawbar\InvoiceTemplate\InvoiceTemplateServiceProvider" --tag="config"
+```
+
+### Database Migration
+
+Publish and run the migration to create the templates table:
+
+```bash
+php artisan vendor:publish --provider="Snawbar\InvoiceTemplate\InvoiceTemplateServiceProvider" --tag="migrations"
+php artisan migrate
 ```
 
 ## Configuration
 
-The package is designed to work out-of-the-box, but you can publish the configuration file for more control.
-
-Publish the configuration file using the following command:
-
-```bash
-php artisan vendor:publish --provider="Mikailfaruqali\LogViewer\LogViewerServiceProvider" --tag="config"
-```
-
-This will create a `config/log-viewer.php` file in your project where you can customize the package settings:
+The package comes with sensible defaults, but you can customize everything in `config/snawbar-invoice-template.php`:
 
 ```php
-// config/log-viewer.php
-
 return [
-    // The URI path where the log viewer will be accessible.
-    'route-path' => 'logs',
+    // Database table name for storing templates
+    'table' => 'invoice_templates',
 
-    // The middleware applied to the log viewer routes.
-    // By default, it's protected by 'web' and 'auth' middleware.
-    'middleware' => ['web', 'auth'],
+    // Storage configuration
+    'storage' => [
+        'path' => 'invoices', // storage/app/invoices/
+    ],
+
+    // Binary paths for wkhtmltopdf
+    'binary' => [
+        'windows' => '"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"',
+        'linux' => '/usr/local/bin/wkhtmltopdf',
+        'darwin' => '/usr/local/bin/wkhtmltopdf'
+    ],
+
+    // Default PDF options
+    'options' => [
+        'page-size' => 'A4',
+        'orientation' => 'Portrait',
+        'margin-top' => '10mm',
+        'margin-bottom' => '10mm',
+        'margin-left' => '10mm',
+        'margin-right' => '10mm',
+        'encoding' => 'UTF-8',
+        'enable-local-file-access' => true,
+        'header-spacing' => 10,
+        'footer-spacing' => 10,
+    ],
 ];
 ```
 
-You can also publish the views to customize the UI:
+## Requirements
 
+Install wkhtmltopdf on your system:
+
+**Ubuntu/Debian:**
 ```bash
-php artisan vendor:publish --provider="Mikailfaruqali\LogViewer\LogViewerServiceProvider" --tag="views"
+sudo apt-get install wkhtmltopdf
+```
+
+**CentOS/RHEL:**
+```bash
+sudo yum install wkhtmltopdf
+```
+
+**Windows:**
+Download from: https://wkhtmltopdf.org/downloads.html
+
+**macOS:**
+```bash
+brew install wkhtmltopdf
 ```
 
 ## Usage
 
-Once installed, navigate to the configured route in your browser. By default, this is:
+### Creating Templates
 
-`https://your-app.com/logs`
+First, create a template in your database with header, content, and footer sections:
 
-You must be authenticated to access this page, as defined by the default `auth` middleware in the configuration. You can change this to suit your application's needs (e.g., by creating a specific `can:view-logs` middleware).
+```php
+use Snawbar\InvoiceTemplate\InvoiceTemplate;
+use Illuminate\Http\Request;
+
+// Create a new template
+$request = new Request([
+    'route' => 'client-invoice',
+    'name' => 'Client Invoice Template',
+    'header' => '
+        <div style="text-align: center; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
+            <h1>{{company_name}}</h1>
+            <p>Generated on: {{formatted_datetime}} by {{current_user}}</p>
+        </div>
+    ',
+    'content' => '
+        <div style="margin: 20px 0;">
+            <h2>Invoice #{{invoice_number}}</h2>
+            <p><strong>Client:</strong> {{client_name}}</p>
+            <p><strong>Amount:</strong> {{total_amount}}</p>
+            <p><strong>Date:</strong> {{current_date}}</p>
+            
+            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                <tr style="background-color: #f8f9fa;">
+                    <th style="border: 1px solid #ddd; padding: 8px;">Description</th>
+                    <th style="border: 1px solid #ddd; padding: 8px;">Amount</th>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #ddd; padding: 8px;">{{service_description}}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">{{service_amount}}</td>
+                </tr>
+            </table>
+        </div>
+    ',
+    'footer' => '
+        <div style="text-align: center; border-top: 1px solid #ddd; padding-top: 10px; font-size: 12px;">
+            <p>Thank you for your business!</p>
+            <p>Generated by {{current_user}} on {{current_datetime}}</p>
+        </div>
+    '
+]);
+
+InvoiceTemplate::create($request);
+```
+
+### Generating PDFs
+
+#### Display Inline in Browser
+
+```php
+use Snawbar\InvoiceTemplate\InvoiceTemplate;
+
+// Current Date and Time (UTC - YYYY-MM-DD HH:MM:SS formatted): 2025-08-20 13:22:41
+// Current User's Login: mikailfaruqali
+
+return InvoiceTemplate::route('client-invoice')
+    ->withData([
+        'company_name' => 'mikailfaruqali Solutions',
+        'client_name' => 'John Doe',
+        'invoice_number' => 'INV-2025-001',
+        'total_amount' => '$1,500.00',
+        'service_description' => 'Web Development Services',
+        'service_amount' => '$1,500.00'
+    ])
+    ->a4()
+    ->portrait()
+    ->highQuality()
+    ->inline(); // Shows in browser: invoice_client-invoice_mikailfaruqali_2025-08-20_13-22-41.pdf
+```
+
+#### Save for Email with Auto-Cleanup
+
+```php
+use Illuminate\Support\Facades\Mail;
+
+InvoiceTemplate::route('client-invoice')
+    ->withData([
+        'company_name' => 'mikailfaruqali Solutions',
+        'client_name' => 'Jane Smith',
+        'invoice_number' => 'INV-2025-002',
+        'total_amount' => '$2,500.00'
+    ])
+    ->a4()
+    ->mediumQuality()
+    ->saveForEmail(function($pdfPath) {
+        Mail::send('emails.invoice', [], function($message) use ($pdfPath) {
+            $message->to('client@example.com')
+                    ->subject('Invoice from mikailfaruqali Solutions')
+                    ->attach($pdfPath, [
+                        'as' => 'invoice_client-invoice_mikailfaruqali_2025-08-20_13-22-41.pdf',
+                        'mime' => 'application/pdf'
+                    ]);
+        });
+    });
+// PDF automatically deleted after email sent!
+```
+
+#### Download PDF
+
+```php
+return InvoiceTemplate::route('client-invoice')
+    ->withData(['company_name' => 'Download Corp'])
+    ->a4()
+    ->download('invoice-download.pdf');
+```
+
+#### Save Permanently
+
+```php
+$savedPath = InvoiceTemplate::route('permanent-invoice')
+    ->withData(['company_name' => 'Permanent Corp'])
+    ->a4()
+    ->save();
+
+// Returns: /storage/app/temp/invoices/localhost/invoice_permanent-invoice_mikailfaruqali_2025-08-20_13-22-41.pdf
+```
+
+### Available System Placeholders
+
+The package automatically provides these system placeholders in all templates:
+
+```html
+{{current_datetime}}    <!-- 2025-08-20 13:22:41 -->
+{{current_user}}        <!-- mikailfaruqali -->
+{{current_date}}        <!-- 2025-08-20 -->
+{{current_time}}        <!-- 13:22:41 -->
+{{current_year}}        <!-- 2025 -->
+{{current_month}}       <!-- 08 -->
+{{current_day}}         <!-- 20 -->
+{{formatted_datetime}}  <!-- August 20, 2025 01:22 PM -->
+```
+
+### PDF Configuration Options
+
+#### Page Sizes
+
+```php
+InvoiceTemplate::route('my-invoice')
+    ->a4()        // A4 size
+    ->a5()        // A5 size  
+    ->a3()        // A3 size
+    ->letter()    // Letter size
+    ->legal()     // Legal size
+    ->width('210mm')  // Custom width
+    ->height('297mm') // Custom height
+```
+
+#### Orientation & Quality
+
+```php
+InvoiceTemplate::route('my-invoice')
+    ->portrait()     // Portrait orientation
+    ->landscape()    // Landscape orientation
+    ->highQuality()  // 300 DPI, best quality
+    ->mediumQuality() // 150 DPI, balanced
+    ->lowQuality()   // 72 DPI, smallest size
+```
+
+#### Margins & Spacing
+
+```php
+InvoiceTemplate::route('my-invoice')
+    ->marginTop('15mm')
+    ->marginBottom('15mm')
+    ->marginLeft('20mm')
+    ->marginRight('20mm')
+    ->headerSpacing(5)
+    ->footerSpacing(5)
+    ->headerLine()      // Add line under header
+    ->footerLine()      // Add line above footer
+```
+
+### Template Management
+
+#### Create Template
+
+```php
+$request = new Request([
+    'route' => 'new-template',
+    'name' => 'My Template',
+    'header' => '<div>Header HTML</div>',
+    'content' => '<div>Content HTML with {{placeholders}}</div>',
+    'footer' => '<div>Footer HTML</div>'
+]);
+
+InvoiceTemplate::create($request);
+```
+
+#### Delete Template
+
+```php
+InvoiceTemplate::deleteTemplate('template-route-name');
+```
+
+#### Get Template
+
+```php
+$template = InvoiceTemplate::getTemplate('template-route-name');
+```
+
+### Debugging & Utilities
+
+#### Preview HTML
+
+```php
+$htmlPreview = InvoiceTemplate::route('my-template')
+    ->withData(['test' => 'value'])
+    ->previewHtml();
+
+// Returns HTML with highlighted header, content, and footer sections
+```
+
+#### Get Template Info
+
+```php
+$info = InvoiceTemplate::route('my-template')
+    ->withData(['test' => 'value'])
+    ->a4()
+    ->getTemplateInfo();
+
+// Returns: ['route', 'placeholders', 'pdf_options', 'created_by', 'created_at']
+```
+
+#### Clean Up Old Files
+
+Add to your `app/Console/Kernel.php`:
+
+```php
+protected function schedule(Schedule $schedule)
+{
+    // Clean up temp files daily at 2 AM
+    $schedule->call(function () {
+        $deletedCount = InvoiceTemplate::cleanupTempFiles(24); // Delete files older than 24 hours
+        \Log::info("Cleaned up {$deletedCount} old invoice temp files");
+    })->dailyAt('02:00');
+}
+```
 
 ## Security
 
-By default, the log viewer is only accessible to authenticated users. If your application has roles and permissions, it is **highly recommended** to create a custom authorization policy.
+- **Secure Storage**: PDFs are stored in `storage/app/` (not publicly accessible)
+- **Auto-Cleanup**: Temporary files automatically deleted after email sending
+- **Safe Placeholders**: All user input is safely replaced in templates
+- **Access Control**: Configure middleware for template management routes
 
-You can do this by creating a custom middleware and adding it to the `middleware` array in the `config/log-viewer.php` file.
+### Recommended Security Setup
 
-**Example: Admin-only middleware**
+```php
+// In your routes or middleware
+Route::middleware(['auth', 'can:manage-invoices'])->group(function () {
+    // Your invoice generation routes
+});
+```
 
-1.  Create the middleware: `php artisan make:middleware AbortIfNotAdmin`
-2.  Implement the logic in the middleware's `handle` method.
-3.  Update your `config/log-viewer.php`:
-    ```php
-    'middleware' => ['web', 'auth', 'admin'],
-    ```
+## File Structure
+
+```
+storage/app/temp/invoices/
+├── localhost/
+│   ├── invoice_client-invoice_mikailfaruqali_2025-08-20_13-22-41.pdf
+│   └── invoice_email-invoice_mikailfaruqali_2025-08-20_13-22-41.pdf (auto-deleted)
+├── example.com/
+└── app.domain.com/
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+
+## Support
+
+If you encounter any issues or have questions, please [open an issue](https://github.com/mikailfaruqali/invoice-template/issues) on GitHub.
+
+---
+
+**Package created by:** mikailfaruqali  
+**Current Version:** 1.0.0  
+**Last Updated:** 2025-08-20 13:22:41 UTC
