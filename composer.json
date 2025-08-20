@@ -1,0 +1,50 @@
+{
+    "name": "mikailfaruqali/invoice-template",
+    "description": "A Laravel package for generating PDF invoices with customizable templates. Features header/footer support via Snappy PDF generator and database-driven content management.",
+    "keywords": [
+        "laravel",
+        "invoice",
+        "pdf",
+        "template",
+        "snappy",
+        "wkhtmltopdf",
+        "invoice-generator",
+        "pdf-generation"
+    ],
+    "homepage": "https://github.com/mikailfaruqali/invoice-template",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mikail Faruq Ali",
+            "email": "alanfaruq85@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=7.4",
+        "barryvdh/laravel-snappy": "^1.0",
+        "illuminate/contracts": ">=5.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.14",
+        "orchestra/testbench": "^8.22|^9.0",
+        "driftingly/rector-laravel": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Snawbar\\InvoiceTemplate\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Snawbar\\InvoiceTemplate\\InvoiceTemplateServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
