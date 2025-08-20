@@ -10,9 +10,9 @@ trait DatabaseOperations
     public static function create(Request $request)
     {
         return DB::table(self::getTableName())->updateOrInsert(['route' => $request->route, 'lang' => $request->lang], [
-            'header' => $request->header,
-            'content' => $request->content,
-            'footer' => $request->footer,
+            'header' => $request->input('header', ''),
+            'content' => $request->input('content', ''),
+            'footer' => $request->input('footer', ''),
         ]);
     }
 

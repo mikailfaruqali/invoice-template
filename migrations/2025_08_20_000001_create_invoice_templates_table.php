@@ -12,7 +12,7 @@ return new class extends Migration
             $blueprint->string('route');
             $blueprint->text('header');
             $blueprint->text('content');
-            $blueprint->text('footer')->nullable();
+            $blueprint->text('footer');
             $blueprint->string('lang')->default('en');
             $blueprint->primary(['route', 'lang']);
         });
