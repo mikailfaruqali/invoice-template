@@ -13,6 +13,12 @@ trait DatabaseOperations
             'header' => $request->input('header', ''),
             'content' => $request->input('content', ''),
             'footer' => $request->input('footer', ''),
+            'margin_top' => $request->input('margin_top'),
+            'margin_bottom' => $request->input('margin_bottom'),
+            'margin_left' => $request->input('margin_left'),
+            'margin_right' => $request->input('margin_right'),
+            'header_space' => $request->input('header_space'),
+            'footer_space' => $request->input('footer_space'),
         ]);
     }
 
