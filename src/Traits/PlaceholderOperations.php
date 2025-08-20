@@ -42,6 +42,14 @@ trait PlaceholderOperations
             $htmlPart = str_replace(sprintf('{%s}', $key), $value, $htmlPart);
         }
 
+        if ($direction = self::getLocaleDirection()) {
+            $htmlPart = str_replace('{direction}', $direction, $htmlPart);
+        }
+
+        if ($font = self::getFont()) {
+            $htmlPart = str_replace('{font}', $font, $htmlPart);
+        }
+
         return $htmlPart;
     }
 }

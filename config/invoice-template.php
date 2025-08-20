@@ -64,4 +64,34 @@ return [
         'image-dpi' => 72,
         'image-quality' => 50,
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Font Family Configuration
+    |--------------------------------------------------------------------------
+    | Default font family for PDF generation
+    |
+    */
+
+    'font' => '',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Font Directory Path
+    |--------------------------------------------------------------------------
+    | Directory path containing custom font files for PDF generation
+    |
+    */
+
+    'font-dir' => '',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Locale Direction Key for Session
+    |--------------------------------------------------------------------------
+    | Session key used for text direction (LTR/RTL support) based on locale
+    |
+    */
+
+    'locale-direction-key' => 'direction',
 ];

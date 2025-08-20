@@ -176,6 +176,16 @@ trait SnappyOptions
         return new static;
     }
 
+    private static function getFont()
+    {
+        return self::normalizePath(sprintf('%s/%s', config('snawbar-invoice-template.font-dir'), config('snawbar-invoice-template.font')));
+    }
+
+    private static function getLocaleDirection()
+    {
+        return session(config('snawbar-invoice-template.locale-direction-key'));
+    }
+
     private static function setBinaryPath()
     {
         config(['snappy.pdf.binary' => config('snawbar-invoice-template.binary')[PHP_OS_FAMILY === 'Windows' ? 'windows' : 'linux']]);
@@ -184,5 +194,10 @@ trait SnappyOptions
     private static function configureOptions()
     {
         return array_merge(config('snawbar-invoice-template.options'), self::$options);
+    }
+
+    private static function normalizePath($path)
+    {
+        return str_replace('\\', '/', $path);
     }
 }
