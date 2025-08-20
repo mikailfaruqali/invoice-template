@@ -25,19 +25,19 @@ trait DatabaseOperations
         ]);
     }
 
-    public static function deleteTemplate($routeName, $lang = 'en')
+    public static function deleteTemplate($page, $lang = 'en')
     {
         return DB::table(self::getTableName())
-            ->where('route', $routeName)
+            ->where('page', $page)
             ->where('lang', $lang)
             ->delete();
     }
 
-    public static function getTemplate($routeName)
+    public static function getTemplate($page)
     {
         return DB::table(self::getTableName())
-            ->where('route', $routeName)
             ->where('lang', app()->getLocale())
+            ->where('page', $page)
             ->firstOrFail();
     }
 

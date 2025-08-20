@@ -47,7 +47,7 @@ trait SnappyOperations
 
     private static function generateSecureFilename()
     {
-        return sprintf('%s_%s.pdf', self::getRouteName(), now()->format('Y-m-d_H-i-s'));
+        return sprintf('%s_%s.pdf', self::getPage(), now()->format('Y-m-d_H-i-s'));
     }
 
     private static function ensureDirectoryExist($path)

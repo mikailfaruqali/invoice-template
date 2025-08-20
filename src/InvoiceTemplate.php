@@ -14,15 +14,15 @@ class InvoiceTemplate
     use SnappyOptions;
     use TwigOperations;
 
-    private static $routeName;
+    private static $page;
 
     private static $extension = [];
 
     private static $placeholderData = [];
 
-    public static function route($routeName)
+    public static function page($page)
     {
-        static::$routeName = $routeName;
+        static::$page = $page;
 
         return new static;
     }
@@ -43,9 +43,9 @@ class InvoiceTemplate
         return new static;
     }
 
-    private static function getRouteName()
+    private static function getPage()
     {
-        return static::$routeName ?? request()->route()->getName();
+        return static::$page;
     }
 
     private static function getPlaceholderData()
