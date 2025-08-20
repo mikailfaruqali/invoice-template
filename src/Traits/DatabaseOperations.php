@@ -41,6 +41,13 @@ trait DatabaseOperations
             ->firstOrFail();
     }
 
+    public static function getTemplateById($templateId)
+    {
+        return DB::table(self::getTableName())
+            ->where('id', $templateId)
+            ->firstOrFail();
+    }
+
     public static function getAllTemplates()
     {
         return DB::table(self::getTableName())->get();
