@@ -26,7 +26,7 @@ trait SnappyOperations
     private static function generate()
     {
         self::setBinaryPath();
-        self::loadTemplate();
+        self::loadTemplate(app()->getLocale());
 
         $pdfWrapper = SnappyPdf::loadHTML(self::getContentTemplate());
 

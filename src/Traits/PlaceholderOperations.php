@@ -27,9 +27,9 @@ trait PlaceholderOperations
         return self::$footerTemplate;
     }
 
-    private static function loadTemplate()
+    private static function loadTemplate($lang = 'en')
     {
-        $template = self::getTemplate(self::getRouteName());
+        $template = self::getTemplate(self::getRouteName(), $lang);
 
         self::$headerTemplate = self::replacePlaceholders($template->header);
         self::$contentTemplate = self::replacePlaceholders($template->content);
