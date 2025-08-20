@@ -16,6 +16,8 @@ class InvoiceTemplate
 
     private static $routeName;
 
+    private static $extension = [];
+
     private static $placeholderData = [];
 
     public static function route($routeName)
@@ -32,6 +34,15 @@ class InvoiceTemplate
         return new static;
     }
 
+    public static function setExtension($extension)
+    {
+        $extensions = is_array($extension) ? $extension : [$extension];
+
+        static::$extension = $extensions;
+
+        return new static;
+    }
+
     private static function getRouteName()
     {
         return static::$routeName ?? request()->route()->getName();
@@ -40,5 +51,10 @@ class InvoiceTemplate
     private static function getPlaceholderData()
     {
         return static::$placeholderData;
+    }
+
+    private static function getExtension()
+    {
+        return static::$extension;
     }
 }

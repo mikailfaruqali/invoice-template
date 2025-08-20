@@ -28,9 +28,9 @@ trait PlaceholderOperations
         return self::$footerTemplate;
     }
 
-    private static function loadTemplate($lang = 'en')
+    private static function loadTemplate()
     {
-        $template = self::getTemplate(self::getRouteName(), $lang);
+        $template = self::getTemplate(self::getRouteName());
 
         $arrayLoader = new ArrayLoader([
             'header' => $template->header,
@@ -38,10 +38,11 @@ trait PlaceholderOperations
             'footer' => $template->footer,
         ]);
 
-        $twigEnvironment = new Environment($arrayLoader, [
-            'cache' => FALSE,
-            'auto_reload' => TRUE,
-        ]);
+        $twigEnvironment = new Environment($arrayLoader);
+
+        if ($extension = self::getExtension()) {
+            array_map([$twigEnvironment, 'addExtension'], $extension);
+        }
 
         $data = self::preparePlaceholders();
 

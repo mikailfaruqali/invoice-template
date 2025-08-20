@@ -24,11 +24,11 @@ trait DatabaseOperations
             ->delete();
     }
 
-    public static function getTemplate($routeName, $lang = 'en')
+    public static function getTemplate($routeName)
     {
         return DB::table(self::getTableName())
             ->where('route', $routeName)
-            ->where('lang', $lang)
+            ->where('lang', app()->getLocale())
             ->firstOrFail();
     }
 
