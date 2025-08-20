@@ -32,15 +32,6 @@ trait DatabaseOperations
             ->delete();
     }
 
-    public static function getTemplate($page)
-    {
-        return DB::table(self::getTableName())
-            ->where('lang', app()->getLocale())
-            ->where('is_active', TRUE)
-            ->where('page', $page)
-            ->firstOrFail();
-    }
-
     public static function getTemplateById($templateId)
     {
         return DB::table(self::getTableName())
@@ -51,6 +42,15 @@ trait DatabaseOperations
     public static function getAllTemplates()
     {
         return DB::table(self::getTableName())->get();
+    }
+
+    private static function getTemplateFromDatabase($page)
+    {
+        return DB::table(self::getTableName())
+            ->where('lang', app()->getLocale())
+            ->where('is_active', TRUE)
+            ->where('page', $page)
+            ->firstOrFail();
     }
 
     private static function getTableName()

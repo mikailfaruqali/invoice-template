@@ -30,7 +30,7 @@ trait TwigOperations
 
     private static function loadTemplate()
     {
-        $template = self::getTemplate(self::getPage());
+        $template = self::getTemplate();
 
         $arrayLoader = new ArrayLoader([
             'header' => $template->header,

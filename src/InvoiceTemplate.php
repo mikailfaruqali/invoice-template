@@ -14,15 +14,15 @@ class InvoiceTemplate
     use SnappyOptions;
     use TwigOperations;
 
-    private static $page;
+    private static $template;
 
     private static $extension = [];
 
     private static $placeholderData = [];
 
-    public static function page($page)
+    public static function template($template)
     {
-        static::$page = $page;
+        static::$template = self::getTemplateFromDatabase($template);
 
         return new static;
     }
@@ -43,9 +43,9 @@ class InvoiceTemplate
         return new static;
     }
 
-    private static function getPage()
+    private static function getTemplate()
     {
-        return static::$page;
+        return static::$template;
     }
 
     private static function getPlaceholderData()
