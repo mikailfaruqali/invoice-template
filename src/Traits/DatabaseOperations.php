@@ -37,6 +37,7 @@ trait DatabaseOperations
     {
         return DB::table(self::getTableName())
             ->where('lang', app()->getLocale())
+            ->where('is_active', TRUE)
             ->where('page', $page)
             ->firstOrFail();
     }
