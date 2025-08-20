@@ -25,11 +25,10 @@ trait DatabaseOperations
         ]);
     }
 
-    public static function deleteTemplate($page, $lang = 'en')
+    public static function deleteTemplate($templateId)
     {
         return DB::table(self::getTableName())
-            ->where('page', $page)
-            ->where('lang', $lang)
+            ->where('id', $templateId)
             ->delete();
     }
 
