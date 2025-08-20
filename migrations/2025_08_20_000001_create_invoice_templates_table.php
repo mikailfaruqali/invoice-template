@@ -8,13 +8,13 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::create(config('snawbar-invoice-template.table'), function (Blueprint $table) {
-            $table->string('route')->primary();
-            $table->string('name');
-            $table->text('header');
-            $table->text('content');
-            $table->text('footer')->nullable();
-            $table->json('styles')->nullable();
+        Schema::create(config('snawbar-invoice-template.table'), function (Blueprint $blueprint) {
+            $blueprint->string('route');
+            $blueprint->text('header');
+            $blueprint->text('content');
+            $blueprint->text('footer')->nullable();
+            $blueprint->string('lang')->default('en');
+            $blueprint->primary(['route', 'lang']);
         });
     }
 };

@@ -33,7 +33,7 @@ trait SnappyOperations
         $pdfWrapper->setOption('header-html', self::getHeaderTemplate());
         $pdfWrapper->setOption('footer-html', self::getFooterTemplate());
 
-        foreach (self::configurePdfOptions() as $option => $value) {
+        foreach (self::configureOptions() as $option => $value) {
             $pdfWrapper->setOption($option, $value);
         }
 

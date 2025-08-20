@@ -4,202 +4,174 @@ namespace Snawbar\InvoiceTemplate\Traits;
 
 trait SnappyOptions
 {
-    protected static $pdfOptions = [];
+    protected static $options = [];
 
-    public static function setPdfOption($option, $value)
+    public static function setOption($option, $value)
     {
-        self::$pdfOptions[$option] = $value;
+        self::$options[$option] = $value;
 
         return new static;
     }
 
-    public static function setPdfOptions(array $options)
+    public static function setOptions(array $options)
     {
-        self::$pdfOptions = array_merge(self::$pdfOptions, $options);
-
-        return new static;
-    }
-
-    public static function a4()
-    {
-        self::$pdfOptions['page-size'] = 'a4';
-
-        return new static;
-    }
-
-    public static function a5()
-    {
-        self::$pdfOptions['page-size'] = 'a5';
-
-        return new static;
-    }
-
-    public static function a3()
-    {
-        self::$pdfOptions['page-size'] = 'a3';
-
-        return new static;
-    }
-
-    public static function a11()
-    {
-        self::$pdfOptions['page-size'] = 'a11';
+        self::$options = array_merge(self::$options, $options);
 
         return new static;
     }
 
     public static function portrait()
     {
-        self::$pdfOptions['orientation'] = 'Portrait';
+        self::$options['orientation'] = 'Portrait';
 
         return new static;
     }
 
     public static function landscape()
     {
-        self::$pdfOptions['orientation'] = 'Landscape';
+        self::$options['orientation'] = 'Landscape';
 
         return new static;
     }
 
     public static function letter()
     {
-        self::$pdfOptions['page-size'] = 'Letter';
+        self::$options['page-size'] = 'Letter';
 
         return new static;
     }
 
     public static function legal()
     {
-        self::$pdfOptions['page-size'] = 'Legal';
+        self::$options['page-size'] = 'Legal';
 
         return new static;
     }
 
     public static function width($width)
     {
-        self::$pdfOptions['page-width'] = $width;
+        self::$options['page-width'] = $width;
 
         return new static;
     }
 
     public static function height($height)
     {
-        self::$pdfOptions['page-height'] = $height;
+        self::$options['page-height'] = $height;
 
         return new static;
     }
 
     public static function marginTop($margin)
     {
-        self::$pdfOptions['margin-top'] = $margin;
+        self::$options['margin-top'] = $margin;
 
         return new static;
     }
 
     public static function marginRight($margin)
     {
-        self::$pdfOptions['margin-right'] = $margin;
+        self::$options['margin-right'] = $margin;
 
         return new static;
     }
 
     public static function marginBottom($margin)
     {
-        self::$pdfOptions['margin-bottom'] = $margin;
+        self::$options['margin-bottom'] = $margin;
 
         return new static;
     }
 
     public static function marginLeft($margin)
     {
-        self::$pdfOptions['margin-left'] = $margin;
+        self::$options['margin-left'] = $margin;
 
         return new static;
     }
 
     public static function headerSpacing($spacing)
     {
-        self::$pdfOptions['header-spacing'] = $spacing;
+        self::$options['header-spacing'] = $spacing;
 
         return new static;
     }
 
     public static function noHeaderSpacing()
     {
-        self::$pdfOptions['header-spacing'] = '0';
+        self::$options['header-spacing'] = '0';
 
         return new static;
     }
 
     public static function footerSpacing($spacing)
     {
-        self::$pdfOptions['footer-spacing'] = $spacing;
+        self::$options['footer-spacing'] = $spacing;
 
         return new static;
     }
 
     public static function noFooterSpacing()
     {
-        self::$pdfOptions['footer-spacing'] = '0';
+        self::$options['footer-spacing'] = '0';
 
         return new static;
     }
 
     public static function headerLine()
     {
-        self::$pdfOptions['header-line'] = TRUE;
+        self::$options['header-line'] = TRUE;
 
         return new static;
     }
 
     public static function noHeaderLine()
     {
-        self::$pdfOptions['header-line'] = FALSE;
+        self::$options['header-line'] = FALSE;
 
         return new static;
     }
 
     public static function footerLine()
     {
-        self::$pdfOptions['footer-line'] = TRUE;
+        self::$options['footer-line'] = TRUE;
 
         return new static;
     }
 
     public static function noFooterLine()
     {
-        self::$pdfOptions['footer-line'] = FALSE;
+        self::$options['footer-line'] = FALSE;
 
         return new static;
     }
 
     public static function highQuality()
     {
-        self::$pdfOptions['lowquality'] = FALSE;
-        self::$pdfOptions['dpi'] = 300;
-        self::$pdfOptions['image-dpi'] = 300;
-        self::$pdfOptions['image-quality'] = 94;
+        self::$options['lowquality'] = FALSE;
+        self::$options['dpi'] = 300;
+        self::$options['image-dpi'] = 300;
+        self::$options['image-quality'] = 94;
 
         return new static;
     }
 
     public static function mediumQuality()
     {
-        self::$pdfOptions['lowquality'] = FALSE;
-        self::$pdfOptions['dpi'] = 150;
-        self::$pdfOptions['image-dpi'] = 150;
-        self::$pdfOptions['image-quality'] = 75;
+        self::$options['lowquality'] = FALSE;
+        self::$options['dpi'] = 150;
+        self::$options['image-dpi'] = 150;
+        self::$options['image-quality'] = 75;
 
         return new static;
     }
 
     public static function lowQuality()
     {
-        self::$pdfOptions['lowquality'] = TRUE;
-        self::$pdfOptions['dpi'] = 72;
-        self::$pdfOptions['image-dpi'] = 72;
-        self::$pdfOptions['image-quality'] = 50;
+        self::$options['lowquality'] = TRUE;
+        self::$options['dpi'] = 72;
+        self::$options['image-dpi'] = 72;
+        self::$options['image-quality'] = 50;
 
         return new static;
     }
@@ -209,8 +181,8 @@ trait SnappyOptions
         config(['snappy.pdf.binary' => config('snawbar-invoice-template.binary')[PHP_OS_FAMILY === 'Windows' ? 'windows' : 'linux']]);
     }
 
-    private static function configurePdfOptions()
+    private static function configureOptions()
     {
-        return array_merge(config('snawbar-invoice-template.options'), self::$pdfOptions);
+        return array_merge(config('snawbar-invoice-template.options'), self::$options);
     }
 }
