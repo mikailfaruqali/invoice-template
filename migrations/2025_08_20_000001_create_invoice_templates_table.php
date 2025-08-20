@@ -22,7 +22,7 @@ return new class extends Migration
             $blueprint->double('footer_space')->default(0);
             $blueprint->string('lang')->default('en');
             $blueprint->boolean('is_active')->default(TRUE);
-            $blueprint->unique(['id', 'page', 'lang']);
+            $blueprint->unique(['page', 'lang', 'is_active']);
         });
     }
 };
