@@ -42,13 +42,13 @@ trait DatabaseOperations
             ->firstOrFail();
     }
 
+    public static function getAllTemplates()
+    {
+        return DB::table(self::getTableName())->get();
+    }
+
     private static function getTableName()
     {
         return config('snawbar-invoice-template.table');
-    }
-
-    private static function getAllTemplates()
-    {
-        return DB::table(self::getTableName())->get();
     }
 }
