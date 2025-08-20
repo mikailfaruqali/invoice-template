@@ -16,7 +16,7 @@ trait SnappyOperations
     {
         self::ensureDirectoryExist(self::generatePath());
 
-        $fullPath = sprintf('%s/%s.pdf', self::generatePath(), self::generateSecureFilename());
+        $fullPath = sprintf('%s/%s', self::generatePath(), self::generateSecureFilename());
 
         self::generate()->save($fullPath);
 
