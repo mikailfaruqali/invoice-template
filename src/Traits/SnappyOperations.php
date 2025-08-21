@@ -68,6 +68,31 @@ trait SnappyOperations
         return sprintf('%s_%s.pdf', self::getTemplate()->page, now()->format('Y-m-d_H-i-s'));
     }
 
+    private static function getFont()
+    {
+        return self::normalizePath(sprintf('%s/%s', config('snawbar-invoice-template.font-dir'), config('snawbar-invoice-template.font')));
+    }
+
+    private static function getLocaleDirection()
+    {
+        return session(config('snawbar-invoice-template.locale-direction-key'));
+    }
+
+    private static function setBinaryPath()
+    {
+        config(['snappy.pdf.binary' => config('snawbar-invoice-template.binary')[PHP_OS_FAMILY === 'Windows' ? 'windows' : 'linux']]);
+    }
+
+    private static function configureOptions()
+    {
+        return config('snawbar-invoice-template.options');
+    }
+
+    private static function normalizePath($path)
+    {
+        return str_replace('\\', '/', $path);
+    }
+
     private static function ensureDirectoryExist($path)
     {
         if (File::missing($path)) {

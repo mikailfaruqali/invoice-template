@@ -59,10 +59,10 @@ return [
         'minimum-font-size' => 8,
         'zoom' => 1.0,
         'viewport-size' => '1024x768',
-        'lowquality' => TRUE,
-        'dpi' => 72,
-        'image-dpi' => 72,
-        'image-quality' => 50,
+        'lowquality' => FALSE,
+        'dpi' => 150,
+        'image-dpi' => 150,
+        'image-quality' => 75,
     ],
 
     /*
