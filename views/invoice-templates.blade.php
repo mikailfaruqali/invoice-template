@@ -418,7 +418,7 @@
         const AppState = {
             templates: [],
             filteredTemplates: [],
-            editingTemplate: null
+            editingTemplate: null,
         };
 
         const Elements = {
@@ -444,6 +444,7 @@
         const HttpClient = {
             init() {
                 const csrfToken = document.querySelector('meta[name="csrf-token"]');
+
                 if (csrfToken) {
                     axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken.getAttribute('content');
                 }
@@ -511,8 +512,14 @@
         const ErrorHandler = {
             getErrorMessage(error) {
                 if (error.response) {
-                    if (error.response.data?.message) return error.response.data.message;
-                    if (error.response.data?.error) return error.response.data.error;
+                    if (error.response.data?.message) {
+                        return error.response.data.message;
+                    }
+
+                    if (error.response.data?.error) {
+                        return error.response.data.error;
+                    }
+
                     return `Server error: ${error.response.status} ${error.response.statusText}`;
                 }
                 
@@ -527,7 +534,9 @@
                 const container = document.getElementById('alertContainer');
                 const alertMessage = document.getElementById('alertMessage');
                 
-                if (!container || !alertMessage) return;
+                if (! container || ! alertMessage) {
+                    return;
+                }
 
                 container.classList.remove('hidden');
                 alertMessage.textContent = message;
@@ -549,7 +558,10 @@
 
             showToast(message, type = 'info') {
                 const existingToast = document.getElementById('modalToast');
-                if (existingToast) existingToast.remove();
+
+                if (existingToast) {
+                    existingToast.remove();
+                }
 
                 const toast = document.createElement('div');
                 toast.id = 'modalToast';
@@ -620,7 +632,9 @@
             clearAllErrors() {
                 document.querySelectorAll('[id$="Error"]').forEach(el => {
                     el.classList.add('hidden');
+
                     const input = el.previousElementSibling;
+                    
                     if (input?.classList) {
                         input.classList.remove('input-error');
                     }
@@ -632,13 +646,14 @@
                 
                 fields.forEach(fieldName => {
                     const element = document.getElementById(fieldName);
-                    if (!element || element.value.trim() === '') {
+
+                    if (! element || element.value.trim() === '') {
                         this.showError(fieldName, 'This field is required');
                         hasErrors = true;
                     }
                 });
                 
-                return !hasErrors;
+                return ! hasErrors;
             },
 
             handleServerErrors(errors) {
@@ -671,6 +686,7 @@
                             field.toLowerCase().includes(searchTerm)
                         );
                     });
+
                     Elements.clearSearchBtn.classList.remove('hidden');
                 }
                 
@@ -748,8 +764,7 @@
                 const statusClass = template.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
                 const statusText = template.is_active ? 'Active' : 'Inactive';
 
-                return `
-                    <tr class="hover:bg-gray-50 transition-colors">
+                return `<tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-4 py-3">
                             <div class="font-medium text-gray-900 text-sm">${slug}</div>
                         </td>
@@ -788,8 +803,7 @@
                                 </button>
                             </div>
                         </td>
-                    </tr>
-                `;
+                    </tr>`;
             }
         };
 
@@ -826,7 +840,6 @@
                 AppState.editingTemplate = null;
                 Elements.modalTitle.textContent = 'New Template';
                 Elements.submitText.textContent = 'Save Template';
-                this.resetForm();
                 Elements.templateModal.classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
             },
@@ -834,12 +847,12 @@
             close() {
                 Elements.templateModal.classList.add('hidden');
                 document.body.style.overflow = 'auto';
-                this.resetForm();
             },
 
             edit(id) {
                 const template = AppState.templates.find(t => t.id === id);
-                if (!template) {
+
+                if (! template) {
                     ErrorHandler.showMainAlert('Template not found', 'error');
                     return;
                 }
@@ -883,7 +896,10 @@
 
                 Object.entries(fieldMappings).forEach(([fieldId, value]) => {
                     const element = document.getElementById(fieldId);
-                    if (!element) return;
+                    
+                    if (! element) {
+                        return;
+                    }
 
                     if (element.type === 'checkbox') {
                         element.checked = Boolean(value);
@@ -1005,7 +1021,8 @@
                 FormValidation.clearAllErrors();
 
                 const requiredFields = ['page', 'lang', 'header', 'content'];
-                if (!FormValidation.validateRequired(requiredFields)) {
+
+                if (! FormValidation.validateRequired(requiredFields)) {
                     ErrorHandler.showToast('Please fill in all required fields', 'error');
                     return;
                 }
@@ -1060,7 +1077,7 @@
 
             async delete(id) {
                 const result = await Swal.fire({
-                    title: 'Delete Template?',
+                    title: 'Delete Template ?',
                     text: 'This action cannot be undone.',
                     icon: 'warning',
                     showCancelButton: true,
@@ -1070,7 +1087,9 @@
                     cancelButtonText: 'Cancel'
                 });
 
-                if (!result.isConfirmed) return;
+                if (! result.isConfirmed) {
+                    return;
+                }
 
                 try {
                     await HttpClient.delete(`/invoice-templates/delete/${id}`);
@@ -1080,7 +1099,7 @@
                         text: 'Template has been deleted.',
                         icon: 'success',
                         timer: 2000,
-                        showConfirmButton: false
+                        showConfirmButton: false,
                     });
                     
                     await this.load();
@@ -1101,16 +1120,16 @@
 
             handleKeyDown(event) {
                 if (event.key === 'Escape') {
-                    if (!Elements.previewModal.classList.contains('hidden')) {
+                    if (! Elements.previewModal.classList.contains('hidden')) {
                         PreviewModal.close();
-                    } else if (!Elements.templateModal.classList.contains('hidden')) {
+                    } else if (! Elements.templateModal.classList.contains('hidden')) {
                         TemplateModal.close();
                     }
+                    
                     return;
                 }
 
-                if (event.ctrlKey && event.key === 's' && 
-                    !Elements.templateModal.classList.contains('hidden')) {
+                if (event.ctrlKey && event.key === 's' && ! Elements.templateModal.classList.contains('hidden')) {
                     event.preventDefault();
                     TemplateAPI.save();
                     return;
