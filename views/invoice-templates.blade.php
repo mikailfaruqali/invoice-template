@@ -485,8 +485,8 @@
             },
 
             formatPaperSize(template) {
-                const size = template.paper_size || 'A4';
-                const orientation = template.orientation || 'portrait';
+                const size = template.paper_size;
+                const orientation = template.orientation;
                 return `${size} ${this.capitalize(orientation)}`;
             },
 
@@ -675,10 +675,10 @@
                 } else {
                     AppState.filteredTemplates = AppState.templates.filter(template => {
                         const searchFields = [
-                            template.page || '',
-                            template.lang || '',
-                            template.paper_size || '',
-                            template.orientation || '',
+                            template.page,
+                            template.lang,
+                            template.paper_size,
+                            template.orientation,
                             template.is_active ? 'active' : 'inactive'
                         ];
                         
@@ -758,8 +758,8 @@
             },
 
             createTableRow(template) {
-                const slug = Utils.escapeHtml(template.page || 'untitled');
-                const language = Utils.escapeHtml((template.lang || 'en').toUpperCase());
+                const slug = Utils.escapeHtml(template.page);
+                const language = Utils.escapeHtml((template.lang).toUpperCase());
                 const paperFormat = Utils.escapeHtml(Utils.formatPaperSize(template));
                 const statusClass = template.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
                 const statusText = template.is_active ? 'Active' : 'Inactive';
@@ -815,10 +815,10 @@
             },
 
             updateDimensions() {
-                const paperSize = document.getElementById('paperSize')?.value || 'A4';
-                const orientation = document.getElementById('orientation')?.value || 'portrait';
+                const paperSize = document.getElementById('paperSize')?.value;
+                const orientation = document.getElementById('orientation')?.value;
                 
-                const dimensions = this.dimensions[paperSize] || this.dimensions['A4'];
+                const dimensions = this.dimensions[paperSize];
                 
                 const widthElement = document.getElementById('width');
                 const heightElement = document.getElementById('height');
@@ -876,22 +876,22 @@
             populateForm(template) {
                 const fieldMappings = {
                     'templateId': template.id,
-                    'page': template.page || '',
-                    'lang': template.lang || 'en',
+                    'page': template.page,
+                    'lang': template.lang,
                     'isActive': template.is_active,
-                    'paperSize': template.paper_size || 'A4',
-                    'orientation': template.orientation || 'portrait',
-                    'width': template.width || 210,
-                    'height': template.height || 297,
-                    'marginTop': template.margin_top || 20,
-                    'marginBottom': template.margin_bottom || 20,
-                    'marginLeft': template.margin_left || 20,
-                    'marginRight': template.margin_right || 20,
-                    'headerSpace': template.header_space || 10,
-                    'footerSpace': template.footer_space || 10,
-                    'header': template.header || '',
-                    'content': template.content || '',
-                    'footer': template.footer || ''
+                    'paperSize': template.paper_size,
+                    'orientation': template.orientation,
+                    'width': template.width,
+                    'height': template.height,
+                    'marginTop': template.margin_top,
+                    'marginBottom': template.margin_bottom,
+                    'marginLeft': template.margin_left,
+                    'marginRight': template.margin_right,
+                    'headerSpace': template.header_space,
+                    'footerSpace': template.footer_space,
+                    'header': template.header,
+                    'content': template.content,
+                    'footer': template.footer
                 };
 
                 Object.entries(fieldMappings).forEach(([fieldId, value]) => {
@@ -912,7 +912,7 @@
 
         const PreviewModal = {
             open(type) {
-                const content = document.getElementById(type)?.value || '';
+                const content = document.getElementById(type)?.value;
                 
                 if (content.trim() === '') {
                     ErrorHandler.showToast(`Please enter ${type} content first`, 'error');

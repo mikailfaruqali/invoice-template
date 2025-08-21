@@ -4,14 +4,12 @@ namespace Snawbar\InvoiceTemplate;
 
 use Snawbar\InvoiceTemplate\Traits\DatabaseOperations;
 use Snawbar\InvoiceTemplate\Traits\SnappyOperations;
-use Snawbar\InvoiceTemplate\Traits\SnappyOptions;
 use Snawbar\InvoiceTemplate\Traits\TwigOperations;
 
 class InvoiceTemplate
 {
     use DatabaseOperations;
     use SnappyOperations;
-    use SnappyOptions;
     use TwigOperations;
 
     private static $template;

@@ -57,7 +57,13 @@ trait TwigOperations
     {
         return array_merge(self::getPlaceholderData(), array_filter([
             'direction' => self::getLocaleDirection(),
+            'global' => self::getTemplateGlobals(),
             'font' => self::getFont(),
         ]));
+    }
+
+    private static function getTemplateGlobals()
+    {
+        return app()->has('snawbar-invoice-template') ? app('snawbar-invoice-template') : [];
     }
 }
