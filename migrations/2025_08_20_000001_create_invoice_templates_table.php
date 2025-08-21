@@ -28,7 +28,6 @@ return new class extends Migration
             $blueprint->double('height')->default('297');
             $blueprint->string('lang')->default('en');
             $blueprint->boolean('is_active')->default(TRUE);
-            $blueprint->unique(['page', 'lang', 'is_active']);
         });
     }
 };

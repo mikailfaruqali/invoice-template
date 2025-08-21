@@ -3,6 +3,49 @@
 return [
     /*
     |--------------------------------------------------------------------------
+    | Route Configuration
+    |--------------------------------------------------------------------------
+    |
+    | This section defines the routing configuration for the invoice templates
+    | package. The route prefix will be used as the base URL for all template
+    | management routes (e.g., /invoice-templates).
+    |
+    | Example routes that will be generated:
+    | - GET /invoice-templates (template listing page)
+    | - POST /invoice-templates/store (create new template)
+    | - PUT /invoice-templates/update/{id} (update existing template)
+    | - DELETE /invoice-templates/delete/{id} (delete template)
+    | - GET /invoice-templates/get-data (API endpoint for template data)
+    |
+    */
+
+    'route-prefix' => 'invoice-templates',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Middleware Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Define the middleware that should be applied to all invoice template routes.
+    | The 'web' middleware group provides session state, CSRF protection, and
+    | cookie encryption. The 'auth' middleware ensures only authenticated users
+    | can access the template management interface.
+    |
+    | Common middleware options:
+    | - 'web': Provides web-based features (sessions, CSRF, etc.)
+    | - 'auth': Requires user authentication
+    | - 'role:admin': Requires specific role (if using role-based access)
+    | - 'permission:manage-templates': Requires specific permission
+    |
+    | You can add additional middleware as needed for your application's
+    | security requirements.
+    |
+    */
+
+    'middleware' => ['web', 'auth'],
+
+    /*
+    |--------------------------------------------------------------------------
     | Database Table Configuration
     |--------------------------------------------------------------------------
     |
