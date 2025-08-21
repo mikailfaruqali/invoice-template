@@ -18,6 +18,10 @@ trait SnappyOperations
             ->setOption('header-spacing', $template->header_space)
             ->setOption('footer-spacing', $template->footer_space)
             ->setOption('margin-bottom', $template->margin_bottom)
+            ->setOption('page-size', $template->page_size)
+            ->setOption('orientation', $template->orientation)
+            ->setOption('height', $template->height)
+            ->setOption('width', $template->width)
             ->inline(self::generateSecureFilename());
     }
 
@@ -36,6 +40,10 @@ trait SnappyOperations
             ->setOption('header-spacing', $template->header_space)
             ->setOption('footer-spacing', $template->footer_space)
             ->setOption('margin-bottom', $template->margin_bottom)
+            ->setOption('page-size', $template->page_size)
+            ->setOption('orientation', $template->orientation)
+            ->setOption('height', $template->height)
+            ->setOption('width', $template->width)
             ->save($fullPath);
 
         return $fullPath;
