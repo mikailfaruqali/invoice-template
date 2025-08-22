@@ -304,7 +304,7 @@
                                                 Preview
                                             </button>
                                         </div>
-                                        <textarea id="header" name="header" rows="4" placeholder="Enter header HTML content..."
+                                        <textarea id="header" name="header" rows="4" placeholder="Enter header content HTML (optional)..."
                                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-xs bg-white"
                                             oninput="FormValidation.clearError('header')" required></textarea>
                                         <div id="headerError" class="text-red-500 text-xs mt-1 font-medium hidden">
@@ -336,7 +336,7 @@
                                                 Preview
                                             </button>
                                         </div>
-                                        <textarea id="footer" name="footer" rows="3" placeholder="Enter footer HTML content (optional)..."
+                                        <textarea id="footer" name="footer" rows="3" placeholder="Enter footer content HTML (optional)..."
                                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-xs bg-white"
                                             oninput="FormValidation.clearError('footer')"></textarea>
                                         <div id="footerError" class="text-red-500 text-xs mt-1 font-medium hidden">
