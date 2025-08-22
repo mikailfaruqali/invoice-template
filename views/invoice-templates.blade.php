@@ -763,6 +763,7 @@
                 const paperFormat = Utils.escapeHtml(Utils.formatPaperSize(template));
                 const statusClass = template.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
                 const statusText = template.is_active ? 'Active' : 'Inactive';
+                const isPreviewHidden = template.content === '' ? 'hidden' : '';
 
                 return `<tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-4 py-3">
@@ -785,7 +786,7 @@
                             <div class="flex items-center gap-2">
                                 <a 
                                     href="/{{ config('snawbar-invoice-template.route-prefix') }}/view/${template.id}"
-                                    class="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors"
+                                    class="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors ${isPreviewHidden}"
                                     title="View template"
                                     target="_blank"
                                 >
