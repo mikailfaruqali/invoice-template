@@ -81,6 +81,14 @@ trait SnappyOperations
 
         $pdfWrapper = SnappyPdf::loadView(self::$view, self::$data);
 
+        if ($headerTemplate = self::getHeaderTemplate()) {
+            $pdfWrapper->setOption('header-html', $headerTemplate);
+        }
+
+        if ($footerTemplate = self::getFooterTemplate()) {
+            $pdfWrapper->setOption('footer-html', $footerTemplate);
+        }
+
         foreach (self::configureOptions() as $option => $value) {
             $pdfWrapper->setOption($option, $value);
         }
@@ -95,8 +103,13 @@ trait SnappyOperations
 
         $pdfWrapper = SnappyPdf::loadHTML(self::getContentTemplate());
 
-        $pdfWrapper->setOption('header-html', self::getHeaderTemplate());
-        $pdfWrapper->setOption('footer-html', self::getFooterTemplate());
+        if ($headerTemplate = self::getHeaderTemplate()) {
+            $pdfWrapper->setOption('header-html', $headerTemplate);
+        }
+
+        if ($footerTemplate = self::getFooterTemplate()) {
+            $pdfWrapper->setOption('footer-html', $footerTemplate);
+        }
 
         foreach (self::configureOptions() as $option => $value) {
             $pdfWrapper->setOption($option, $value);

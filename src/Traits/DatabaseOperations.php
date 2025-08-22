@@ -21,8 +21,8 @@ trait DatabaseOperations
         return DB::table(self::getTableName())->updateOrInsert(['id' => $templateId], [
             'page' => $request->page,
             'lang' => $request->lang,
-            'header' => $request->header,
-            'content' => $request->content,
+            'header' => (string) ($request->header),
+            'content' => (string) ($request->content),
             'footer' => (string) ($request->footer),
             'orientation' => $request->orientation,
             'paper_size' => $request->paper_size,
@@ -59,7 +59,7 @@ trait DatabaseOperations
             ->get();
     }
 
-    private static function getTemplateFromDatabase($page)
+    private static function getTemplateFromDatabase($page = '*')
     {
         return DB::table(self::getTableName())
             ->where(function ($query) {

@@ -25,8 +25,8 @@ class InvoiceTemplateController extends Controller
         $request->validate([
             'page' => 'required',
             'lang' => 'required',
-            'header' => 'required|string',
-            'content' => 'required|string',
+            'header' => 'nullable|string',
+            'content' => 'nullable|string',
             'footer' => 'nullable|string',
             'margin_top' => 'numeric|min:0',
             'margin_bottom' => 'numeric|min:0',
@@ -48,8 +48,8 @@ class InvoiceTemplateController extends Controller
         $request->validate([
             'page' => 'required',
             'lang' => 'required',
-            'header' => 'required|string',
-            'content' => 'required|string',
+            'header' => 'nullable|string',
+            'content' => 'nullable|string',
             'footer' => 'nullable|string',
             'margin_top' => 'numeric|min:0',
             'margin_bottom' => 'numeric|min:0',
