@@ -5,11 +5,13 @@ use Snawbar\InvoiceTemplate\Controllers\InvoiceTemplateController;
 
 Route::prefix(config('snawbar-invoice-template.route-prefix'))
     ->middleware(config('snawbar-invoice-template.middleware'))
+    ->controller(InvoiceTemplateController::class)
     ->name('invoice-templates.')
     ->group(function () {
-        Route::get('/', [InvoiceTemplateController::class, 'index'])->name('index');
-        Route::get('/get-data', [InvoiceTemplateController::class, 'getData'])->name('data');
-        Route::post('/store', [InvoiceTemplateController::class, 'store'])->name('store');
-        Route::put('/update/{id}', [InvoiceTemplateController::class, 'update'])->name('update');
-        Route::delete('/delete/{id}', [InvoiceTemplateController::class, 'destroy'])->name('destroy');
+        Route::get('/', 'index')->name('index');
+        Route::get('/get-data', 'getData')->name('data');
+        Route::get('/view/{id}', 'view')->name('view');
+        Route::post('/store', 'store')->name('store');
+        Route::put('/update/{id}', 'update')->name('update');
+        Route::delete('/delete/{id}', 'destroy')->name('destroy');
     });

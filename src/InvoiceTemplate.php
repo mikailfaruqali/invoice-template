@@ -25,6 +25,13 @@ class InvoiceTemplate
         return new static;
     }
 
+    public static function makeTest($templateId)
+    {
+        static::$template = self::getTemplateById($templateId);
+
+        return new static;
+    }
+
     public static function withData($data)
     {
         static::$placeholderData = array_merge(static::$placeholderData, $data);

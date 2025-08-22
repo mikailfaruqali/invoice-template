@@ -783,6 +783,17 @@
                         </td>
                         <td class="px-4 py-3">
                             <div class="flex items-center gap-2">
+                                <a 
+                                    href="/{{ config('snawbar-invoice-template.route-prefix') }}/view/${template.id}"
+                                    class="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors"
+                                    title="View template"
+                                    target="_blank"
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                </a>
                                 <button 
                                     onclick="TemplateModal.edit(${template.id})"
                                     class="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
@@ -1008,7 +1019,7 @@
         const TemplateAPI = {
             async load() {
                 try {
-                    const response = await HttpClient.get('/invoice-templates/get-data');
+                    const response = await HttpClient.get('/{{ config('snawbar-invoice-template.route-prefix') }}/get-data');
                     AppState.templates = response.data || [];
                     AppState.filteredTemplates = [...AppState.templates];
                     TemplateTable.render();
@@ -1046,11 +1057,11 @@
                     if (AppState.editingTemplate) {
                         formData.append('_method', 'PUT');
                         response = await HttpClient.post(
-                            `/invoice-templates/update/${AppState.editingTemplate.id}`, 
+                            `/{{ config('snawbar-invoice-template.route-prefix') }}/update/${AppState.editingTemplate.id}`, 
                             formData
                         );
                     } else {
-                        response = await HttpClient.post('/invoice-templates/store', formData);
+                        response = await HttpClient.post('/{{ config('snawbar-invoice-template.route-prefix') }}/store', formData);
                     }
 
                     const successMessage = AppState.editingTemplate ? 
@@ -1096,7 +1107,7 @@
                 }
 
                 try {
-                    await HttpClient.delete(`/invoice-templates/delete/${id}`);
+                    await HttpClient.delete(`/{{ config('snawbar-invoice-template.route-prefix') }}/delete/${id}`);
                     
                     Swal.fire({
                         title: 'Deleted!',
