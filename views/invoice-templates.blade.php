@@ -1020,7 +1020,7 @@
             async save() {
                 FormValidation.clearAllErrors();
 
-                const requiredFields = ['page', 'lang', 'header', 'content'];
+                const requiredFields = ['page', 'lang'];
 
                 if (! FormValidation.validateRequired(requiredFields)) {
                     ErrorHandler.showToast('Please fill in all required fields', 'error');
