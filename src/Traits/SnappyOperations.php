@@ -7,11 +7,17 @@ use Illuminate\Support\Facades\File;
 
 trait SnappyOperations
 {
+    protected static $options = [];
+
+    protected static $view;
+
+    protected static $data = [];
+
     public static function inline()
     {
         $template = self::getTemplate();
 
-        return self::generate()
+        return self::{self::getRenderMode()}()
             ->setOption('margin-top', $template->margin_top)
             ->setOption('margin-right', $template->margin_right)
             ->setOption('margin-left', $template->margin_left)
@@ -33,7 +39,7 @@ trait SnappyOperations
 
         $fullPath = sprintf('%s/%s', self::generatePath(), self::generateSecureFilename());
 
-        self::generate()
+        return self::{self::getRenderMode()}()
             ->setOption('margin-top', $template->margin_top)
             ->setOption('margin-right', $template->margin_right)
             ->setOption('margin-left', $template->margin_left)
@@ -45,11 +51,44 @@ trait SnappyOperations
             ->setOption('page-height', $template->height)
             ->setOption('page-width', $template->width)
             ->save($fullPath);
-
-        return $fullPath;
     }
 
-    private static function generate()
+    public static function setOption($key, $value)
+    {
+        self::$options[$key] = $value;
+
+        return new static;
+    }
+
+    public static function setOptions($options)
+    {
+        self::$options = $options;
+
+        return new static;
+    }
+
+    public static function view($view, $data = [])
+    {
+        self::$view = $view;
+        self::$data = $data;
+
+        return new static;
+    }
+
+    private static function renderView()
+    {
+        self::setBinaryPath();
+
+        $pdfWrapper = SnappyPdf::loadView(self::$view, self::$data);
+
+        foreach (self::configureOptions() as $option => $value) {
+            $pdfWrapper->setOption($option, $value);
+        }
+
+        return $pdfWrapper;
+    }
+
+    private static function renderHtml()
     {
         self::setBinaryPath();
         self::loadTemplate();
@@ -93,7 +132,7 @@ trait SnappyOperations
 
     private static function configureOptions()
     {
-        return config('snawbar-invoice-template.options');
+        return array_merge(self::$options, config('snawbar-invoice-template.options'));
     }
 
     private static function normalizePath($path)
@@ -106,5 +145,10 @@ trait SnappyOperations
         if (File::missing($path)) {
             File::makeDirectory($path, 0755, TRUE, TRUE);
         }
+    }
+
+    private static function getRenderMode()
+    {
+        return filled(self::$view) ? 'renderView' : 'renderHtml';
     }
 }
