@@ -17,7 +17,7 @@ trait SnappyOperations
     {
         $template = self::getTemplate();
 
-        return self::{self::getRenderMode()}()
+        return self::render()
             ->setOption('margin-top', $template->margin_top)
             ->setOption('margin-right', $template->margin_right)
             ->setOption('margin-left', $template->margin_left)
@@ -39,7 +39,7 @@ trait SnappyOperations
 
         $fullPath = sprintf('%s/%s', self::generatePath(), self::generateSecureFilename());
 
-        return self::{self::getRenderMode()}()
+        return self::render()
             ->setOption('margin-top', $template->margin_top)
             ->setOption('margin-right', $template->margin_right)
             ->setOption('margin-left', $template->margin_left)
@@ -75,34 +75,12 @@ trait SnappyOperations
         return new static;
     }
 
-    private static function renderView()
+    private static function render()
     {
         self::setBinaryPath();
         self::loadTemplate();
 
-        $pdfWrapper = SnappyPdf::loadView(self::$view, self::$data);
-
-        if ($headerTemplate = self::getHeaderTemplate()) {
-            $pdfWrapper->setOption('header-html', $headerTemplate);
-        }
-
-        if ($footerTemplate = self::getFooterTemplate()) {
-            $pdfWrapper->setOption('footer-html', $footerTemplate);
-        }
-
-        foreach (self::configureOptions() as $option => $value) {
-            $pdfWrapper->setOption($option, $value);
-        }
-
-        return $pdfWrapper;
-    }
-
-    private static function renderHtml()
-    {
-        self::setBinaryPath();
-        self::loadTemplate();
-
-        $pdfWrapper = SnappyPdf::loadHTML(self::getContentTemplate());
+        $pdfWrapper = SnappyPdf::loadHTML(self::prepareHtml());
 
         if ($headerTemplate = self::getHeaderTemplate()) {
             $pdfWrapper->setOption('header-html', $headerTemplate);
@@ -161,8 +139,8 @@ trait SnappyOperations
         }
     }
 
-    private static function getRenderMode()
+    private static function prepareHtml()
     {
-        return filled(self::$view) ? 'renderView' : 'renderHtml';
+        return self::getContentTemplate() ?? view(self::$view, self::$data)->render();
     }
 }

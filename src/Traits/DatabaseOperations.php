@@ -9,15 +9,6 @@ trait DatabaseOperations
 {
     public static function create(Request $request, $templateId = NULL)
     {
-        if ($request->boolean('is_active', FALSE) && self::templateExists($request->page, $request->lang)) {
-            DB::table(self::getTableName())
-                ->where('page', $request->page)
-                ->where('lang', $request->lang)
-                ->update([
-                    'is_active' => FALSE,
-                ]);
-        }
-
         return DB::table(self::getTableName())->updateOrInsert(['id' => $templateId], [
             'page' => $request->page,
             'lang' => $request->lang,
@@ -61,14 +52,14 @@ trait DatabaseOperations
 
     private static function getTemplateFromDatabase($page = '*')
     {
-        return DB::table(self::getTableName())
-            ->where(function ($query) {
-                $query->where('lang', app()->getLocale());
-                $query->orWhere('lang', '*');
-            })
-            ->where('is_active', TRUE)
-            ->where('page', $page)
-            ->firstOrFail();
+        $locale = app()->getLocale();
+
+        $builder = DB::table(self::getTableName())->where('is_active', TRUE)->orderByDesc('id');
+
+        return (clone $builder)->where('page', $page)->where('lang', $locale)->first()
+            ?? (clone $builder)->where('page', $page)->where('lang', '*')->first()
+            ?? (clone $builder)->where('page', '*')->where('lang', $locale)->first()
+            ?? (clone $builder)->where('page', '*')->where('lang', '*')->firstOrFail();
     }
 
     private static function templateExists($page, $lang)
