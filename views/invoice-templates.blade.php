@@ -842,6 +842,10 @@
                 Elements.submitText.textContent = 'Save Template';
                 Elements.templateModal.classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
+
+                if (document.getElementById('templateId').value) {
+                    this.resetForm();
+                }
             },
 
             close() {
