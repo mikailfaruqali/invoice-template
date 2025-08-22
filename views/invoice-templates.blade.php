@@ -320,7 +320,7 @@
                                                 Preview
                                             </button>
                                         </div>
-                                        <textarea id="content" name="content" rows="6" placeholder="Enter main content HTML..."
+                                        <textarea id="content" name="content" rows="6" placeholder="Enter main content HTML (optional)..."
                                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-xs bg-white"
                                             oninput="FormValidation.clearError('content')" required></textarea>
                                         <div id="contentError" class="text-red-500 text-xs mt-1 font-medium hidden">
