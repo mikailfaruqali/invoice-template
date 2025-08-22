@@ -62,7 +62,10 @@ trait DatabaseOperations
     private static function getTemplateFromDatabase($page)
     {
         return DB::table(self::getTableName())
-            ->where('lang', app()->getLocale())
+            ->where(function ($query) {
+                $query->where('lang', app()->getLocale());
+                $query->orWhere('lang', '*');
+            })
             ->where('is_active', TRUE)
             ->where('page', $page)
             ->firstOrFail();
@@ -71,9 +74,9 @@ trait DatabaseOperations
     private static function templateExists($page, $lang)
     {
         return DB::table(self::getTableName())
+            ->where('is_active', TRUE)
             ->where('page', $page)
             ->where('lang', $lang)
-            ->where('is_active', TRUE)
             ->exists();
     }
 
