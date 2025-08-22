@@ -18,7 +18,7 @@ class InvoiceTemplate
 
     private static $placeholderData = [];
 
-    public static function template($template)
+    public static function make($template = '*')
     {
         static::$template = self::getTemplateFromDatabase($template);
 
