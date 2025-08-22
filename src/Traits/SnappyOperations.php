@@ -141,6 +141,6 @@ trait SnappyOperations
 
     private static function prepareHtml()
     {
-        return self::getContentTemplate() ?? view(self::$view, self::$data)->render();
+        return self::getContentTemplate() ?: view(self::$view, self::$data)->render();
     }
 }
