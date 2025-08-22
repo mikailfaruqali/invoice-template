@@ -78,6 +78,7 @@ trait SnappyOperations
     private static function renderView()
     {
         self::setBinaryPath();
+        self::loadTemplate();
 
         $pdfWrapper = SnappyPdf::loadView(self::$view, self::$data);
 
