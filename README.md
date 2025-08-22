@@ -1,7 +1,22 @@
 
+
 # Laravel Invoice Template Generator
 
-Laravel Invoice Template Generator is a robust and extensible package for Laravel that enables you to create, manage, and render PDF invoices using customizable templates. It provides a modern web interface, a powerful API, and deep integration with Snappy PDF (wkhtmltopdf) and Twig for advanced templating. This documentation covers every feature and configuration option in detail.
+**Laravel Invoice Template Generator** is a powerful, flexible package by [**Snawbar**](https://snawbar.com) for generating PDF invoices in Laravel using fully customizable templates. It features a modern web UI, dynamic placeholders, advanced PDF options, and seamless integration with Snappy PDF and Twig.
+
+<p align="center">
+    <a href="https://snawbar.com">
+        <img src="https://snawbar.com/images/backend/logo/1733997832.png" alt="Snawbar Logo" height="80">
+    </a>
+</p>
+
+---
+
+## About Snawbar
+
+[**Snawbar**](https://snawbar.com) is a technology company specializing in ERP systems for large and small businesses. We deliver robust, scalable, and user-friendly solutions to help organizations streamline their operations, manage resources, and grow efficiently.
+
+---
 
 ## Table of Contents
 
@@ -23,24 +38,29 @@ Laravel Invoice Template Generator is a robust and extensible package for Larave
 - [Credits](#credits)
 - [License](#license)
 
+
 ## Features
 
-- **Database-Driven Templates**: Store invoice templates in the database, including header, content, and footer HTML sections. Each template can be language-specific and have its own page size, orientation, and margin settings.
-- **Modern Web UI**: Manage templates visually with a responsive, Tailwind CSS-powered interface. Features include live HTML preview, search/filter, and keyboard shortcuts for productivity.
-- **Dynamic Placeholders**: Use variables such as `{company_name}`, `{current_date}`, `{current_user}`, and any custom data in your templates. Placeholders are replaced at render time.
-- **Multi-Language Support**: Store and select templates per language/locale, making it easy to generate invoices in multiple languages.
-- **Custom Page Configuration**: Set paper size (A4, A5, A3), orientation (portrait, landscape), width, height, and all margin/spacing options for each template.
-- **Header/Footer Support**: Define separate HTML for header and footer, with independent margin and spacing controls.
-- **Role-Based Access**: All management routes are protected by configurable middleware (default: `web`, `auth`).
-- **RESTful API**: Full CRUD endpoints for managing templates programmatically.
-- **Twig Templating**: Use Twig syntax for advanced logic, loops, filters, and custom extensions in your templates.
-- **Snappy PDF Integration**: High-quality PDF rendering using wkhtmltopdf, with extensive configuration for DPI, fonts, compression, and more.
-- **File Saving and Streaming**: Save generated PDFs to disk or stream them inline to the browser.
-- **Extensible Architecture**: Add custom Twig extensions, global variables, and more for advanced use cases.
+- **Database-Driven Templates**: Store and manage invoice templates (header, content, footer) in your database, with support for multiple languages and custom page settings.
+- **Modern Web UI**: Intuitive, responsive interface for creating, editing, and previewing templates. Includes search, filter, and keyboard shortcuts.
+- **Dynamic Placeholders**: Use variables like `{company_name}`, `{current_date}`, `{current_user}`, and more. All placeholders are replaced at render time.
+- **Logo Support**: Easily add your company logo to invoices by specifying a logo path in your template data.
+- **Multi-Language**: Create templates for any language or locale.
+- **Custom Page Settings**: Configure paper size (A4, A5, A3), orientation, width, height, and all margins.
+- **Header/Footer Sections**: Separate HTML for header and footer, with full control over spacing and content.
+- **Role-Based Access**: Secure all management routes with configurable middleware (default: `web`, `auth`).
+- **RESTful API**: Full CRUD endpoints for programmatic template management.
+- **Twig Templating**: Use Twig for advanced logic, loops, filters, and custom extensions in your templates.
+- **Snappy PDF Integration**: High-quality PDF rendering with extensive configuration for DPI, fonts, compression, and more.
+- **File Saving/Streaming**: Save PDFs to disk or stream them inline to the browser.
+- **Extensible**: Add custom Twig extensions, global variables, and more.
+
+---
+
 
 ## Installation
 
-Install the package via Composer and publish the configuration and migration files:
+Install via Composer and publish the configuration and migration files:
 
 ```bash
 composer require mikailfaruqali/invoice-template
@@ -106,6 +126,7 @@ All routes are prefixed (default: `/invoice-templates`) and protected by middlew
 - `PUT /invoice-templates/update/{id}` — Update an existing template
 - `DELETE /invoice-templates/delete/{id}` — Delete a template
 
+
 ## Usage
 
 ### Creating a Template Programmatically
@@ -123,12 +144,24 @@ use Snawbar\InvoiceTemplate\InvoiceTemplate;
 
 // Show in browser (inline)
 InvoiceTemplate::template('my-invoice')
-    ->withData(['company_name' => 'My Company'])
+    ->withData([
+        'company_name' => 'Snawbar',
+        'logo' => 'https://snawbar.com/images/backend/logo/1733997832.png',
+        'invoice_number' => 'INV-2025-001',
+        'amount' => 123.45,
+        // ...
+    ])
     ->inline();
 
 // Save to file
 $path = InvoiceTemplate::template('my-invoice')
-    ->withData(['company_name' => 'My Company'])
+    ->withData([
+        'company_name' => 'Snawbar',
+        'logo' => 'https://snawbar.com/images/backend/logo/1733997832.png',
+        'invoice_number' => 'INV-2025-001',
+        'amount' => 123.45,
+        // ...
+    ])
     ->save();
 ```
 
@@ -140,14 +173,74 @@ $path = InvoiceTemplate::template('my-invoice')
 4. Save the template. It will be available for PDF generation and API use.
 5. Edit or delete templates as needed.
 
+---
+
+## Example Template Sections
+
+Below are sample header, content, and footer HTML blocks for your invoice templates. You can use Twig and placeholders as needed.
+
+### Header Example
+
+```html
+<div style="display: flex; align-items: center; justify-content: space-between;">
+    <img src="{{ logo|default('https://snawbar.com/images/backend/logo/1733997832.png') }}" alt="Snawbar Logo" style="height: 60px;">
+    <div style="text-align: right;">
+        <h2 style="margin: 0;">{{ company_name|default('Snawbar') }}</h2>
+        <p style="margin: 0; font-size: 12px; color: #888;">ERP Solutions for Every Business</p>
+    </div>
+</div>
+<hr>
+```
+
+### Content Example
+
+```html
+<h1 style="margin-bottom: 0;">Invoice</h1>
+<p style="margin-top: 0;">Invoice #: {{ invoice_number }}<br>Date: {{ current_date }}</p>
+
+<table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+    <thead>
+        <tr>
+            <th style="border-bottom: 1px solid #ccc; text-align: left;">Description</th>
+            <th style="border-bottom: 1px solid #ccc; text-align: right;">Amount</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in items %}
+        <tr>
+            <td style="padding: 8px 0;">{{ item.description }}</td>
+            <td style="padding: 8px 0; text-align: right;">{{ item.amount|number_format(2) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3 style="text-align: right; margin-top: 30px;">Total: {{ amount|number_format(2) }}</h3>
+```
+
+### Footer Example
+
+```html
+<hr>
+<p style="font-size: 12px; text-align: center; color: #888;">
+    Thank you for your business!<br>
+    &copy; {{ current_date|date('Y') }} {{ company_name }}. All rights reserved.
+</p>
+```
+
+---
+
+
 ## Template Placeholders
 
-You can use any data passed via `withData()` as `{variable}` in your template. Built-in placeholders include:
+You can use any data passed via `withData()` as a Twig variable in your template. Built-in placeholders include:
 
-- `{company_name}`: Your data
-- `{current_date}`: The current date (e.g., 2025-08-20)
-- `{current_user}`: The current user (e.g., mikailfaruqali)
-- `{current_datetime}`: The current date and time (e.g., 2025-08-20 13:30:17)
+- `company_name`: Your company name (e.g., Snawbar)
+- `logo`: Path to your company logo (e.g., `https://snawbar.com/images/backend/logo/1733997832.png`)
+- `current_date`: The current date (e.g., 2025-08-20)
+- `current_user`: The current user (e.g., mikailfaruqali)
+- `current_datetime`: The current date and time (e.g., 2025-08-20 13:30:17)
+
 
 ## Twig Templating
 
@@ -160,7 +253,7 @@ All templates are rendered using Twig, allowing you to use advanced logic, loops
     <li>{{ item.name }}: {{ item.price|number_format(2) }}</li>
 {% endfor %}
 </ul>
-<p>Total: {{ total|number_format(2) }}</p>
+<p>Total: {{ amount|number_format(2) }}</p>
 ```
 
 You can add custom Twig extensions via `InvoiceTemplate::setExtension($extension)` and register global variables via the Laravel service container as `snawbar-invoice-template`.
@@ -218,6 +311,7 @@ InvoiceTemplate::template('invoice-template-en')
 - [barryvdh/laravel-snappy](https://github.com/barryvdh/laravel-snappy)
 - [twig/twig](https://twig.symfony.com/)
 - [Tailwind CSS](https://tailwindcss.com/)
+
 
 ## License
 
