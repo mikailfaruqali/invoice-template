@@ -9,9 +9,17 @@ trait SnappyOperations
 {
     protected static $options = [];
 
-    protected static $view;
+    protected static $contentView;
 
-    protected static $data = [];
+    protected static $contentData = [];
+
+    protected static $headerView;
+
+    protected static $headerData = [];
+
+    protected static $footerView;
+
+    protected static $footerData = [];
 
     public static function inline()
     {
@@ -67,10 +75,26 @@ trait SnappyOperations
         return new static;
     }
 
-    public static function view($view, $data = [])
+    public static function renderView($view, $data = [])
     {
-        self::$view = $view;
-        self::$data = $data;
+        self::$contentView = $view;
+        self::$contentData = $data;
+
+        return new static;
+    }
+
+    public static function renderHeader($view, $data = [])
+    {
+        self::$headerView = $view;
+        self::$headerData = $data;
+
+        return new static;
+    }
+
+    public static function renderFooter($view, $data = [])
+    {
+        self::$footerView = $view;
+        self::$footerData = $data;
 
         return new static;
     }
@@ -80,13 +104,13 @@ trait SnappyOperations
         self::setBinaryPath();
         self::loadTemplate();
 
-        $pdfWrapper = SnappyPdf::loadHTML(self::prepareHtml());
+        $pdfWrapper = SnappyPdf::loadHTML(self::prepareContentHtml());
 
-        if ($headerTemplate = self::getHeaderTemplate()) {
+        if ($headerTemplate = self::prepareHeaderHtml()) {
             $pdfWrapper->setOption('header-html', $headerTemplate);
         }
 
-        if ($footerTemplate = self::getFooterTemplate()) {
+        if ($footerTemplate = self::prepareFooterHtml()) {
             $pdfWrapper->setOption('footer-html', $footerTemplate);
         }
 
@@ -139,8 +163,28 @@ trait SnappyOperations
         }
     }
 
-    private static function prepareHtml()
+    private static function prepareContentHtml()
     {
-        return self::getContentTemplate() ?: view(self::$view, self::$data)->render();
+        abort_if(blank(self::getContentTemplate()) && blank(self::$contentView), 500, 'Content view or data must be provided to generate PDF.');
+
+        return self::getContentTemplate() ?: view(self::$contentView, self::$contentData)->render();
+    }
+
+    private static function prepareHeaderHtml()
+    {
+        if (blank(self::getHeaderTemplate()) && blank(self::$headerData)) {
+            return NULL;
+        }
+
+        return self::getHeaderTemplate() ?: view(self::$headerView, self::$headerData)->render();
+    }
+
+    private static function prepareFooterHtml()
+    {
+        if (blank(self::getFooterTemplate()) && blank(self::$footerData)) {
+            return NULL;
+        }
+
+        return self::getFooterTemplate() ?: view(self::$footerView, self::$footerData)->render();
     }
 }
