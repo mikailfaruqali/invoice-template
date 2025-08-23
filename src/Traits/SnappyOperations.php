@@ -172,7 +172,7 @@ trait SnappyOperations
 
     private static function prepareHeaderHtml()
     {
-        if (blank(self::getHeaderTemplate()) && blank(self::$headerData)) {
+        if (blank(self::getHeaderTemplate()) && blank(self::$headerView)) {
             return NULL;
         }
 
@@ -181,7 +181,7 @@ trait SnappyOperations
 
     private static function prepareFooterHtml()
     {
-        if (blank(self::getFooterTemplate()) && blank(self::$footerData)) {
+        if (blank(self::getFooterTemplate()) && blank(self::$footerView)) {
             return NULL;
         }
 
