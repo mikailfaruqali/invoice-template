@@ -208,16 +208,34 @@ trait SnappyOperations
 
     private static function getContentData()
     {
-        return self::$contentData;
+        return array_merge(self::$contentData, self::getTemplateMeasures());
     }
 
     private static function getHeaderData()
     {
-        return self::$headerData;
+        return array_merge(self::$headerData, self::getTemplateMeasures());
     }
 
     private static function getFooterData()
     {
-        return self::$footerData;
+        return array_merge(self::$footerData, self::getTemplateMeasures());
+    }
+
+    private static function getTemplateMeasures()
+    {
+        $template = self::getTemplate();
+
+        return [
+            'marginTop' => $template->margin_top,
+            'marginRight' => $template->margin_right,
+            'marginLeft' => $template->margin_left,
+            'headerSpace' => $template->header_space,
+            'footerSpace' => $template->footer_space,
+            'marginBottom' => $template->margin_bottom,
+            'pageSize' => $template->paper_size,
+            'orientation' => $template->orientation,
+            'height' => $template->height,
+            'width' => $template->width,
+        ];
     }
 }
