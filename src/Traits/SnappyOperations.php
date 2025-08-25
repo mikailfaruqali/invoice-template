@@ -75,25 +75,43 @@ trait SnappyOperations
         return new static;
     }
 
-    public static function renderView($view, $data = [])
+    public static function renderContent($view)
     {
         self::$contentView = $view;
+
+        return new static;
+    }
+
+    public static function contentData($data = [])
+    {
         self::$contentData = $data;
 
         return new static;
     }
 
-    public static function renderHeader($view, $data = [])
+    public static function renderHeader($view)
     {
         self::$headerView = $view;
+
+        return new static;
+    }
+
+    public static function headerData($data = [])
+    {
         self::$headerData = $data;
 
         return new static;
     }
 
-    public static function renderFooter($view, $data = [])
+    public static function renderFooter($view)
     {
         self::$footerView = $view;
+
+        return new static;
+    }
+
+    public static function footerData($data = [])
+    {
         self::$footerData = $data;
 
         return new static;
@@ -186,5 +204,20 @@ trait SnappyOperations
         }
 
         return self::getFooterTemplate() ?: view(self::$footerView, self::$footerData)->render();
+    }
+
+    private static function getContentData()
+    {
+        return self::$contentData;
+    }
+
+    private static function getHeaderData()
+    {
+        return self::$headerData;
+    }
+
+    private static function getFooterData()
+    {
+        return self::$footerData;
     }
 }
