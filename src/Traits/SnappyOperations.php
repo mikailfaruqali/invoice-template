@@ -47,7 +47,7 @@ trait SnappyOperations
 
         $fullPath = sprintf('%s/%s', self::generatePath(), self::generateSecureFilename());
 
-        return self::render()
+        self::render()
             ->setOption('margin-top', $template->margin_top)
             ->setOption('margin-right', $template->margin_right)
             ->setOption('margin-left', $template->margin_left)
@@ -59,6 +59,8 @@ trait SnappyOperations
             ->setOption('page-height', $template->height)
             ->setOption('page-width', $template->width)
             ->save($fullPath);
+
+        return $fullPath;
     }
 
     public static function setOption($key, $value)
