@@ -148,7 +148,7 @@ trait SnappyOperations
 
     private static function generateSecureFilename()
     {
-        return sprintf('%s_%s.pdf', self::getTemplate()->page, now()->format('Y-m-d_H-i-s'));
+        return sprintf('%s_%s.pdf', now()->format('Y-m-d_H-i-s'), bin2hex(random_bytes(8)));
     }
 
     private static function getFont()
