@@ -185,7 +185,7 @@ trait SnappyOperations
     {
         abort_if(blank(self::getContentTemplate()) && blank(self::$contentView), 500, 'Content view or data must be provided to generate PDF.');
 
-        return self::getContentTemplate() ?: view(self::$contentView, self::$contentData)->render();
+        return self::getContentTemplate() ?: view(self::$contentView, self::getContentData())->render();
     }
 
     private static function prepareHeaderHtml()
@@ -194,7 +194,7 @@ trait SnappyOperations
             return NULL;
         }
 
-        return self::getHeaderTemplate() ?: view(self::$headerView, self::$headerData)->render();
+        return self::getHeaderTemplate() ?: view(self::$headerView, self::getHeaderData())->render();
     }
 
     private static function prepareFooterHtml()
@@ -203,7 +203,7 @@ trait SnappyOperations
             return NULL;
         }
 
-        return self::getFooterTemplate() ?: view(self::$footerView, self::$footerData)->render();
+        return self::getFooterTemplate() ?: view(self::$footerView, self::getFooterData())->render();
     }
 
     private static function getContentData()
