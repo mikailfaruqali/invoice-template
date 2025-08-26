@@ -215,7 +215,7 @@
                                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Paper Size</label>
-                                        <select id="paperSize" name="paper_size" onchange="PaperConfig.updateDimensions()"
+                                        <select id="paperSize" name="paper_size"
                                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
                                             <option value="A4">A4</option>
                                             <option value="A5">A5</option>
@@ -226,25 +226,10 @@
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Orientation</label>
                                         <select id="orientation" name="orientation"
-                                            onchange="PaperConfig.updateDimensions()"
                                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
                                             <option value="portrait">Portrait</option>
                                             <option value="landscape">Landscape</option>
                                         </select>
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Width (mm)</label>
-                                        <input type="number" id="width" name="width" step="0.1"
-                                            value="210"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white" />
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Height (mm)</label>
-                                        <input type="number" id="height" name="height" step="0.1"
-                                            value="297"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white" />
                                     </div>
                                 </div>
 
@@ -819,34 +804,6 @@
             }
         };
 
-        const PaperConfig = {
-            dimensions: {
-                'A4': { width: 210, height: 297 },
-                'A5': { width: 148, height: 210 },
-                'A3': { width: 297, height: 420 }
-            },
-
-            updateDimensions() {
-                const paperSize = document.getElementById('paperSize')?.value;
-                const orientation = document.getElementById('orientation')?.value;
-                
-                const dimensions = this.dimensions[paperSize];
-                
-                const widthElement = document.getElementById('width');
-                const heightElement = document.getElementById('height');
-                
-                if (widthElement && heightElement) {
-                    if (orientation === 'landscape') {
-                        widthElement.value = dimensions.height;
-                        heightElement.value = dimensions.width;
-                    } else {
-                        widthElement.value = dimensions.width;
-                        heightElement.value = dimensions.height;
-                    }
-                }
-            }
-        };
-
         const TemplateModal = {
             open() {
                 AppState.editingTemplate = null;
@@ -886,7 +843,6 @@
                 Elements.templateForm.reset();
                 document.getElementById('templateId').value = '';
                 FormValidation.clearAllErrors();
-                PaperConfig.updateDimensions();
             },
 
             populateForm(template) {
@@ -897,8 +853,6 @@
                     'isActive': template.is_active,
                     'paperSize': template.paper_size,
                     'orientation': template.orientation,
-                    'width': template.width,
-                    'height': template.height,
                     'marginTop': template.margin_top,
                     'marginBottom': template.margin_bottom,
                     'marginLeft': template.margin_left,
@@ -1181,7 +1135,6 @@
         window.saveTemplate = () => TemplateAPI.save();
         window.filterTemplates = () => TemplateSearch.filter();
         window.clearSearch = () => TemplateSearch.clear();
-        window.updatePaperDimensions = () => PaperConfig.updateDimensions();
         window.clearError = (fieldName) => FormValidation.clearError(fieldName);
     </script>
 </body>

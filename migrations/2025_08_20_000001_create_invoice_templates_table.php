@@ -24,8 +24,6 @@ return new class extends Migration
             $blueprint->double('footer_space')->default(0);
             $blueprint->enum('orientation', ['portrait', 'landscape'])->default('portrait');
             $blueprint->enum('paper_size', ['A4', 'A5', 'A3'])->default('A4');
-            $blueprint->double('width')->default('210');
-            $blueprint->double('height')->default('297');
             $blueprint->string('lang')->default('en');
             $blueprint->boolean('is_active')->default(TRUE);
         });

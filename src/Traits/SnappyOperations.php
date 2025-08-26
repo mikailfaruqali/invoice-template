@@ -25,6 +25,8 @@ trait SnappyOperations
     {
         $template = self::getTemplate();
 
+        $orientation = request()->input('orientation', $template->orientation);
+
         return self::render()
             ->setOption('margin-top', $template->margin_top)
             ->setOption('margin-right', $template->margin_right)
@@ -33,9 +35,7 @@ trait SnappyOperations
             ->setOption('footer-spacing', $template->footer_space)
             ->setOption('margin-bottom', $template->margin_bottom)
             ->setOption('page-size', $template->paper_size)
-            ->setOption('orientation', $template->orientation)
-            ->setOption('page-height', $template->height)
-            ->setOption('page-width', $template->width)
+            ->setOption('orientation', $orientation)
             ->inline(self::generateSecureFilename());
     }
 
@@ -44,6 +44,8 @@ trait SnappyOperations
         self::ensureDirectoryExist(self::generatePath());
 
         $template = self::getTemplate();
+
+        $orientation = request()->input('orientation', $template->orientation);
 
         $fullPath = sprintf('%s/%s', self::generatePath(), self::generateSecureFilename());
 
@@ -55,9 +57,7 @@ trait SnappyOperations
             ->setOption('footer-spacing', $template->footer_space)
             ->setOption('margin-bottom', $template->margin_bottom)
             ->setOption('page-size', $template->paper_size)
-            ->setOption('orientation', $template->orientation)
-            ->setOption('page-height', $template->height)
-            ->setOption('page-width', $template->width)
+            ->setOption('orientation', $orientation)
             ->save($fullPath);
 
         return $fullPath;
@@ -236,8 +236,6 @@ trait SnappyOperations
             'marginBottom' => $template->margin_bottom,
             'pageSize' => $template->paper_size,
             'orientation' => $template->orientation,
-            'height' => $template->height,
-            'width' => $template->width,
         ];
     }
 }

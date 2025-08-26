@@ -37,8 +37,6 @@ class InvoiceTemplateController extends Controller
             'footer_space' => 'numeric|min:0',
             'orientation' => 'in:portrait,landscape',
             'paper_size' => 'in:A4,A5,A3',
-            'width' => 'numeric|min:1',
-            'height' => 'numeric|min:1',
         ]);
 
         return $this->create($request);
@@ -60,8 +58,6 @@ class InvoiceTemplateController extends Controller
             'footer_space' => 'numeric|min:0',
             'orientation' => 'in:portrait,landscape',
             'paper_size' => 'in:A4,A5,A3',
-            'width' => 'numeric|min:1',
-            'height' => 'numeric|min:1',
         ]);
 
         return $this->create($request, $templateId);
