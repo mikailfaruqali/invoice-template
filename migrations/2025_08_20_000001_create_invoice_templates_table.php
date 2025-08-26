@@ -11,9 +11,9 @@ return new class extends Migration
         Schema::create(config('snawbar-invoice-template.table'), function (Blueprint $blueprint) {
             $blueprint->id();
             $blueprint->string('page');
-            $blueprint->longText('header');
-            $blueprint->longText('content');
-            $blueprint->longText('footer');
+            $blueprint->longText('header')->nullable();
+            $blueprint->longText('content')->nullable();
+            $blueprint->longText('footer')->nullable();
             $blueprint->tinyText('logo')->nullable();
             $blueprint->tinyText('watermark')->nullable();
             $blueprint->double('margin_top')->default(0);

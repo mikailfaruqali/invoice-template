@@ -21,6 +21,7 @@ class InvoiceTemplateServiceProvider extends ServiceProvider
 
             $this->publishes([
                 __DIR__ . '/../config/invoice-template.php' => config_path('snawbar-invoice-template.php'),
+                __DIR__ . '/../migrations' => database_path('migrations'),
             ], 'snawbar-invoice-template-assets');
         }
     }

@@ -12,9 +12,9 @@ trait DatabaseOperations
         return DB::table(self::getTableName())->updateOrInsert(['id' => $templateId], [
             'page' => $request->page,
             'lang' => $request->lang,
-            'header' => (string) ($request->header),
-            'content' => (string) ($request->content),
-            'footer' => (string) ($request->footer),
+            'header' => $request->header,
+            'content' => $request->content,
+            'footer' => $request->footer,
             'orientation' => $request->orientation,
             'paper_size' => $request->paper_size,
             'width' => $request->width,
@@ -26,6 +26,25 @@ trait DatabaseOperations
             'header_space' => $request->header_space,
             'footer_space' => $request->footer_space,
             'is_active' => $request->boolean('is_active', FALSE),
+        ]);
+    }
+
+    public static function createDefault()
+    {
+        return DB::table(self::getTableName())->insert([
+            'page' => '*',
+            'lang' => '*',
+            'orientation' => 'portrait',
+            'paper_size' => 'a4',
+            'width' => 210,
+            'height' => 297,
+            'margin_top' => 50,
+            'margin_bottom' => 0,
+            'margin_left' => 0,
+            'margin_right' => 0,
+            'header_space' => 0,
+            'footer_space' => 0,
+            'is_active' => TRUE,
         ]);
     }
 
