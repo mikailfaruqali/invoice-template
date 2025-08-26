@@ -212,7 +212,7 @@
                             <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
                                 <h3 class="text-lg font-medium text-gray-900 mb-4">Page Configuration</h3>
 
-                                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                                <div class="grid grid-cols-2 gap-4 mb-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Paper Size</label>
                                         <select id="paperSize" name="paper_size"
