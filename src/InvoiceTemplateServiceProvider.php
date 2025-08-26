@@ -6,11 +6,6 @@ use Illuminate\Support\ServiceProvider;
 
 class InvoiceTemplateServiceProvider extends ServiceProvider
 {
-    public function register()
-    {
-        $this->mergeConfigFrom(__DIR__ . '/../config/invoice-template.php', 'snawbar-invoice-template');
-    }
-
     public function boot()
     {
         $this->loadViewsFrom(__DIR__ . '/../views', 'snawbar-invoice-template');
