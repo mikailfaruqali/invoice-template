@@ -21,6 +21,8 @@ trait SnappyOperations
 
     protected static $footerData = [];
 
+    protected static $waterMark;
+
     public static function inline()
     {
         $template = self::getTemplate();
@@ -119,6 +121,26 @@ trait SnappyOperations
         return new static;
     }
 
+    public static function setWaterMark($text, $opacity = '0.05')
+    {
+        if (blank($text)) {
+            return NULL;
+        }
+
+        $svgContent = rawurlencode(sprintf(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><text x="200" y="150" font-size="48" font-weight="bold" text-anchor="middle" transform="rotate(-45 200 150)" fill="#cccccc" opacity="%s">%s</text></svg>',
+            $opacity,
+            htmlspecialchars($text, ENT_QUOTES, 'UTF-8')
+        ));
+
+        self::$waterMark = sprintf(
+            'background: url("data:image/svg+xml;charset=utf-8,%s") repeat; background-size: 30%%;',
+            $svgContent
+        );
+
+        return new static;
+    }
+
     private static function render()
     {
         self::setBinaryPath();
@@ -210,20 +232,20 @@ trait SnappyOperations
 
     private static function getContentData()
     {
-        return array_merge(self::$contentData, self::getTemplateMeasures());
+        return array_merge(self::$contentData, self::getTemplateDefaultData());
     }
 
     private static function getHeaderData()
     {
-        return array_merge(self::$headerData, self::getTemplateMeasures());
+        return array_merge(self::$headerData, self::getTemplateDefaultData());
     }
 
     private static function getFooterData()
     {
-        return array_merge(self::$footerData, self::getTemplateMeasures());
+        return array_merge(self::$footerData, self::getTemplateDefaultData());
     }
 
-    private static function getTemplateMeasures()
+    private static function getTemplateDefaultData()
     {
         $template = self::getTemplate();
 
@@ -236,6 +258,7 @@ trait SnappyOperations
             'marginBottom' => $template->margin_bottom,
             'pageSize' => $template->paper_size,
             'orientation' => $template->orientation,
+            'waterMark' => self::$waterMark,
         ];
     }
 }
