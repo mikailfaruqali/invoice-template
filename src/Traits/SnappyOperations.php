@@ -26,10 +26,9 @@ trait SnappyOperations
         $template = self::getTemplate();
 
         $orientation = request()->input('orientation', $template->orientation);
-        $smartShrinking = (bool) $template->disabled_smart_shrinking;
 
         return self::render()
-            ->setOption('disable-smart-shrinking', $smartShrinking)
+            ->setOption('disable-smart-shrinking', (bool) $template->disabled_smart_shrinking)
             ->setOption('margin-top', $template->margin_top)
             ->setOption('margin-right', $template->margin_right)
             ->setOption('margin-left', $template->margin_left)
@@ -48,12 +47,11 @@ trait SnappyOperations
         $template = self::getTemplate();
 
         $orientation = request()->input('orientation', $template->orientation);
-        $smartShrinking = (bool) $template->disabled_smart_shrinking;
 
         $fullPath = sprintf('%s/%s', self::generatePath(), self::generateSecureFilename());
 
         self::render()
-            ->setOption('disable-smart-shrinking', $smartShrinking)
+            ->setOption('disable-smart-shrinking', (bool) $template->disabled_smart_shrinking)
             ->setOption('margin-top', $template->margin_top)
             ->setOption('margin-right', $template->margin_right)
             ->setOption('margin-left', $template->margin_left)
