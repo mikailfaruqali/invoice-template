@@ -10,6 +10,7 @@ trait DatabaseOperations
     public static function create(Request $request, $templateId = NULL)
     {
         return DB::table(self::getTableName())->updateOrInsert(['id' => $templateId], [
+            'disabled_smart_shrinking' => $request->boolean('disabled_smart_shrinking', FALSE),
             'page' => $request->page,
             'lang' => $request->lang,
             'header' => $request->header,
@@ -23,16 +24,16 @@ trait DatabaseOperations
             'margin_right' => $request->margin_right,
             'header_space' => $request->header_space,
             'footer_space' => $request->footer_space,
-            'is_active' => $request->boolean('is_active', FALSE),
         ]);
     }
 
-    public static function createDefault()
+    public static function createDefault($page = '*', $options = [])
     {
-        return DB::table(self::getTableName())->insert([
-            'page' => '*',
-            'lang' => '*',
+        return DB::table(self::getTableName())->insert(array_merge([
+            'disabled_smart_shrinking' => FALSE,
             'orientation' => 'portrait',
+            'page' => $page,
+            'lang' => '*',
             'paper_size' => 'a4',
             'margin_top' => 50,
             'margin_bottom' => 0,
@@ -41,7 +42,7 @@ trait DatabaseOperations
             'header_space' => 0,
             'footer_space' => 0,
             'is_active' => TRUE,
-        ]);
+        ], $options));
     }
 
     public static function deleteTemplate($templateId)
@@ -71,10 +72,10 @@ trait DatabaseOperations
 
         $builder = DB::table(self::getTableName())->where('is_active', TRUE)->orderByDesc('id');
 
-        return (clone $builder)->where('page', $page)->where('lang', $locale)->first()
-            ?? (clone $builder)->where('page', $page)->where('lang', '*')->first()
-            ?? (clone $builder)->where('page', '*')->where('lang', $locale)->first()
-            ?? (clone $builder)->where('page', '*')->where('lang', '*')->firstOrFail();
+        return $builder->clone()->where('page', $page)->where('lang', $locale)->first()
+            ?? $builder->clone()->where('page', $page)->where('lang', '*')->first()
+            ?? $builder->clone()->where('page', '*')->where('lang', $locale)->first()
+            ?? $builder->clone()->where('page', '*')->where('lang', '*')->firstOrFail();
     }
 
     private static function templateExists($page, $lang)

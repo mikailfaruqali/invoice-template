@@ -73,7 +73,7 @@
                                 </svg>
                             </div>
                             <input type="text" id="searchInput"
-                                placeholder="Search by slug, language, paper, or status..."
+                                placeholder="Search by slug, language, paper..."
                                 class="w-full pl-10 pr-8 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white"
                                 oninput="TemplateSearch.filter()" />
                             <button id="clearSearch" onclick="TemplateSearch.clear()"
@@ -100,9 +100,6 @@
                                 <th
                                     class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                                     Paper</th>
-                                <th
-                                    class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                                    Status</th>
                                 <th
                                     class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                                     Actions</th>
@@ -201,10 +198,9 @@
 
                                 <div class="mt-4">
                                     <label class="flex items-center">
-                                        <input type="checkbox" id="isActive" name="is_active"
-                                            class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                            checked />
-                                        <span class="ml-2 text-sm text-gray-700">Active Template</span>
+                                        <input type="checkbox" id="disabled-smart-shrinking" name="disabled_smart_shrinking"
+                                            class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+                                        <span class="ml-2 text-sm text-gray-700">Disable Smart Shrinking</span>
                                     </label>
                                 </div>
                             </div>
@@ -664,7 +660,6 @@
                             template.lang,
                             template.paper_size,
                             template.orientation,
-                            template.is_active ? 'active' : 'inactive'
                         ];
                         
                         return searchFields.some(field => 
@@ -746,9 +741,6 @@
                 const slug = Utils.escapeHtml(template.page);
                 const language = Utils.escapeHtml((template.lang).toUpperCase());
                 const paperFormat = Utils.escapeHtml(Utils.formatPaperSize(template));
-                const statusClass = template.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
-                const statusText = template.is_active ? 'Active' : 'Inactive';
-                const isPreviewHidden = template.content === '' ? 'hidden' : '';
 
                 return `<tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-4 py-3">
@@ -763,23 +755,7 @@
                             ${paperFormat}
                         </td>
                         <td class="px-4 py-3">
-                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium ${statusClass}">
-                                ${statusText}
-                            </span>
-                        </td>
-                        <td class="px-4 py-3">
                             <div class="flex items-center gap-2">
-                                <a 
-                                    href="/{{ config('snawbar-invoice-template.route-prefix') }}/view/${template.id}"
-                                    class="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors ${isPreviewHidden}"
-                                    title="View template"
-                                    target="_blank"
-                                >
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                    </svg>
-                                </a>
                                 <button 
                                     onclick="TemplateModal.edit(${template.id})"
                                     class="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
@@ -850,7 +826,7 @@
                     'templateId': template.id,
                     'page': template.page,
                     'lang': template.lang,
-                    'isActive': template.is_active,
+                    'disabled-smart-shrinking': template.disabled_smart_shrinking,
                     'paperSize': template.paper_size,
                     'orientation': template.orientation,
                     'marginTop': template.margin_top,

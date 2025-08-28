@@ -21,15 +21,15 @@ trait SnappyOperations
 
     protected static $footerData = [];
 
-    protected static $waterMark;
-
     public static function inline()
     {
         $template = self::getTemplate();
 
         $orientation = request()->input('orientation', $template->orientation);
+        $smartShrinking = $template->disabled_smart_shrinking ? TRUE : FALSE;
 
         return self::render()
+            ->setOption('disable-smart-shrinking', $smartShrinking)
             ->setOption('margin-top', $template->margin_top)
             ->setOption('margin-right', $template->margin_right)
             ->setOption('margin-left', $template->margin_left)
@@ -48,10 +48,12 @@ trait SnappyOperations
         $template = self::getTemplate();
 
         $orientation = request()->input('orientation', $template->orientation);
+        $smartShrinking = $template->disabled_smart_shrinking ? TRUE : FALSE;
 
         $fullPath = sprintf('%s/%s', self::generatePath(), self::generateSecureFilename());
 
         self::render()
+            ->setOption('disable-smart-shrinking', $smartShrinking)
             ->setOption('margin-top', $template->margin_top)
             ->setOption('margin-right', $template->margin_right)
             ->setOption('margin-left', $template->margin_left)
@@ -117,26 +119,6 @@ trait SnappyOperations
     public static function footerData($data = [])
     {
         self::$footerData = $data;
-
-        return new static;
-    }
-
-    public static function setWaterMark($text, $opacity = '0.05')
-    {
-        if (blank($text)) {
-            return NULL;
-        }
-
-        $svgContent = rawurlencode(sprintf(
-            '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><text x="200" y="150" font-size="48" font-weight="bold" text-anchor="middle" transform="rotate(-45 200 150)" fill="#cccccc" opacity="%s">%s</text></svg>',
-            $opacity,
-            htmlspecialchars($text, ENT_QUOTES, 'UTF-8')
-        ));
-
-        self::$waterMark = sprintf(
-            'background: url("data:image/svg+xml;charset=utf-8,%s") repeat; background-size: 30%%;',
-            $svgContent
-        );
 
         return new static;
     }
@@ -258,7 +240,6 @@ trait SnappyOperations
             'marginBottom' => $template->margin_bottom,
             'pageSize' => $template->paper_size,
             'orientation' => $template->orientation,
-            'waterMark' => self::$waterMark,
         ];
     }
 }

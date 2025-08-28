@@ -15,7 +15,6 @@ return new class extends Migration
             $blueprint->longText('content')->nullable();
             $blueprint->longText('footer')->nullable();
             $blueprint->tinyText('logo')->nullable();
-            $blueprint->tinyText('watermark')->nullable();
             $blueprint->double('margin_top')->default(0);
             $blueprint->double('margin_bottom')->default(0);
             $blueprint->double('margin_left')->default(0);
@@ -25,6 +24,7 @@ return new class extends Migration
             $blueprint->enum('orientation', ['portrait', 'landscape'])->default('portrait');
             $blueprint->enum('paper_size', ['A4', 'A5', 'A3'])->default('A4');
             $blueprint->string('lang')->default('en');
+            $blueprint->boolean('disabled_smart_shrinking')->default(FALSE);
             $blueprint->boolean('is_active')->default(TRUE);
         });
     }

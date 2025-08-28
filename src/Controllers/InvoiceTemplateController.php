@@ -4,7 +4,6 @@ namespace Snawbar\InvoiceTemplate\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Snawbar\InvoiceTemplate\InvoiceTemplate;
 use Snawbar\InvoiceTemplate\Traits\DatabaseOperations;
 
 class InvoiceTemplateController extends Controller
@@ -66,10 +65,5 @@ class InvoiceTemplateController extends Controller
     public function destroy($templateId)
     {
         return $this->deleteTemplate($templateId);
-    }
-
-    public function view($templateId)
-    {
-        return InvoiceTemplate::makeTest($templateId)->inline();
     }
 }

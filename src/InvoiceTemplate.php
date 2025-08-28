@@ -21,13 +21,6 @@ class InvoiceTemplate
         return new static;
     }
 
-    public static function makeTest($templateId)
-    {
-        static::$template = self::getTemplateById($templateId);
-
-        return new static;
-    }
-
     private static function getTemplate()
     {
         return static::$template;

@@ -10,7 +10,6 @@ Route::prefix(config('snawbar-invoice-template.route-prefix'))
     ->group(function () {
         Route::get('/', 'index')->name('index');
         Route::get('/get-data', 'getData')->name('data');
-        Route::get('/view/{id}', 'view')->name('view');
         Route::post('/store', 'store')->name('store');
         Route::put('/update/{id}', 'update')->name('update');
         Route::delete('/delete/{id}', 'destroy')->name('destroy');
