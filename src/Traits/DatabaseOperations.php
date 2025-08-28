@@ -30,7 +30,7 @@ trait DatabaseOperations
     public static function createDefault($page = '*', $options = [])
     {
         return DB::table(self::getTableName())->insert(array_merge([
-            'disabled_smart_shrinking' => FALSE,
+            'disabled_smart_shrinking' => TRUE,
             'orientation' => 'portrait',
             'page' => $page,
             'lang' => '*',
