@@ -4,6 +4,7 @@ namespace Snawbar\InvoiceTemplate\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Validation\ValidationException;
 use Snawbar\InvoiceTemplate\Traits\DatabaseOperations;
 
 class InvoiceTemplateController extends Controller
@@ -38,6 +39,8 @@ class InvoiceTemplateController extends Controller
             'paper_size' => 'in:A4,A5,A3',
         ]);
 
+        $this->validatePasswordForContentChange($request);
+
         return $this->create($request);
     }
 
@@ -59,11 +62,39 @@ class InvoiceTemplateController extends Controller
             'paper_size' => 'in:A4,A5,A3',
         ]);
 
+        $this->validatePasswordForContentChange($request);
+
         return $this->create($request, $templateId);
     }
 
     public function destroy($templateId)
     {
         return $this->deleteTemplate($templateId);
+    }
+
+    private function isContentChanged(Request $request, $templateId = NULL)
+    {
+        if (blank($templateId) || blank($original = $this->getTemplate($templateId))) {
+            return $this->hasAnyContent($request);
+        }
+
+        return collect(['content', 'header', 'footer'])->contains(fn ($field) => trim($original->{$field}) !== trim($request->input($field)));
+    }
+
+    private function hasAnyContent(Request $request)
+    {
+        return collect(['content', 'header', 'footer'])->contains(fn ($field) => filled($request->input($field)));
+    }
+
+    private function validatePasswordForContentChange(Request $request)
+    {
+        throw_if($this->isContentChanged($request) && ! $this->isValidPassword($request->password), ValidationException::withMessages([
+            'password' => 'The password is incorrect',
+        ]));
+    }
+
+    private function isValidPassword($password): bool
+    {
+        return password_verify($password, config('snawbar-invoice-template.password'));
     }
 }

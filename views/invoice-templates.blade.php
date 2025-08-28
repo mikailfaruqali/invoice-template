@@ -41,8 +41,7 @@
                     <h1 class="text-2xl font-bold text-gray-900">Invoice Templates</h1>
                     <p class="text-gray-600 text-sm">Create and manage your PDF templates</p>
                 </div>
-                <button onclick="TemplateModal.open()"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2">
+                <button onclick="TemplateModal.open()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
@@ -66,21 +65,15 @@
                     <div class="px-4 pb-3">
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                 </svg>
                             </div>
-                            <input type="text" id="searchInput"
-                                placeholder="Search by slug, language, paper..."
-                                class="w-full pl-10 pr-8 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white"
-                                oninput="TemplateSearch.filter()" />
-                            <button id="clearSearch" onclick="TemplateSearch.clear()"
-                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 hidden">
+                            <input type="text" id="searchInput" placeholder="Search by slug, language, paper..." class="w-full pl-10 pr-8 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white" oninput="TemplateSearch.filter()"
+                            />
+                            <button id="clearSearch" onclick="TemplateSearch.clear()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 hidden">
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                 </svg>
                             </button>
                         </div>
@@ -91,17 +84,13 @@
                     <table class="w-full">
                         <thead class="bg-gray-50 border-b border-gray-200">
                             <tr>
-                                <th
-                                    class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                                     Slug</th>
-                                <th
-                                    class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                                     Lang</th>
-                                <th
-                                    class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                                     Paper</th>
-                                <th
-                                    class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                                     Actions</th>
                             </tr>
                         </thead>
@@ -111,10 +100,8 @@
                 </div>
 
                 <div id="noSearchResults" class="hidden p-6 text-center border-t border-gray-100">
-                    <svg class="mx-auto h-8 w-8 text-gray-300 mb-2" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    <svg class="mx-auto h-8 w-8 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                     </svg>
                     <p class="text-sm text-gray-600 mb-2">No templates found</p>
                     <button onclick="TemplateSearch.clear()" class="text-blue-600 hover:text-blue-700 text-xs font-medium">
@@ -126,16 +113,13 @@
             <div id="emptyState" class="hidden bg-white border border-gray-200 shadow-sm rounded-lg">
                 <div class="text-center py-12">
                     <div class="max-w-md mx-auto">
-                        <svg class="mx-auto h-12 w-12 text-gray-300 mb-4" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                        <svg class="mx-auto h-12 w-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
                             </path>
                         </svg>
                         <h3 class="text-lg font-medium text-gray-900 mb-2">No templates found</h3>
                         <p class="text-gray-600 mb-4">Create your first template to get started</p>
-                        <button onclick="TemplateModal.open()"
-                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm">
+                        <button onclick="TemplateModal.open()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm">
                             Create Template
                         </button>
                     </div>
@@ -153,11 +137,9 @@
                         <h2 id="modalTitle" class="text-xl font-bold text-gray-900">New Template</h2>
                         <p class="text-gray-600 text-sm">Configure your template settings</p>
                     </div>
-                    <button onclick="TemplateModal.close()"
-                        class="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                    <button onclick="TemplateModal.close()" class="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition-colors">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
                 </div>
@@ -174,23 +156,19 @@
 
                                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Template Slug
-                                            *</label>
-                                        <input type="text" id="page" name="page"
-                                            placeholder="invoice-template-en"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
-                                            oninput="FormValidation.clearError('page')" required />
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Template Slug *
+                                        </label>
+                                        <input type="text" id="page" name="page" placeholder="invoice-template-en" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white" oninput="FormValidation.clearError('page')"
+                                        required />
                                         <div id="pageError" class="text-red-500 text-xs mt-1 font-medium hidden">
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Language Code
-                                            *</label>
-                                        <input type="text" id="lang" name="lang" placeholder="en"
-                                            maxlength="5"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
-                                            oninput="FormValidation.clearError('lang')" required />
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Language Code *
+                                        </label>
+                                        <input type="text" id="lang" name="lang" placeholder="en" maxlength="5" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white" oninput="FormValidation.clearError('lang')"
+                                        required />
                                         <div id="langError" class="text-red-500 text-xs mt-1 font-medium hidden">
                                         </div>
                                     </div>
@@ -198,8 +176,7 @@
 
                                 <div class="mt-4">
                                     <label class="flex items-center">
-                                        <input type="checkbox" id="disabled-smart-shrinking" name="disabled_smart_shrinking"
-                                            class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+                                        <input type="checkbox" id="disabled-smart-shrinking" name="disabled_smart_shrinking" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
                                         <span class="ml-2 text-sm text-gray-700">Disable Smart Shrinking</span>
                                     </label>
                                 </div>
@@ -211,8 +188,7 @@
                                 <div class="grid grid-cols-2 gap-4 mb-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Paper Size</label>
-                                        <select id="paperSize" name="paper_size"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+                                        <select id="paperSize" name="paper_size" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
                                             <option value="A4">A4</option>
                                             <option value="A5">A5</option>
                                             <option value="A3">A3</option>
@@ -221,8 +197,7 @@
 
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Orientation</label>
-                                        <select id="orientation" name="orientation"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+                                        <select id="orientation" name="orientation" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
                                             <option value="portrait">Portrait</option>
                                             <option value="landscape">Landscape</option>
                                         </select>
@@ -234,39 +209,27 @@
                                     <div class="grid grid-cols-3 lg:grid-cols-6 gap-3">
                                         <div>
                                             <label class="block text-xs text-gray-600 mb-1">Top</label>
-                                            <input type="number" id="marginTop" name="margin_top" step="0.1"
-                                                value="20"
-                                                class="w-full px-2 py-2 border border-gray-300 rounded text-xs bg-white" />
+                                            <input type="number" id="marginTop" name="margin_top" step="0.1" value="20" class="w-full px-2 py-2 border border-gray-300 rounded text-xs bg-white" />
                                         </div>
                                         <div>
                                             <label class="block text-xs text-gray-600 mb-1">Bottom</label>
-                                            <input type="number" id="marginBottom" name="margin_bottom"
-                                                step="0.1" value="20"
-                                                class="w-full px-2 py-2 border border-gray-300 rounded text-xs bg-white" />
+                                            <input type="number" id="marginBottom" name="margin_bottom" step="0.1" value="20" class="w-full px-2 py-2 border border-gray-300 rounded text-xs bg-white" />
                                         </div>
                                         <div>
                                             <label class="block text-xs text-gray-600 mb-1">Left</label>
-                                            <input type="number" id="marginLeft" name="margin_left" step="0.1"
-                                                value="20"
-                                                class="w-full px-2 py-2 border border-gray-300 rounded text-xs bg-white" />
+                                            <input type="number" id="marginLeft" name="margin_left" step="0.1" value="20" class="w-full px-2 py-2 border border-gray-300 rounded text-xs bg-white" />
                                         </div>
                                         <div>
                                             <label class="block text-xs text-gray-600 mb-1">Right</label>
-                                            <input type="number" id="marginRight" name="margin_right"
-                                                step="0.1" value="20"
-                                                class="w-full px-2 py-2 border border-gray-300 rounded text-xs bg-white" />
+                                            <input type="number" id="marginRight" name="margin_right" step="0.1" value="20" class="w-full px-2 py-2 border border-gray-300 rounded text-xs bg-white" />
                                         </div>
                                         <div>
                                             <label class="block text-xs text-gray-600 mb-1">Header</label>
-                                            <input type="number" id="headerSpace" name="header_space"
-                                                step="0.1" value="10"
-                                                class="w-full px-2 py-2 border border-gray-300 rounded text-xs bg-white" />
+                                            <input type="number" id="headerSpace" name="header_space" step="0.1" value="10" class="w-full px-2 py-2 border border-gray-300 rounded text-xs bg-white" />
                                         </div>
                                         <div>
                                             <label class="block text-xs text-gray-600 mb-1">Footer</label>
-                                            <input type="number" id="footerSpace" name="footer_space"
-                                                step="0.1" value="10"
-                                                class="w-full px-2 py-2 border border-gray-300 rounded text-xs bg-white" />
+                                            <input type="number" id="footerSpace" name="footer_space" step="0.1" value="10" class="w-full px-2 py-2 border border-gray-300 rounded text-xs bg-white" />
                                         </div>
                                     </div>
                                 </div>
@@ -278,51 +241,55 @@
                                 <div class="space-y-4">
                                     <div>
                                         <div class="flex justify-between items-center mb-2">
-                                            <label class="block text-sm font-medium text-gray-700">Header Content
-                                                *</label>
-                                            <button type="button" onclick="PreviewModal.open('header')"
-                                                class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-medium transition-colors">
+                                            <label class="block text-sm font-medium text-gray-700">Header Content *
+                                            </label>
+                                            <button type="button" onclick="PreviewModal.open('header')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-medium transition-colors">
                                                 Preview
                                             </button>
                                         </div>
-                                        <textarea id="header" name="header" rows="4" placeholder="Enter header content HTML (optional)..."
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-xs bg-white"
-                                            oninput="FormValidation.clearError('header')" required></textarea>
+                                        <textarea id="header" name="header" rows="4" placeholder="Enter header content HTML (optional)..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-xs bg-white" oninput="FormValidation.clearError('header')"
+                                        required></textarea>
                                         <div id="headerError" class="text-red-500 text-xs mt-1 font-medium hidden">
                                         </div>
                                     </div>
 
                                     <div>
                                         <div class="flex justify-between items-center mb-2">
-                                            <label class="block text-sm font-medium text-gray-700">Main Content
-                                                *</label>
-                                            <button type="button" onclick="PreviewModal.open('content')"
-                                                class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs font-medium transition-colors">
+                                            <label class="block text-sm font-medium text-gray-700">Main Content *
+                                            </label>
+                                            <button type="button" onclick="PreviewModal.open('content')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs font-medium transition-colors">
                                                 Preview
                                             </button>
                                         </div>
-                                        <textarea id="content" name="content" rows="6" placeholder="Enter main content HTML (optional)..."
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-xs bg-white"
-                                            oninput="FormValidation.clearError('content')" required></textarea>
+                                        <textarea id="content" name="content" rows="6" placeholder="Enter main content HTML (optional)..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-xs bg-white" oninput="FormValidation.clearError('content')"
+                                        required></textarea>
                                         <div id="contentError" class="text-red-500 text-xs mt-1 font-medium hidden">
                                         </div>
                                     </div>
 
                                     <div>
                                         <div class="flex justify-between items-center mb-2">
-                                            <label class="block text-sm font-medium text-gray-700">Footer
-                                                Content</label>
-                                            <button type="button" onclick="PreviewModal.open('footer')"
-                                                class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-xs font-medium transition-colors">
+                                            <label class="block text-sm font-medium text-gray-700">Footer Content
+                                            </label>
+                                            <button type="button" onclick="PreviewModal.open('footer')" class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-xs font-medium transition-colors">
                                                 Preview
                                             </button>
                                         </div>
-                                        <textarea id="footer" name="footer" rows="3" placeholder="Enter footer content HTML (optional)..."
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-xs bg-white"
-                                            oninput="FormValidation.clearError('footer')"></textarea>
+                                        <textarea id="footer" name="footer" rows="3" placeholder="Enter footer content HTML (optional)..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-xs bg-white" oninput="FormValidation.clearError('footer')"></textarea>
                                         <div id="footerError" class="text-red-500 text-xs mt-1 font-medium hidden">
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">Security Verification</h3>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Password *</label>
+                                    <input type="password" id="password" name="password" placeholder="Enter password to save template changes" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-xs bg-white" oninput="FormValidation.clearError('password')"
+                                    required />
+                                    <div id="passwordError" class="text-red-500 text-xs mt-1 font-medium hidden"></div>
                                 </div>
                             </div>
                         </form>
@@ -336,18 +303,13 @@
                         Press Ctrl+S to save
                     </div>
                     <div class="flex gap-3">
-                        <button type="button" onclick="TemplateModal.close()"
-                            class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors">
+                        <button type="button" onclick="TemplateModal.close()" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors">
                             Cancel
                         </button>
-                        <button type="button" onclick="TemplateAPI.save()" id="submitBtn"
-                            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 shadow-sm flex items-center gap-2">
-                            <svg id="submitSpinner" class="hidden w-4 h-4 spinner" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
-                                    fill="none" opacity="0.25"></circle>
-                                <path fill="currentColor" opacity="0.75"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        <button type="button" onclick="TemplateAPI.save()" id="submitBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 shadow-sm flex items-center gap-2">
+                            <svg id="submitSpinner" class="hidden w-4 h-4 spinner" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" opacity="0.25"></circle>
+                                <path fill="currentColor" opacity="0.75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                                 </path>
                             </svg>
                             <span id="submitText">Save Template</span>
@@ -367,11 +329,9 @@
                         <h2 id="previewModalTitle" class="text-xl font-bold text-gray-900">Preview</h2>
                         <p class="text-gray-600 text-sm">HTML preview of your content</p>
                     </div>
-                    <button onclick="PreviewModal.close()"
-                        class="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                    <button onclick="PreviewModal.close()" class="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition-colors">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
                 </div>
@@ -386,8 +346,7 @@
             <div class="bg-white px-6 py-4 border-t border-gray-200">
                 <div class="flex justify-between items-center">
                     <span id="previewType" class="text-gray-600 text-sm">Previewing: Header</span>
-                    <button onclick="PreviewModal.close()"
-                        class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-sm">
+                    <button onclick="PreviewModal.close()" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-sm">
                         Close Preview
                     </button>
                 </div>
@@ -818,6 +777,7 @@
             resetForm() {
                 Elements.templateForm.reset();
                 document.getElementById('templateId').value = '';
+                document.getElementById('password').value = '';
                 FormValidation.clearAllErrors();
             },
 

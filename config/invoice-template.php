@@ -3,6 +3,20 @@
 return [
     /*
     |--------------------------------------------------------------------------
+    | Security Password
+    |--------------------------------------------------------------------------
+    |
+    | WARNING: Template content can execute PHP/HTML/JavaScript code.
+    | This password protects against unauthorized template modifications
+    | that could compromise system security.
+    |
+    |
+    */
+
+    'password' => '',
+
+    /*
+    |--------------------------------------------------------------------------
     | Route Configuration
     |--------------------------------------------------------------------------
     |
