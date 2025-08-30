@@ -3,7 +3,6 @@
 namespace Snawbar\InvoiceTemplate\Traits;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 trait DatabaseOperations
@@ -28,7 +27,7 @@ trait DatabaseOperations
         ]);
     }
 
-    public static function createDefault($page = '*', $options = [])
+    public static function createDefault($page = ['*'], $options = [])
     {
         return DB::table(self::getTableName())->insert(array_merge([
             'page' => self::encodePages($page),
@@ -86,6 +85,25 @@ trait DatabaseOperations
 
     private static function encodePages($pages)
     {
-        return json_encode(Arr::wrap($pages));
+        if (self::isJson($pages)) {
+            return $pages;
+        }
+
+        if (is_array($pages)) {
+            return json_encode($pages);
+        }
+
+        return json_encode([$pages]);
+    }
+
+    private static function isJson($string): bool
+    {
+        if (! is_string($string)) {
+            return FALSE;
+        }
+
+        json_decode($string);
+
+        return json_last_error() === JSON_ERROR_NONE;
     }
 }
