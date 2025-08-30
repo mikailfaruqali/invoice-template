@@ -3,6 +3,7 @@
 namespace Snawbar\InvoiceTemplate\Traits;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 trait DatabaseOperations
@@ -11,7 +12,7 @@ trait DatabaseOperations
     {
         return DB::table(self::getTableName())->updateOrInsert(['id' => $templateId], [
             'disabled_smart_shrinking' => $request->boolean('disabled_smart_shrinking', FALSE),
-            'page' => self::getPagesEncoded($request->page),
+            'page' => self::encodePages($request->page),
             'lang' => $request->lang,
             'header' => $request->header,
             'content' => $request->content,
@@ -30,7 +31,7 @@ trait DatabaseOperations
     public static function createDefault($page = '*', $options = [])
     {
         return DB::table(self::getTableName())->insert(array_merge([
-            'page' => self::getPagesEncoded($page),
+            'page' => self::encodePages($page),
             'disabled_smart_shrinking' => TRUE,
             'orientation' => 'portrait',
             'lang' => '*',
@@ -83,8 +84,8 @@ trait DatabaseOperations
         return config('snawbar-invoice-template.table');
     }
 
-    private static function getPagesEncoded($page)
+    private static function encodePages($pages)
     {
-        return is_array($page) ? json_encode($page) : $page;
+        return json_encode(Arr::wrap($pages));
     }
 }

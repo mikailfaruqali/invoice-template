@@ -52,6 +52,12 @@
 
                 <div class="overflow-x-auto">
                     <table class="w-full">
+                        <colgroup>
+                            <col class="w-[35%]">
+                            <col>
+                            <col>
+                            <col>
+                        </colgroup>
                         <thead class="bg-gray-50 border-b border-gray-200">
                             <tr>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Slugs</th>
