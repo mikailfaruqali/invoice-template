@@ -3,6 +3,28 @@
 return [
     /*
     |--------------------------------------------------------------------------
+    | Page Slugs
+    |--------------------------------------------------------------------------
+    |
+    | Define the canonical slugs used to identify pages/sections for templates.
+    | These values seed the “Page” tags input to keep entries consistent
+    | (e.g., invoice, receipt, summary).
+    |
+    | Type: array<string>
+    | Rules: lowercase, kebab-case, unique, trimmed (no spaces or duplicates)
+    | Behavior:
+    |   - Empty array => no preset suggestions; editors can add any slug.
+    |   - Non-empty   => values appear as suggestions; editors can still add new.
+    |
+    | Example:
+    |   'page-slugs' => ['invoice', 'receipt', 'summary'],
+    |
+    */
+
+    'page-slugs' => [],
+
+    /*
+    |--------------------------------------------------------------------------
     | Security Password
     |--------------------------------------------------------------------------
     |

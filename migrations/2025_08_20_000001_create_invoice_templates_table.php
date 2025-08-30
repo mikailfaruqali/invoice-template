@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create(config('snawbar-invoice-template.table'), function (Blueprint $blueprint) {
             $blueprint->id();
-            $blueprint->string('page');
+            $blueprint->json('page');
             $blueprint->longText('header')->nullable();
             $blueprint->longText('content')->nullable();
             $blueprint->longText('footer')->nullable();
@@ -22,7 +22,7 @@ return new class extends Migration
             $blueprint->double('header_space')->default(0);
             $blueprint->double('footer_space')->default(0);
             $blueprint->enum('orientation', ['portrait', 'landscape'])->default('portrait');
-            $blueprint->enum('paper_size', ['A4', 'A5', 'A3'])->default('A4');
+            $blueprint->enum('paper_size', ['A4', 'A5', 'A3', 'letter', 'legal'])->default('A4');
             $blueprint->string('lang')->default('en');
             $blueprint->boolean('disabled_smart_shrinking')->default(FALSE);
             $blueprint->boolean('is_active')->default(TRUE);

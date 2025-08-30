@@ -11,7 +11,7 @@ trait DatabaseOperations
     {
         return DB::table(self::getTableName())->updateOrInsert(['id' => $templateId], [
             'disabled_smart_shrinking' => $request->boolean('disabled_smart_shrinking', FALSE),
-            'page' => $request->page,
+            'page' => self::getPagesEncoded($request->page),
             'lang' => $request->lang,
             'header' => $request->header,
             'content' => $request->content,
@@ -30,9 +30,9 @@ trait DatabaseOperations
     public static function createDefault($page = '*', $options = [])
     {
         return DB::table(self::getTableName())->insert(array_merge([
+            'page' => self::getPagesEncoded($page),
             'disabled_smart_shrinking' => TRUE,
             'orientation' => 'portrait',
-            'page' => $page,
             'lang' => '*',
             'paper_size' => 'a4',
             'margin_top' => 50,
@@ -72,23 +72,19 @@ trait DatabaseOperations
 
         $builder = DB::table(self::getTableName())->where('is_active', TRUE)->orderByDesc('id');
 
-        return $builder->clone()->where('page', $page)->where('lang', $locale)->first()
-            ?? $builder->clone()->where('page', $page)->where('lang', '*')->first()
-            ?? $builder->clone()->where('page', '*')->where('lang', $locale)->first()
-            ?? $builder->clone()->where('page', '*')->where('lang', '*')->firstOrFail();
-    }
-
-    private static function templateExists($page, $lang)
-    {
-        return DB::table(self::getTableName())
-            ->where('is_active', TRUE)
-            ->where('page', $page)
-            ->where('lang', $lang)
-            ->exists();
+        return $builder->clone()->whereJsonContains('page', $page)->where('lang', $locale)->first()
+            ?? $builder->clone()->whereJsonContains('page', $page)->where('lang', '*')->first()
+            ?? $builder->clone()->whereJsonContains('page', '*')->where('lang', $locale)->first()
+            ?? $builder->clone()->whereJsonContains('page', '*')->where('lang', '*')->firstOrFail();
     }
 
     private static function getTableName()
     {
         return config('snawbar-invoice-template.table');
+    }
+
+    private static function getPagesEncoded($page)
+    {
+        return is_array($page) ? json_encode($page) : $page;
     }
 }
