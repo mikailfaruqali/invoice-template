@@ -270,8 +270,8 @@
     </div>
 
     <script>
-        var INITIAL_PAGE_SLUGS = @json(config('snawbar-invoice-template.page-slugs', []));
-    
+        var INITIAL_PAGE_SLUGS = @json($pageSlugs);
+
         var TemplateApplicationState = {
             templates: [],
             filteredTemplates: [],

@@ -13,7 +13,12 @@ class InvoiceTemplateController extends Controller
 
     public function index()
     {
-        return view('snawbar-invoice-template::invoice-templates');
+        return view('snawbar-invoice-template::invoice-templates', [
+            'pageSlugs' => collect(config('snawbar-invoice-template.page-slugs'))
+                ->unique()
+                ->values()
+                ->toArray(),
+        ]);
     }
 
     public function getData()
