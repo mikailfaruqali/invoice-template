@@ -25,6 +25,8 @@ return new class extends Migration
             $blueprint->enum('paper_size', ['A4', 'A5', 'A3', 'letter', 'legal'])->default('A4');
             $blueprint->string('lang')->default('en');
             $blueprint->boolean('disabled_smart_shrinking')->default(FALSE);
+            $blueprint->boolean('disable_header')->default(FALSE);
+            $blueprint->boolean('disable_footer')->default(FALSE);
             $blueprint->boolean('is_active')->default(TRUE);
         });
     }

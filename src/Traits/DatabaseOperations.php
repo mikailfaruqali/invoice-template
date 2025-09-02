@@ -11,6 +11,8 @@ trait DatabaseOperations
     {
         return DB::table(self::getTableName())->updateOrInsert(['id' => $templateId], [
             'disabled_smart_shrinking' => $request->boolean('disabled_smart_shrinking', FALSE),
+            'disable_header' => $request->boolean('disable_header', FALSE),
+            'disable_footer' => $request->boolean('disable_footer', FALSE),
             'page' => self::encodePages($request->page),
             'lang' => $request->lang,
             'header' => $request->header,
@@ -32,6 +34,8 @@ trait DatabaseOperations
         return DB::table(self::getTableName())->insert(array_merge([
             'page' => self::encodePages($page),
             'disabled_smart_shrinking' => TRUE,
+            'disable_header' => FALSE,
+            'disable_footer' => FALSE,
             'orientation' => 'portrait',
             'lang' => '*',
             'paper_size' => 'a4',

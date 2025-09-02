@@ -202,10 +202,18 @@
                                     </div>
                                 </div>
 
-                                <div class="mt-4">
+                                <div class="grid grid-cols-4 gap-3 mt-4">
                                     <label class="flex items-center">
                                         <input type="checkbox" id="disabled-smart-shrinking" name="disabled_smart_shrinking" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
                                         <span class="ml-2 text-sm text-gray-700">Disable Smart Shrinking</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" id="disable-header" name="disable_header" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                        <span class="ml-2 text-sm text-gray-700">Disable Header</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" id="disable-footer" name="disable_footer" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                        <span class="ml-2 text-sm text-gray-700">Disable Footer</span>
                                     </label>
                                 </div>
                             </div>
@@ -744,6 +752,8 @@
                     'templateId': templateData.id,
                     'lang': templateData.lang,
                     'disabled-smart-shrinking': templateData.disabled_smart_shrinking,
+                    'disabled-header': templateData.disabled_header,
+                    'disabled-footer': templateData.disabled_footer,
                     'paperSize': templateData.paper_size,
                     'orientation': templateData.orientation,
                     'marginTop': templateData.margin_top,
