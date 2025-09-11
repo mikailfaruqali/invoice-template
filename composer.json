@@ -1,6 +1,6 @@
 {
     "name": "mikailfaruqali/invoice-template",
-    "description": "A Laravel package for generating PDF invoices with customizable templates. Features header/footer support via Snappy PDF generator and database-driven content management.",
+    "description": "A powerful Laravel package for generating professional PDF invoices with customizable templates. Features advanced header/footer support, multi-language capabilities, and a comprehensive template management system powered by wkhtmltopdf via Snappy PDF generator.",
     "keywords": [
         "laravel",
         "invoice",
