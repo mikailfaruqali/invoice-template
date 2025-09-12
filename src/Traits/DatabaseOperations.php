@@ -38,7 +38,7 @@ trait DatabaseOperations
             'disable_footer' => FALSE,
             'orientation' => 'portrait',
             'lang' => '*',
-            'paper_size' => 'a4',
+            'paper_size' => 'A4',
             'margin_top' => 50,
             'margin_bottom' => 0,
             'margin_left' => 0,
