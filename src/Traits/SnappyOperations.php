@@ -11,6 +11,8 @@ trait SnappyOperations
 
     protected static $contentView;
 
+    protected static $contentHtml;
+
     protected static $contentData = [];
 
     protected static $headerView;
@@ -126,7 +128,9 @@ trait SnappyOperations
         self::setBinaryPath();
         self::loadTemplate();
 
-        $pdfWrapper = SnappyPdf::loadHTML(self::prepareContentHtml());
+        self::$contentHtml = self::prepareContentHtml();
+
+        $pdfWrapper = SnappyPdf::loadHTML(self::$contentHtml);
 
         if ($headerTemplate = self::prepareHeaderHtml()) {
             $pdfWrapper->setOption('header-html', $headerTemplate);
@@ -150,7 +154,7 @@ trait SnappyOperations
 
     private static function generateSecureFilename()
     {
-        return sprintf('%s_%s.pdf', now()->format('Y-m-d_H-i-s'), bin2hex(random_bytes(8)));
+        return self::getContentTitle() ?: sprintf('%s_%s.pdf', now()->format('Y-m-d_H-i-s'), bin2hex(random_bytes(8)));
     }
 
     private static function getFont()
@@ -239,5 +243,16 @@ trait SnappyOperations
             'pageSize' => $template->paper_size,
             'orientation' => $template->orientation,
         ];
+    }
+
+    private static function getContentTitle()
+    {
+        if (preg_match('/<title[^>]*>(.*?)<\/title>/is', self::$contentHtml, $matches)) {
+            $title = html_entity_decode(strip_tags($matches[1]), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+            return preg_replace('/[^\p{L}\p{N}\s_-]+/u', '', trim($title));
+        }
+
+        return NULL;
     }
 }

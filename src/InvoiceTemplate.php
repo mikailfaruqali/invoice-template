@@ -16,13 +16,13 @@ class InvoiceTemplate
 
     public static function make($template = '*')
     {
-        static::$template = self::getTemplateFromDatabase($template);
+        self::$template = self::getTemplateFromDatabase($template);
 
         return new static;
     }
 
     private static function getTemplate()
     {
-        return static::$template;
+        return self::$template;
     }
 }
