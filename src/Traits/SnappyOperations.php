@@ -125,6 +125,7 @@ trait SnappyOperations
 
     private static function render()
     {
+        self::setTimeout();
         self::setBinaryPath();
         self::loadTemplate();
 
@@ -170,6 +171,11 @@ trait SnappyOperations
     private static function setBinaryPath()
     {
         config(['snappy.pdf.binary' => config('snawbar-invoice-template.binary')[PHP_OS_FAMILY === 'Windows' ? 'windows' : 'linux']]);
+    }
+
+    private static function setTimeout()
+    {
+        config(['snappy.pdf.timeout' => config('snawbar-invoice-template.timeout', 300)]);
     }
 
     private static function configureOptions()

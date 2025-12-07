@@ -146,6 +146,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | PDF Generation Timeout
+    |--------------------------------------------------------------------------
+    |
+    | Maximum time (in seconds) to wait for wkhtmltopdf to generate a PDF.
+    | This prevents the process from hanging indefinitely on complex documents
+    | or when server resources are limited.
+    |
+    | Default: 300 seconds (5 minutes)
+    | Recommended range: 60-600 seconds depending on document complexity
+    | Set to null to disable timeout (not recommended for production)
+    |
+    */
+
+    'timeout' => 300,
+
+    /*
+    |--------------------------------------------------------------------------
     | Font Family Configuration
     |--------------------------------------------------------------------------
     | Default font family for PDF generation
