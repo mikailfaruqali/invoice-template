@@ -8,13 +8,18 @@ trait BladeOperations
 {
     private static $headerTemplate;
 
-    private static $disableHeaderTemplate;
-
     private static $contentTemplate;
 
     private static $footerTemplate;
 
+    private static $disableHeaderTemplate;
+
     private static $disabledFooterTemplate;
+
+    public static function directPrint($templateName, $fallbackView, $data = [])
+    {
+        return self::renderTemplate(optional(self::getTemplateFromDatabase($templateName))->content ?: $fallbackView, $data);
+    }
 
     private static function getDisableHeaderTemplate()
     {
@@ -48,8 +53,13 @@ trait BladeOperations
         self::$disableHeaderTemplate = $template->disable_header;
         self::$disabledFooterTemplate = $template->disable_footer;
 
-        self::$headerTemplate = Blade::render($template->header, self::getHeaderData());
-        self::$contentTemplate = Blade::render($template->content, self::getContentData());
-        self::$footerTemplate = Blade::render($template->footer, self::getFooterData());
+        self::$headerTemplate = self::renderTemplate($template->header, self::getHeaderData());
+        self::$contentTemplate = self::renderTemplate($template->content, self::getContentData());
+        self::$footerTemplate = self::renderTemplate($template->footer, self::getFooterData());
+    }
+
+    private static function renderTemplate($template, $data = [])
+    {
+        return Blade::render($template, $data);
     }
 }
