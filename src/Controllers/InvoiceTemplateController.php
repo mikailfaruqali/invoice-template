@@ -41,7 +41,7 @@ class InvoiceTemplateController extends Controller
             'header_space' => 'numeric|min:0',
             'footer_space' => 'numeric|min:0',
             'orientation' => 'in:portrait,landscape',
-            'paper_size' => 'in:A4,A5,A3',
+            'paper_size' => 'in:A4,A5,A3,A11,letter,legal',
         ]);
 
         $this->validatePasswordForContentChange($request);
@@ -64,7 +64,7 @@ class InvoiceTemplateController extends Controller
             'header_space' => 'numeric|min:0',
             'footer_space' => 'numeric|min:0',
             'orientation' => 'in:portrait,landscape',
-            'paper_size' => 'in:A4,A5,A3',
+            'paper_size' => 'in:A4,A5,A3,A11,letter,legal',
         ]);
 
         $this->validatePasswordForContentChange($request);

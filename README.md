@@ -18,7 +18,7 @@ A powerful Laravel package for generating professional PDF invoices with customi
 ### 📄 **PDF Generation**
 - **Professional PDF output** using wkhtmltopdf engine
 - **Customizable headers and footers** with Blade template support
-- **Multiple paper sizes** (A4, A5, A3, Letter, Legal)
+- **Multiple paper sizes** (A4, A5, A3, A11, Letter, Legal)
 - **Portrait and landscape orientations**
 - **Precise margin control** (top, bottom, left, right)
 - **Header/footer spacing configuration**

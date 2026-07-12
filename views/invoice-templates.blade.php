@@ -160,6 +160,9 @@
                                             <option value="A4">A4</option>
                                             <option value="A5">A5</option>
                                             <option value="A3">A3</option>
+                                            <option value="A11">A11</option>
+                                            <option value="letter">Letter</option>
+                                            <option value="legal">Legal</option>
                                         </select>
                                     </div>
 
