@@ -42,8 +42,8 @@ class InvoiceTemplateController extends Controller
             'footer_space' => ['numeric', 'min:0'],
             'orientation' => ['in:portrait,landscape'],
             'paper_size' => ['in:A4,A5,A3,A11,letter,legal'],
-            'page_width' => ['nullable', 'numeric', 'gt:0', 'required_if:paper_size,A11'],
-            'page_height' => ['nullable', 'numeric', 'gt:0', 'required_if:paper_size,A11'],
+            'page_width' => ['nullable', 'numeric', 'min:0', 'required_if:paper_size,A11'],
+            'page_height' => ['nullable', 'numeric', 'min:0', 'required_if:paper_size,A11'],
         ]);
 
         $this->validatePasswordForContentChange($request);
@@ -67,8 +67,8 @@ class InvoiceTemplateController extends Controller
             'footer_space' => ['numeric', 'min:0'],
             'orientation' => ['in:portrait,landscape'],
             'paper_size' => ['in:A4,A5,A3,A11,letter,legal'],
-            'page_width' => ['nullable', 'numeric', 'gt:0', 'required_if:paper_size,A11'],
-            'page_height' => ['nullable', 'numeric', 'gt:0', 'required_if:paper_size,A11'],
+            'page_width' => ['nullable', 'numeric', 'min:0', 'required_if:paper_size,A11'],
+            'page_height' => ['nullable', 'numeric', 'min:0', 'required_if:paper_size,A11'],
         ]);
 
         $this->validatePasswordForContentChange($request);
