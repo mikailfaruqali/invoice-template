@@ -19,6 +19,7 @@ A powerful Laravel package for generating professional PDF invoices with customi
 - **Professional PDF output** using wkhtmltopdf engine
 - **Customizable headers and footers** with Blade template support
 - **Multiple paper sizes** (A4, A5, A3, A11, Letter, Legal)
+- **Custom A11 page width/height** from UI/API (mm) for wkhtmltopdf compatibility
 - **Portrait and landscape orientations**
 - **Precise margin control** (top, bottom, left, right)
 - **Header/footer spacing configuration**
@@ -378,7 +379,9 @@ fetch('/invoice-templates/store', {
         header: '<h1>Header</h1>',
         content: '<div>Content</div>',
         footer: '<p>Footer</p>',
-        paper_size: 'A4',
+        paper_size: 'A11',
+        page_width: 18,
+        page_height: 26,
         orientation: 'portrait',
         password: 'your-password'
     })
@@ -404,7 +407,9 @@ CREATE TABLE `invoice_templates` (
   `header_space` double DEFAULT 0,        -- Header spacing (mm)
   `footer_space` double DEFAULT 0,        -- Footer spacing (mm)
   `orientation` enum('portrait','landscape') DEFAULT 'portrait',
-  `paper_size` enum('A4','A5','A3','letter','legal') DEFAULT 'A4',
+  `paper_size` enum('A4','A5','A3','A11','letter','legal') DEFAULT 'A4',
+  `page_width` double DEFAULT NULL,        -- Custom width in mm (used for A11)
+  `page_height` double DEFAULT NULL,       -- Custom height in mm (used for A11)
   `lang` varchar(255) DEFAULT 'en',       -- Language code
   `disabled_smart_shrinking` tinyint(1) DEFAULT 0,
   `disable_header` tinyint(1) DEFAULT 0,  -- Disable header rendering

@@ -29,7 +29,7 @@ trait SnappyOperations
 
         $orientation = request()->input('orientation', $template->orientation);
 
-        return self::render()
+        $pdfWrapper = self::render()
             ->setOption('disable-smart-shrinking', (bool) $template->disabled_smart_shrinking)
             ->setOption('margin-top', $template->margin_top)
             ->setOption('margin-right', $template->margin_right)
@@ -37,8 +37,9 @@ trait SnappyOperations
             ->setOption('header-spacing', $template->header_space)
             ->setOption('footer-spacing', $template->footer_space)
             ->setOption('margin-bottom', $template->margin_bottom)
-            ->setOption('page-size', $template->paper_size)
-            ->setOption('orientation', $orientation)
+            ->setOption('orientation', $orientation);
+
+        return self::applyPaperSizeOptions($pdfWrapper, $template, $orientation)
             ->inline(self::generateSecureFilename());
     }
 
@@ -52,7 +53,7 @@ trait SnappyOperations
 
         $fullPath = sprintf('%s/%s', self::generatePath(), self::generateSecureFilename());
 
-        self::render()
+        $pdfWrapper = self::render()
             ->setOption('disable-smart-shrinking', (bool) $template->disabled_smart_shrinking)
             ->setOption('margin-top', $template->margin_top)
             ->setOption('margin-right', $template->margin_right)
@@ -60,8 +61,9 @@ trait SnappyOperations
             ->setOption('header-spacing', $template->header_space)
             ->setOption('footer-spacing', $template->footer_space)
             ->setOption('margin-bottom', $template->margin_bottom)
-            ->setOption('page-size', $template->paper_size)
-            ->setOption('orientation', $orientation)
+            ->setOption('orientation', $orientation);
+
+        self::applyPaperSizeOptions($pdfWrapper, $template, $orientation)
             ->save($fullPath);
 
         return $fullPath;
@@ -180,7 +182,52 @@ trait SnappyOperations
 
     private static function configureOptions()
     {
-        return array_merge(self::$options, config('snawbar-invoice-template.options'));
+        $options = array_merge(self::$options, config('snawbar-invoice-template.options'));
+
+        if (mb_strtoupper((string) self::getTemplate()->paper_size) === 'A11') {
+            unset($options['page-size']);
+        }
+
+        return $options;
+    }
+
+    private static function applyPaperSizeOptions($pdfWrapper, $template, $orientation)
+    {
+        if (mb_strtoupper((string) $template->paper_size) === 'A11') {
+            [$defaultWidth, $defaultHeight] = self::resolveA11Dimensions($orientation);
+            $width = self::normalizePageDimension($template->page_width ?? NULL, $defaultWidth);
+            $height = self::normalizePageDimension($template->page_height ?? NULL, $defaultHeight);
+
+            return $pdfWrapper
+                ->setOption('page-width', $width)
+                ->setOption('page-height', $height);
+        }
+
+        return $pdfWrapper->setOption('page-size', $template->paper_size);
+    }
+
+    private static function resolveA11Dimensions($orientation): array
+    {
+        if (mb_strtolower((string) $orientation) === 'landscape') {
+            return ['74mm', '52mm'];
+        }
+
+        return ['52mm', '74mm'];
+    }
+
+    private static function normalizePageDimension($value, $fallback): string
+    {
+        $dimension = mb_trim((string) $value);
+
+        if ($dimension === '') {
+            return $fallback;
+        }
+
+        if (preg_match('/^\d+(\.\d+)?$/', $dimension)) {
+            return sprintf('%smm', $dimension);
+        }
+
+        return $dimension;
     }
 
     private static function normalizePath($path)
@@ -247,6 +294,8 @@ trait SnappyOperations
             'footerSpace' => $template->footer_space,
             'marginBottom' => $template->margin_bottom,
             'pageSize' => $template->paper_size,
+            'pageWidth' => $template->page_width ?? NULL,
+            'pageHeight' => $template->page_height ?? NULL,
             'orientation' => $template->orientation,
         ];
     }
@@ -256,7 +305,7 @@ trait SnappyOperations
         if (preg_match('/<title[^>]*>(.*?)<\/title>/is', self::$contentHtml, $matches)) {
             $title = html_entity_decode(strip_tags($matches[1]), ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
-            return preg_replace('/[^\p{L}\p{N}\s_-]+/u', '', trim($title));
+            return preg_replace('/[^\p{L}\p{N}\s_-]+/u', '', mb_trim($title));
         }
 
         return NULL;

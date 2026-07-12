@@ -175,6 +175,22 @@
                                     </div>
                                 </div>
 
+                                <div id="customPageSizeFields" class="hidden mb-4">
+                                    <h4 class="text-sm font-medium text-gray-700 mb-3">Custom Page Size for A11 (mm)</h4>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-xs text-gray-600 mb-1">Page Width</label>
+                                            <input type="number" id="page_width" name="page_width" step="0.1" min="0.1" placeholder="18" class="w-full px-2 py-2 border border-gray-300 rounded text-xs bg-white" oninput="FormValidation.showNone('page_width')">
+                                            <div id="page_widthError" class="text-red-500 text-xs mt-1 font-medium hidden"></div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-gray-600 mb-1">Page Height</label>
+                                            <input type="number" id="page_height" name="page_height" step="0.1" min="0.1" placeholder="26" class="w-full px-2 py-2 border border-gray-300 rounded text-xs bg-white" oninput="FormValidation.showNone('page_height')">
+                                            <div id="page_heightError" class="text-red-500 text-xs mt-1 font-medium hidden"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div>
                                     <h4 class="text-sm font-medium text-gray-700 mb-3">Margins &amp; Spacing (mm)</h4>
                                     <div class="grid grid-cols-3 lg:grid-cols-6 gap-3">
@@ -640,6 +656,51 @@
                 });
             }
         };
+
+        var PaperSizeFields = {
+            initialize: function() {
+                var paperSizeElement = document.getElementById('paperSize');
+
+                if (! paperSizeElement) {
+                    return;
+                }
+
+                paperSizeElement.addEventListener('change', function() {
+                    PaperSizeFields.updateVisibility();
+                });
+
+                this.updateVisibility();
+            },
+            updateVisibility: function() {
+                var paperSizeElement = document.getElementById('paperSize');
+                var customFieldsContainer = document.getElementById('customPageSizeFields');
+                var pageWidthElement = document.getElementById('page_width');
+                var pageHeightElement = document.getElementById('page_height');
+
+                if (! paperSizeElement || ! customFieldsContainer || ! pageWidthElement || ! pageHeightElement) {
+                    return;
+                }
+
+                var isA11 = paperSizeElement.value === 'A11';
+
+                customFieldsContainer.classList.toggle('hidden', !isA11);
+                pageWidthElement.required = isA11;
+                pageHeightElement.required = isA11;
+
+                if (isA11) {
+                    if (! pageWidthElement.value) {
+                        pageWidthElement.value = '18';
+                    }
+
+                    if (! pageHeightElement.value) {
+                        pageHeightElement.value = '26';
+                    }
+                } else {
+                    FormValidation.showNone('page_width');
+                    FormValidation.showNone('page_height');
+                }
+            }
+        };
     
         var TemplateTable = {
             render: function() {
@@ -722,6 +783,7 @@
                 var hiddenJsonInput = document.getElementById('page');
 
                 hiddenJsonInput.value = JSON.stringify([]);
+                PaperSizeFields.updateVisibility();
             },
             close: function() {
                 DocumentElements.templateModalElement.classList.add('hidden');
@@ -758,6 +820,8 @@
                     'disable-header': templateData.disable_header,
                     'disable-footer': templateData.disable_footer,
                     'paperSize': templateData.paper_size,
+                    'page_width': templateData.page_width,
+                    'page_height': templateData.page_height,
                     'orientation': templateData.orientation,
                     'marginTop': templateData.margin_top,
                     'marginBottom': templateData.margin_bottom,
@@ -795,6 +859,7 @@
                 var hiddenJsonInput = document.getElementById('page');
 
                 hiddenJsonInput.value = JSON.stringify(pagesArray);
+                PaperSizeFields.updateVisibility();
             }
         };
     
@@ -949,6 +1014,7 @@
                 try {
                     HttpClientService.initialize();
                     KeyboardShortcuts.initialize();
+                    PaperSizeFields.initialize();
 
                     await TemplateAPI.load();
                 }

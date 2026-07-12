@@ -20,6 +20,8 @@ trait DatabaseOperations
             'footer' => $request->footer,
             'orientation' => $request->orientation,
             'paper_size' => $request->paper_size,
+            'page_width' => $request->page_width,
+            'page_height' => $request->page_height,
             'margin_top' => $request->margin_top,
             'margin_bottom' => $request->margin_bottom,
             'margin_left' => $request->margin_left,
