@@ -39,7 +39,7 @@ trait SnappyOperations
             ->setOption('margin-bottom', $template->margin_bottom)
             ->setOption('orientation', $orientation);
 
-        return self::applyPaperSizeOptions($pdfWrapper, $template, $orientation)
+        return self::applyPaperSizeOptions($pdfWrapper, $template)
             ->inline(self::generateSecureFilename());
     }
 
@@ -63,7 +63,7 @@ trait SnappyOperations
             ->setOption('margin-bottom', $template->margin_bottom)
             ->setOption('orientation', $orientation);
 
-        self::applyPaperSizeOptions($pdfWrapper, $template, $orientation)
+        self::applyPaperSizeOptions($pdfWrapper, $template)
             ->save($fullPath);
 
         return $fullPath;
@@ -191,36 +191,40 @@ trait SnappyOperations
         return $options;
     }
 
-    private static function applyPaperSizeOptions($pdfWrapper, $template, $orientation)
+    private static function applyPaperSizeOptions($pdfWrapper, $template)
     {
         if (mb_strtoupper((string) $template->paper_size) === 'A11') {
-            [$defaultWidth, $defaultHeight] = self::resolveA11Dimensions($orientation);
-            $width = self::normalizePageDimension($template->page_width ?? NULL, $defaultWidth);
-            $height = self::normalizePageDimension($template->page_height ?? NULL, $defaultHeight);
+            $width = self::normalizePageDimension($template->page_width ?? NULL);
+            $height = self::normalizePageDimension($template->page_height ?? NULL);
 
-            return $pdfWrapper
-                ->setOption('page-width', $width)
-                ->setOption('page-height', $height);
+            if ($width !== NULL) {
+                $pdfWrapper->setOption('page-width', $width);
+            }
+
+            if ($height !== NULL) {
+                $pdfWrapper->setOption('page-height', $height);
+            }
+
+            return $pdfWrapper;
         }
 
         return $pdfWrapper->setOption('page-size', $template->paper_size);
     }
 
-    private static function resolveA11Dimensions($orientation): array
-    {
-        if (mb_strtolower((string) $orientation) === 'landscape') {
-            return ['74mm', '52mm'];
-        }
-
-        return ['52mm', '74mm'];
-    }
-
-    private static function normalizePageDimension($value, $fallback): string
+    private static function normalizePageDimension($value): ?string
     {
         $dimension = mb_trim((string) $value);
 
         if ($dimension === '') {
-            return $fallback;
+            return NULL;
+        }
+
+        if (is_numeric($dimension) && (float) $dimension <= 0) {
+            return NULL;
+        }
+
+        if (preg_match('/^0+(\.0+)?\s*(mm|cm|in|px)?$/i', $dimension)) {
+            return NULL;
         }
 
         if (preg_match('/^\d+(\.\d+)?$/', $dimension)) {
