@@ -41,7 +41,10 @@ trait SnappyOperations
             'orientation' => 'portrait',
         ], $options);
 
-        $pdfWrapper = SnappyPdf::loadHTML(view($view, $data)->render())
+        $view = Blade::render($view, $data);
+        $contentTitle = self::extractTitleFromHtml($view);
+
+        $pdfWrapper = SnappyPdf::loadHTML($view)
             ->setOption('disable-smart-shrinking', (bool) $config->disabled_smart_shrinking)
             ->setOption('margin-top', $config->margin_top)
             ->setOption('margin-right', $config->margin_right)
@@ -60,7 +63,7 @@ trait SnappyOperations
             },
         );
 
-        return self::renderViewer($pdfWrapper->output());
+        return self::renderViewer($pdfWrapper->output(), $contentTitle);
     }
 
     public static function inline()
@@ -81,7 +84,7 @@ trait SnappyOperations
             ->setOption('orientation', $orientation)
             ->output();
 
-        return self::renderViewer($pdfBytes);
+        return self::renderViewer($pdfBytes, self::getContentTitle());
     }
 
     public static function save()
@@ -165,14 +168,14 @@ trait SnappyOperations
         return new static;
     }
 
-    private static function renderViewer(string $pdfBytes)
+    private static function renderViewer(string $pdfBytes, $title)
     {
         $html = Blade::render('snawbar-invoice-template::pdf-viewer', [
             'font' => base64_encode(file_get_contents(self::getFont())),
             'filename' => self::generateSecureFilename(),
-            'dir' => self::getLocaleDirection(),
             'base64' => base64_encode($pdfBytes),
-            'title' => self::getContentTitle(),
+            'dir' => self::getLocaleDirection(),
+            'title' => $title,
         ]);
 
         return response($html)->header('Content-Type', 'text/html');
@@ -315,5 +318,12 @@ trait SnappyOperations
         }
 
         return NULL;
+    }
+
+    private static function extractTitleFromHtml(string $html): ?string
+    {
+        preg_match('/<title>(.*?)<\/title>/i', $html, $matches);
+
+        return $matches[1] ?? NULL;
     }
 }
