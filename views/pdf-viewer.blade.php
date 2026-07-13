@@ -15,8 +15,8 @@
         body {
             height: 100vh;
             overflow: hidden;
-            font-family: system-ui, sans-serif;
-            background: #404040;
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #1e1e1e;
         }
 
         #toolbar {
@@ -26,11 +26,12 @@
             right: 0;
             height: 52px;
             z-index: 999;
-            background: #212121;
+            background: #161616;
+            border-bottom: 1px solid #2a2a2a;
             display: flex;
             align-items: center;
-            padding: 0 16px;
-            gap: 10px;
+            padding: 0 14px;
+            gap: 8px;
         }
 
         #doc-icon {
@@ -38,11 +39,11 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            color: #9e9e9e;
+            color: #666;
         }
 
         #doc-title {
-            color: #eeeeee;
+            color: #d4d4d4;
             font-size: 13px;
             font-weight: 400;
             overflow: hidden;
@@ -50,72 +51,155 @@
             white-space: nowrap;
             flex: 1;
             min-width: 0;
+            letter-spacing: 0.01em;
         }
 
         .actions {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             flex-shrink: 0;
             margin-left: auto;
         }
 
         .btn {
-            width: 36px;
-            height: 36px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
             border: none;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: filter 0.15s, transform 0.1s;
+            transition: opacity 0.15s, transform 0.1s;
             flex-shrink: 0;
             outline: none;
-            line-height: 1;
         }
 
         .btn:hover {
-            filter: brightness(1.15)
+            opacity: 0.85
         }
 
         .btn:active {
-            transform: scale(0.92)
+            transform: scale(0.91)
         }
 
         .btn svg {
-            width: 17px;
-            height: 17px;
+            width: 16px;
+            height: 16px;
             stroke-width: 1.8;
             display: block;
-            flex-shrink: 0;
             pointer-events: none;
         }
 
         .btn-print {
-            background: #455a64;
-            color: #fff
+            background: #2d4a3e;
+            color: #4ade80
         }
 
         .btn-download {
-            background: #37474f;
-            color: #fff
+            background: #1e3a5f;
+            color: #60a5fa
         }
 
         .btn-share {
-            background: #263238;
-            color: #fff
+            background: #4a2d1e;
+            color: #fb923c
         }
 
-        #viewer {
+        #pdf-container {
             position: fixed;
             top: 52px;
             left: 0;
             right: 0;
             bottom: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: #1e1e1e;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px 12px;
+            gap: 12px;
+        }
+
+        #pdf-container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #pdf-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #pdf-container::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 0;
+        }
+
+        #pdf-container::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+
+        .pdf-page {
+            display: block;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.5);
+            flex-shrink: 0;
+            background: #fff;
+            max-width: 100%;
             width: 100%;
-            height: calc(100vh - 52px);
-            border: none;
+            height: auto;
+        }
+
+        #loading {
+            position: fixed;
+            top: 52px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #1e1e1e;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            z-index: 10;
+        }
+
+        #loading-spinner {
+            width: 28px;
+            height: 28px;
+            border: 2px solid #2a2a2a;
+            border-top-color: #60a5fa;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        #loading-text {
+            color: #555;
+            font-size: 12px;
+            letter-spacing: 0.04em;
+        }
+
+        #error-screen {
+            display: none;
+            position: fixed;
+            top: 52px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #1e1e1e;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #ef4444;
+            font-size: 13px;
         }
     </style>
 </head>
@@ -124,8 +208,8 @@
 
     <div id="toolbar">
         <div id="doc-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                stroke-linecap="round" stroke-linejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                 <polyline points="14 2 14 8 20 8" />
             </svg>
@@ -135,8 +219,8 @@
 
         <div class="actions">
             <button id="btn-print" class="btn btn-print">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-linecap="round" stroke-linejoin="round">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
+                    stroke-linejoin="round">
                     <polyline points="6 9 6 2 18 2 18 9" />
                     <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
                     <rect x="6" y="14" width="12" height="8" />
@@ -144,8 +228,8 @@
             </button>
 
             <button id="btn-download" class="btn btn-download">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-linecap="round" stroke-linejoin="round">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
+                    stroke-linejoin="round">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                     <polyline points="7 10 12 15 17 10" />
                     <line x1="12" y1="15" x2="12" y2="3" />
@@ -153,8 +237,8 @@
             </button>
 
             <button id="btn-share" class="btn btn-share">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-linecap="round" stroke-linejoin="round">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
+                    stroke-linejoin="round">
                     <circle cx="18" cy="5" r="3" />
                     <circle cx="6" cy="12" r="3" />
                     <circle cx="18" cy="19" r="3" />
@@ -165,43 +249,63 @@
         </div>
     </div>
 
-    <iframe id="viewer"></iframe>
+    <div id="loading">
+        <div id="loading-spinner"></div>
+        <div id="loading-text">Loading…</div>
+    </div>
 
+    <div id="error-screen">Failed to load document.</div>
+
+    <div id="pdf-container"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+            'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        var CMAP_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/';
+        var STANDARD_FONT = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/standard_fonts/';
+
         var PdfViewerState = {
             filename: @json($filename),
             blob: null,
-            url: null
+            url: null,
+            pdfDoc: null
         };
 
         var DocumentElements = {
-            get viewerElement() {
-                return document.getElementById('viewer');
+            get container() {
+                return document.getElementById('pdf-container')
             },
-            get btnDownload() {
-                return document.getElementById('btn-download');
+            get loading() {
+                return document.getElementById('loading')
+            },
+            get loadingText() {
+                return document.getElementById('loading-text')
+            },
+            get errorScreen() {
+                return document.getElementById('error-screen')
             },
             get btnPrint() {
-                return document.getElementById('btn-print');
+                return document.getElementById('btn-print')
+            },
+            get btnDownload() {
+                return document.getElementById('btn-download')
             },
             get btnShare() {
-                return document.getElementById('btn-share');
+                return document.getElementById('btn-share')
             }
         };
 
         var PdfDecoder = {
-            fromBase64: function(base64String) {
-                var binary = atob(base64String);
+            fromBase64: function(b64) {
+                var binary = atob(b64);
                 var bytes = new Uint8Array(binary.length);
-
-                for (var i = 0; i < binary.length; i++) {
-                    bytes[i] = binary.charCodeAt(i);
-                }
-
+                for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
                 return bytes.buffer;
             },
-            toBlob: function(arrayBuffer) {
-                return new Blob([arrayBuffer], {
+            toBlob: function(buf) {
+                return new Blob([buf], {
                     type: 'application/pdf'
                 });
             },
@@ -210,58 +314,101 @@
             }
         };
 
-        var PdfActions = {
-            download: function() {
-                var anchor = document.createElement('a');
-                anchor.href = PdfViewerState.url;
-                anchor.download = PdfViewerState.filename;
-                anchor.click();
-            },
-            print: function() {
-                var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        var PdfRenderer = {
+            scale: function() {
+                var isMobile = window.innerWidth < 768;
 
                 if (isMobile) {
-                    PdfActions.share();
-                    return;
+                    var containerWidth = window.innerWidth - 24;
+                    return (containerWidth / 595) * (window.devicePixelRatio || 1);
                 }
 
+                return 1.5;
+            },
+
+            renderPage: function(num) {
+                return PdfViewerState.pdfDoc.getPage(num).then(function(page) {
+                    var dpr = window.devicePixelRatio || 1;
+                    var scale = PdfRenderer.scale();
+                    var viewport = page.getViewport({
+                        scale: scale
+                    });
+
+                    var canvas = document.createElement('canvas');
+                    canvas.className = 'pdf-page';
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    canvas.style.width = (viewport.width / dpr) + 'px';
+                    canvas.style.height = (viewport.height / dpr) + 'px';
+
+                    DocumentElements.container.appendChild(canvas);
+
+                    return page.render({
+                        canvasContext: canvas.getContext('2d'),
+                        viewport: viewport
+                    }).promise;
+                });
+            },
+
+            renderAll: function() {
+                var total = PdfViewerState.pdfDoc.numPages;
+                var promise = Promise.resolve();
+
+                for (var i = 1; i <= total; i++) {
+                    (function(num) {
+                        promise = promise.then(function() {
+                            DocumentElements.loadingText.textContent = 'Page ' + num + ' of ' + total;
+                            return PdfRenderer.renderPage(num);
+                        });
+                    })(i);
+                }
+
+                return promise;
+            }
+        };
+
+        var PdfActions = {
+            download: function() {
+                var a = document.createElement('a');
+                a.href = PdfViewerState.url;
+                a.download = PdfViewerState.filename;
+                a.click();
+            },
+
+            print: function() {
                 var iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
+                iframe.style.cssText =
+                    'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;visibility:hidden;';
                 iframe.src = PdfViewerState.url;
-
                 document.body.appendChild(iframe);
-
                 iframe.onload = function() {
                     iframe.contentWindow.focus();
                     iframe.contentWindow.print();
+                    setTimeout(function() {
+                        document.body.removeChild(iframe);
+                    }, 60000);
                 };
             },
-            share: async function() {
-                var file = new File(
-                    [PdfViewerState.blob],
-                    PdfViewerState.filename, {
-                        type: 'application/pdf'
-                    }
-                );
+
+            share: function() {
+                var file = new File([PdfViewerState.blob], PdfViewerState.filename, {
+                    type: 'application/pdf'
+                });
 
                 if (navigator.canShare && navigator.canShare({
                         files: [file]
                     })) {
-                    try {
-                        await navigator.share({
+                    navigator.share({
                             files: [file],
                             title: PdfViewerState.filename
+                        })
+                        .catch(function(e) {
+                            if (e.name !== 'AbortError') console.error('Share failed', e);
                         });
-                    } catch (error) {
-                        if (error.name !== 'AbortError') {
-                            console.error('Share failed');
-                        }
-                    }
-
                     return;
                 }
 
-                await navigator.clipboard.writeText(location.href);
+                navigator.clipboard.writeText(location.href);
             }
         };
 
@@ -273,11 +420,25 @@
                 PdfViewerState.blob = PdfDecoder.toBlob(buffer);
                 PdfViewerState.url = PdfDecoder.toObjectUrl(PdfViewerState.blob);
 
-                DocumentElements.viewerElement.src = PdfViewerState.url + '#toolbar=0&navpanes=0';
-
-                DocumentElements.btnDownload.addEventListener('click', PdfActions.download);
-                DocumentElements.btnPrint.addEventListener('click', PdfActions.print);
-                DocumentElements.btnShare.addEventListener('click', PdfActions.share);
+                pdfjsLib.getDocument({
+                    data: buffer,
+                    cMapUrl: CMAP_URL,
+                    cMapPacked: true,
+                    standardFontDataUrl: STANDARD_FONT,
+                    disableFontFace: true
+                }).promise.then(function(pdfDoc) {
+                    PdfViewerState.pdfDoc = pdfDoc;
+                    return PdfRenderer.renderAll();
+                }).then(function() {
+                    DocumentElements.loading.style.display = 'none';
+                    DocumentElements.btnPrint.addEventListener('click', PdfActions.print);
+                    DocumentElements.btnDownload.addEventListener('click', PdfActions.download);
+                    DocumentElements.btnShare.addEventListener('click', PdfActions.share);
+                }).catch(function(err) {
+                    console.error('PDF error', err);
+                    DocumentElements.loading.style.display = 'none';
+                    DocumentElements.errorScreen.style.display = 'flex';
+                });
             }
         };
 

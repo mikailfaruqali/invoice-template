@@ -40,7 +40,7 @@ trait SnappyOperations
             ->setOption('margin-bottom', $template->margin_bottom)
             ->setOption('page-size', $template->paper_size)
             ->setOption('orientation', $orientation)
-            ->inline(self::generateSecureFilename());
+            ->output();
 
         $pdfViwer = Blade::render('snawbar-invoice-template::pdf-viewer', [
             'filename' => self::generateSecureFilename(),
