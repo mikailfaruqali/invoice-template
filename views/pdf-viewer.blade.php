@@ -112,6 +112,46 @@
             color: #fb923c
         }
 
+        #pdf-viewer-close-btn {
+            background: #dc2626;
+            color: #fff;
+            animation: pulse-once 0.6s ease-out 0.3s both;
+        }
+
+        @keyframes pulse-once {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6);
+            }
+
+            50% {
+                transform: scale(1.15);
+                box-shadow: 0 0 0 8px rgba(220, 38, 38, 0);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+            }
+        }
+
+        @keyframes pulse-once {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6);
+            }
+
+            50% {
+                transform: scale(1.15);
+                box-shadow: 0 0 0 8px rgba(220, 38, 38, 0);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+            }
+        }
+
         #pdf-container {
             position: fixed;
             top: 52px;
@@ -212,13 +252,12 @@
 <body>
 
     <div id="toolbar">
-        <div id="doc-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
+        <button id="pdf-viewer-close-btn" class="btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
-        </div>
+        </button>
 
         <span id="doc-title">{{ $title }}</span>
 
@@ -299,6 +338,9 @@
             },
             get btnShare() {
                 return document.getElementById('btn-share')
+            },
+            get btnClose() {
+                return document.getElementById('pdf-viewer-close-btn')
             }
         };
 
@@ -414,7 +456,15 @@
                 }
 
                 navigator.clipboard.writeText(location.href);
-            }
+            },
+
+            close: function() {
+                if (window.self !== window.top) {
+                    window.parent.$('.modal').modal('hide');
+                } else {
+                    window.close();
+                }
+            },
         };
 
         var PdfViewer = {
@@ -466,6 +516,7 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             Application.initialize();
+            DocumentElements.btnClose.addEventListener('click', PdfActions.close);
         });
     </script>
 
