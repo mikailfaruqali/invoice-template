@@ -24,6 +24,45 @@ trait SnappyOperations
 
     protected static $footerData = [];
 
+    public static function raw(string $view, array $data = [], array $options = [])
+    {
+        self::setTimeout();
+        self::setBinaryPath();
+
+        $config = (object) array_merge([
+            'disabled_smart_shrinking' => TRUE,
+            'margin_top' => 0,
+            'margin_right' => 0,
+            'margin_left' => 0,
+            'margin_bottom' => 0,
+            'page_width' => NULL,
+            'page_height' => '297',
+            'paper_size' => 'A4',
+            'orientation' => 'portrait',
+        ], $options);
+
+        $pdfWrapper = SnappyPdf::loadHTML(view($view, $data)->render())
+            ->setOption('disable-smart-shrinking', (bool) $config->disabled_smart_shrinking)
+            ->setOption('margin-top', $config->margin_top)
+            ->setOption('margin-right', $config->margin_right)
+            ->setOption('margin-left', $config->margin_left)
+            ->setOption('margin-bottom', $config->margin_bottom)
+            ->setOption('orientation', $config->orientation);
+
+        when(
+            condition: $config->page_width,
+            value: function () use ($pdfWrapper, $config) {
+                $pdfWrapper->setOption('page-width', $config->page_width);
+                $pdfWrapper->setOption('page-height', $config->page_height);
+            },
+            default: function () use ($pdfWrapper, $config) {
+                $pdfWrapper->setOption('page-size', $config->paper_size);
+            },
+        );
+
+        return self::renderViewer($pdfWrapper->output());
+    }
+
     public static function inline()
     {
         $template = self::getTemplate();
@@ -42,15 +81,7 @@ trait SnappyOperations
             ->setOption('orientation', $orientation)
             ->output();
 
-        $pdfViwer = Blade::render('snawbar-invoice-template::pdf-viewer', [
-            'font' => base64_encode(file_get_contents(self::getFont())),
-            'filename' => self::generateSecureFilename(),
-            'base64' => base64_encode($pdfBytes),
-            'dir' => self::getLocaleDirection(),
-            'title' => self::getContentTitle(),
-        ]);
-
-        return response($pdfViwer)->header('Content-Type', 'text/html');
+        return self::renderViewer($pdfBytes);
     }
 
     public static function save()
@@ -132,6 +163,19 @@ trait SnappyOperations
         self::$footerData = $data;
 
         return new static;
+    }
+
+    private static function renderViewer(string $pdfBytes)
+    {
+        $html = Blade::render('snawbar-invoice-template::pdf-viewer', [
+            'font' => base64_encode(file_get_contents(self::getFont())),
+            'filename' => self::generateSecureFilename(),
+            'dir' => self::getLocaleDirection(),
+            'base64' => base64_encode($pdfBytes),
+            'title' => self::getContentTitle(),
+        ]);
+
+        return response($html)->header('Content-Type', 'text/html');
     }
 
     private static function render()
