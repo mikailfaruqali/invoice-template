@@ -43,9 +43,11 @@ trait SnappyOperations
             ->output();
 
         $pdfViwer = Blade::render('snawbar-invoice-template::pdf-viewer', [
+            'font' => base64_encode(file_get_contents(self::getFont())),
             'filename' => self::generateSecureFilename(),
-            'dir' => self::getLocaleDirection(),
             'base64' => base64_encode($pdfBytes),
+            'dir' => self::getLocaleDirection(),
+            'title' => self::getContentTitle(),
         ]);
 
         return response($pdfViwer)->header('Content-Type', 'text/html');

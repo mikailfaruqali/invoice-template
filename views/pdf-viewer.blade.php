@@ -4,8 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $filename }}</title>
+    <title>{{ $title }}</title>
     <style>
+        @font-face {
+            font-family: 'Vazirmatn';
+            src: url('data:font/truetype;base64,{{ $font }}') format('truetype');
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -15,7 +20,7 @@
         body {
             height: 100vh;
             overflow: hidden;
-            font-family: system-ui, -apple-system, sans-serif;
+            font-family: 'Vazirmatn', system-ui, sans-serif;
             background: #1e1e1e;
         }
 
@@ -43,9 +48,9 @@
         }
 
         #doc-title {
-            color: #d4d4d4;
-            font-size: 13px;
-            font-weight: 400;
+            color: #e8e8e8;
+            font-size: 14px;
+            font-weight: 500;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -215,7 +220,7 @@
             </svg>
         </div>
 
-        <span id="doc-title">{{ $filename }}</span>
+        <span id="doc-title">{{ $title }}</span>
 
         <div class="actions">
             <button id="btn-print" class="btn btn-print">
@@ -445,6 +450,17 @@
         var Application = {
             initialize: function() {
                 PdfViewer.initialize();
+                ApplicationUI.setupPrintButton();
+            }
+        };
+
+        var ApplicationUI = {
+            setupPrintButton: function() {
+                var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+                if (isMobile) {
+                    DocumentElements.btnPrint.style.display = 'none';
+                }
             }
         };
 
