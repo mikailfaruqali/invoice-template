@@ -3,6 +3,7 @@
 namespace Snawbar\InvoiceTemplate\Traits;
 
 use Barryvdh\Snappy\Facades\SnappyPdf;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\File;
 
 trait SnappyOperations
@@ -29,7 +30,7 @@ trait SnappyOperations
 
         $orientation = request()->input('orientation', $template->orientation);
 
-        return self::render()
+        $pdfBytes = self::render()
             ->setOption('disable-smart-shrinking', (bool) $template->disabled_smart_shrinking)
             ->setOption('margin-top', $template->margin_top)
             ->setOption('margin-right', $template->margin_right)
@@ -40,6 +41,14 @@ trait SnappyOperations
             ->setOption('page-size', $template->paper_size)
             ->setOption('orientation', $orientation)
             ->inline(self::generateSecureFilename());
+
+        $pdfViwer = Blade::render('snawbar-invoice-template::pdf-viewer', [
+            'filename' => self::generateSecureFilename(),
+            'dir' => self::getLocaleDirection(),
+            'base64' => base64_encode($pdfBytes),
+        ]);
+
+        return response($pdfViwer)->header('Content-Type', 'text/html');
     }
 
     public static function save()
@@ -256,7 +265,7 @@ trait SnappyOperations
         if (preg_match('/<title[^>]*>(.*?)<\/title>/is', self::$contentHtml, $matches)) {
             $title = html_entity_decode(strip_tags($matches[1]), ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
-            return preg_replace('/[^\p{L}\p{N}\s_-]+/u', '', trim($title));
+            return preg_replace('/[^\p{L}\p{N}\s_-]+/u', '', mb_trim($title));
         }
 
         return NULL;

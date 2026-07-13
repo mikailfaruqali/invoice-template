@@ -29,19 +29,19 @@ class InvoiceTemplateController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'page' => 'required',
-            'lang' => 'required',
-            'header' => 'nullable|string',
-            'content' => 'nullable|string',
-            'footer' => 'nullable|string',
-            'margin_top' => 'numeric|min:0',
-            'margin_bottom' => 'numeric|min:0',
-            'margin_left' => 'numeric|min:0',
-            'margin_right' => 'numeric|min:0',
-            'header_space' => 'numeric|min:0',
-            'footer_space' => 'numeric|min:0',
-            'orientation' => 'in:portrait,landscape',
-            'paper_size' => 'in:A4,A5,A3',
+            'page' => ['required'],
+            'lang' => ['required'],
+            'header' => ['nullable', 'string'],
+            'content' => ['nullable', 'string'],
+            'footer' => ['nullable', 'string'],
+            'margin_top' => ['numeric', 'min:0'],
+            'margin_bottom' => ['numeric', 'min:0'],
+            'margin_left' => ['numeric', 'min:0'],
+            'margin_right' => ['numeric', 'min:0'],
+            'header_space' => ['numeric', 'min:0'],
+            'footer_space' => ['numeric', 'min:0'],
+            'orientation' => ['in:portrait,landscape'],
+            'paper_size' => ['in:A4,A5,A3'],
         ]);
 
         $this->validatePasswordForContentChange($request);
@@ -52,19 +52,19 @@ class InvoiceTemplateController extends Controller
     public function update(Request $request, $templateId)
     {
         $request->validate([
-            'page' => 'required',
-            'lang' => 'required',
-            'header' => 'nullable|string',
-            'content' => 'nullable|string',
-            'footer' => 'nullable|string',
-            'margin_top' => 'numeric|min:0',
-            'margin_bottom' => 'numeric|min:0',
-            'margin_left' => 'numeric|min:0',
-            'margin_right' => 'numeric|min:0',
-            'header_space' => 'numeric|min:0',
-            'footer_space' => 'numeric|min:0',
-            'orientation' => 'in:portrait,landscape',
-            'paper_size' => 'in:A4,A5,A3',
+            'page' => ['required'],
+            'lang' => ['required'],
+            'header' => ['nullable', 'string'],
+            'content' => ['nullable', 'string'],
+            'footer' => ['nullable', 'string'],
+            'margin_top' => ['numeric', 'min:0'],
+            'margin_bottom' => ['numeric', 'min:0'],
+            'margin_left' => ['numeric', 'min:0'],
+            'margin_right' => ['numeric', 'min:0'],
+            'header_space' => ['numeric', 'min:0'],
+            'footer_space' => ['numeric', 'min:0'],
+            'orientation' => ['in:portrait,landscape'],
+            'paper_size' => ['in:A4,A5,A3'],
         ]);
 
         $this->validatePasswordForContentChange($request);
@@ -83,7 +83,7 @@ class InvoiceTemplateController extends Controller
             return $this->hasAnyContent($request);
         }
 
-        return collect(['content', 'header', 'footer'])->contains(fn ($field) => trim($original->{$field}) !== trim($request->input($field)));
+        return collect(['content', 'header', 'footer'])->contains(fn ($field) => mb_trim($original->{$field}) !== mb_trim($request->input($field)));
     }
 
     private function hasAnyContent(Request $request)
