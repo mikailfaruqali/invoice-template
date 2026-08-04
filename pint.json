@@ -1,6 +1,7 @@
 {
     "preset": "laravel",
     "rules": {
+        "Pint/laravel_blade": true,
         "array_syntax": {
             "syntax": "short"
         },
@@ -47,7 +48,6 @@
             "import_constants": true,
             "import_functions": true
         },
-        "mb_str_functions": true,
         "modernize_types_casting": true,
         "no_superfluous_elseif": true,
         "no_useless_else": true,
@@ -82,6 +82,12 @@
                 "method_private"
             ],
             "sort_algorithm": "none"
-        }
+        },
+        "blank_line_before_statement": {
+            "statements": ["return", "throw"]
+        },
+        "method_chaining_indentation": true,
+        "no_unused_imports": true,
+        "single_import_per_statement": true
     }
 }
