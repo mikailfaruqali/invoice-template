@@ -4,17 +4,21 @@ namespace Snawbar\InvoiceTemplate\Traits;
 
 use Illuminate\Support\Facades\Blade;
 
+/**
+ * @method static static newInstance()
+ * @method object|null getTemplateFromDatabase(string $page = '*')
+ */
 trait BladeOperations
 {
-    private $headerTemplate;
+    private ?string $headerTemplate = NULL;
 
-    private $contentTemplate;
+    private ?string $contentTemplate = NULL;
 
-    private $footerTemplate;
+    private ?string $footerTemplate = NULL;
 
-    private $disableHeaderTemplate;
+    private bool $disableHeaderTemplate = FALSE;
 
-    private $disabledFooterTemplate;
+    private bool $disabledFooterTemplate = FALSE;
 
     public static function directPrint($templateName, $fallbackView, $data = [])
     {

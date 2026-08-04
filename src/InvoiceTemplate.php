@@ -14,7 +14,7 @@ class InvoiceTemplate
     use DatabaseOperations;
     use SnappyOperations;
 
-    private $template;
+    private object $template;
 
     public static function make($template = '*')
     {

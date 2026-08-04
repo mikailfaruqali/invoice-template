@@ -5,6 +5,9 @@ namespace Snawbar\InvoiceTemplate\Traits;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @method static static newInstance()
+ */
 trait DatabaseOperations
 {
     public static function create(Request $request, $templateId = NULL)

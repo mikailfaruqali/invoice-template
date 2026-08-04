@@ -6,23 +6,26 @@ use Barryvdh\Snappy\Facades\SnappyPdf;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\File;
 
+/**
+ * @method static static newInstance()
+ */
 trait SnappyOperations
 {
-    protected $options = [];
+    protected array $options = [];
 
-    protected $contentView;
+    protected ?string $contentView = NULL;
 
-    protected $contentHtml;
+    protected ?string $contentHtml = NULL;
 
-    protected $contentData = [];
+    protected array $contentData = [];
 
-    protected $headerView;
+    protected ?string $headerView = NULL;
 
-    protected $headerData = [];
+    protected array $headerData = [];
 
-    protected $footerView;
+    protected ?string $footerView = NULL;
 
-    protected $footerData = [];
+    protected array $footerData = [];
 
     public static function raw(string $view, array $data = [], array $options = [])
     {
