@@ -27,6 +27,8 @@ trait SnappyOperations
 
     protected array $footerData = [];
 
+    protected bool $useDefaultViewer = FALSE;
+
     public static function raw(string $view, array $data = [], array $options = [])
     {
         $instance = static::newInstance();
@@ -77,7 +79,7 @@ trait SnappyOperations
 
         $orientation = request()->input('orientation', $template->orientation);
 
-        $pdfBytes = $this->render()
+        $pdf = $this->render()
             ->setOption('disable-smart-shrinking', (bool) $template->disabled_smart_shrinking)
             ->setOption('margin-top', $template->margin_top)
             ->setOption('margin-right', $template->margin_right)
@@ -86,10 +88,13 @@ trait SnappyOperations
             ->setOption('footer-spacing', $template->footer_space)
             ->setOption('margin-bottom', $template->margin_bottom)
             ->setOption('page-size', $template->paper_size)
-            ->setOption('orientation', $orientation)
-            ->output();
+            ->setOption('orientation', $orientation);
 
-        return $this->renderViewer($pdfBytes, $this->getContentTitle());
+        if ($this->useDefaultViewer) {
+            return $pdf->inline($this->generateSecureFilename());
+        }
+
+        return $this->renderViewer($pdf->output(), $this->getContentTitle());
     }
 
     public function save()
@@ -115,6 +120,13 @@ trait SnappyOperations
             ->save($fullPath);
 
         return $fullPath;
+    }
+
+    public function useDefaultViewer(): static
+    {
+        $this->useDefaultViewer = TRUE;
+
+        return $this;
     }
 
     public function setOption($key, $value)
