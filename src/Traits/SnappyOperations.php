@@ -8,26 +8,28 @@ use Illuminate\Support\Facades\File;
 
 trait SnappyOperations
 {
-    protected static $options = [];
+    protected $options = [];
 
-    protected static $contentView;
+    protected $contentView;
 
-    protected static $contentHtml;
+    protected $contentHtml;
 
-    protected static $contentData = [];
+    protected $contentData = [];
 
-    protected static $headerView;
+    protected $headerView;
 
-    protected static $headerData = [];
+    protected $headerData = [];
 
-    protected static $footerView;
+    protected $footerView;
 
-    protected static $footerData = [];
+    protected $footerData = [];
 
     public static function raw(string $view, array $data = [], array $options = [])
     {
-        self::setTimeout();
-        self::setBinaryPath();
+        $instance = static::newInstance();
+
+        $instance->setTimeout();
+        $instance->setBinaryPath();
 
         $config = (object) array_merge([
             'disabled_smart_shrinking' => TRUE,
@@ -42,7 +44,7 @@ trait SnappyOperations
         ], $options);
 
         $view = Blade::render($view, $data);
-        $contentTitle = self::extractTitleFromHtml($view);
+        $contentTitle = $instance->extractTitleFromHtml($view);
 
         $pdfWrapper = SnappyPdf::loadHTML($view)
             ->setOption('disable-smart-shrinking', (bool) $config->disabled_smart_shrinking)
@@ -63,16 +65,16 @@ trait SnappyOperations
             },
         );
 
-        return self::renderViewer($pdfWrapper->output(), $contentTitle);
+        return $instance->renderViewer($pdfWrapper->output(), $contentTitle);
     }
 
-    public static function inline()
+    public function inline()
     {
-        $template = self::getTemplate();
+        $template = $this->getTemplate();
 
         $orientation = request()->input('orientation', $template->orientation);
 
-        $pdfBytes = self::render()
+        $pdfBytes = $this->render()
             ->setOption('disable-smart-shrinking', (bool) $template->disabled_smart_shrinking)
             ->setOption('margin-top', $template->margin_top)
             ->setOption('margin-right', $template->margin_right)
@@ -84,20 +86,20 @@ trait SnappyOperations
             ->setOption('orientation', $orientation)
             ->output();
 
-        return self::renderViewer($pdfBytes, self::getContentTitle());
+        return $this->renderViewer($pdfBytes, $this->getContentTitle());
     }
 
-    public static function save()
+    public function save()
     {
-        self::ensureDirectoryExist(self::generatePath());
+        $this->ensureDirectoryExist($this->generatePath());
 
-        $template = self::getTemplate();
+        $template = $this->getTemplate();
 
         $orientation = request()->input('orientation', $template->orientation);
 
-        $fullPath = sprintf('%s/%s', self::generatePath(), self::generateSecureFilename());
+        $fullPath = sprintf('%s/%s', $this->generatePath(), $this->generateSecureFilename());
 
-        self::render()
+        $this->render()
             ->setOption('disable-smart-shrinking', (bool) $template->disabled_smart_shrinking)
             ->setOption('margin-top', $template->margin_top)
             ->setOption('margin-right', $template->margin_right)
@@ -112,190 +114,190 @@ trait SnappyOperations
         return $fullPath;
     }
 
-    public static function setOption($key, $value)
+    public function setOption($key, $value)
     {
-        self::$options[$key] = $value;
+        $this->options[$key] = $value;
 
-        return new static;
+        return $this;
     }
 
-    public static function setOptions($options)
+    public function setOptions($options)
     {
-        self::$options = $options;
+        $this->options = $options;
 
-        return new static;
+        return $this;
     }
 
-    public static function renderContent($view)
+    public function renderContent($view)
     {
-        self::$contentView = $view;
+        $this->contentView = $view;
 
-        return new static;
+        return $this;
     }
 
-    public static function contentData($data = [])
+    public function contentData($data = [])
     {
-        self::$contentData = $data;
+        $this->contentData = $data;
 
-        return new static;
+        return $this;
     }
 
-    public static function renderHeader($view)
+    public function renderHeader($view)
     {
-        self::$headerView = $view;
+        $this->headerView = $view;
 
-        return new static;
+        return $this;
     }
 
-    public static function headerData($data = [])
+    public function headerData($data = [])
     {
-        self::$headerData = $data;
+        $this->headerData = $data;
 
-        return new static;
+        return $this;
     }
 
-    public static function renderFooter($view)
+    public function renderFooter($view)
     {
-        self::$footerView = $view;
+        $this->footerView = $view;
 
-        return new static;
+        return $this;
     }
 
-    public static function footerData($data = [])
+    public function footerData($data = [])
     {
-        self::$footerData = $data;
+        $this->footerData = $data;
 
-        return new static;
+        return $this;
     }
 
-    private static function renderViewer(string $pdfBytes, $title)
+    private function renderViewer(string $pdfBytes, $title)
     {
         $html = Blade::render('snawbar-invoice-template::pdf-viewer', [
-            'font' => base64_encode(file_get_contents(self::getFont())),
-            'filename' => self::generateSecureFilename(),
+            'font' => base64_encode(file_get_contents($this->getFont())),
+            'filename' => $this->generateSecureFilename(),
             'base64' => base64_encode($pdfBytes),
-            'dir' => self::getLocaleDirection(),
+            'dir' => $this->getLocaleDirection(),
             'title' => $title,
         ]);
 
         return response($html)->header('Content-Type', 'text/html');
     }
 
-    private static function render()
+    private function render()
     {
-        self::setTimeout();
-        self::setBinaryPath();
-        self::loadTemplate();
+        $this->setTimeout();
+        $this->setBinaryPath();
+        $this->loadTemplate();
 
-        self::$contentHtml = self::prepareContentHtml();
+        $this->contentHtml = $this->prepareContentHtml();
 
-        $pdfWrapper = SnappyPdf::loadHTML(self::$contentHtml);
+        $pdfWrapper = SnappyPdf::loadHTML($this->contentHtml);
 
-        if ($headerTemplate = self::prepareHeaderHtml()) {
+        if ($headerTemplate = $this->prepareHeaderHtml()) {
             $pdfWrapper->setOption('header-html', $headerTemplate);
         }
 
-        if ($footerTemplate = self::prepareFooterHtml()) {
+        if ($footerTemplate = $this->prepareFooterHtml()) {
             $pdfWrapper->setOption('footer-html', $footerTemplate);
         }
 
-        foreach (self::configureOptions() as $option => $value) {
+        foreach ($this->configureOptions() as $option => $value) {
             $pdfWrapper->setOption($option, $value);
         }
 
         return $pdfWrapper;
     }
 
-    private static function generatePath()
+    private function generatePath()
     {
         return public_path(sprintf('files/%s/pdf', request()->getHost()));
     }
 
-    private static function generateSecureFilename()
+    private function generateSecureFilename()
     {
-        return sprintf('%s_%s.pdf', now()->format('Y-m-d_H-i-s'), self::getContentTitle() ?: bin2hex(random_bytes(8)));
+        return sprintf('%s_%s.pdf', now()->format('Y-m-d_H-i-s'), $this->getContentTitle() ?: bin2hex(random_bytes(8)));
     }
 
-    private static function getFont()
+    private function getFont()
     {
-        return self::normalizePath(sprintf('%s/%s', config('snawbar-invoice-template.font-dir'), config('snawbar-invoice-template.font')));
+        return $this->normalizePath(sprintf('%s/%s', config('snawbar-invoice-template.font-dir'), config('snawbar-invoice-template.font')));
     }
 
-    private static function getLocaleDirection()
+    private function getLocaleDirection()
     {
         return session(config('snawbar-invoice-template.locale-direction-key'));
     }
 
-    private static function setBinaryPath()
+    private function setBinaryPath()
     {
         config(['snappy.pdf.binary' => config('snawbar-invoice-template.binary')[PHP_OS_FAMILY === 'Windows' ? 'windows' : 'linux']]);
     }
 
-    private static function setTimeout()
+    private function setTimeout()
     {
         config(['snappy.pdf.timeout' => config('snawbar-invoice-template.timeout', 300)]);
     }
 
-    private static function configureOptions()
+    private function configureOptions()
     {
-        return array_merge(self::$options, config('snawbar-invoice-template.options'));
+        return array_merge($this->options, config('snawbar-invoice-template.options'));
     }
 
-    private static function normalizePath($path)
+    private function normalizePath($path)
     {
         return str_replace('\\', '/', $path);
     }
 
-    private static function ensureDirectoryExist($path)
+    private function ensureDirectoryExist($path)
     {
         if (File::missing($path)) {
             File::makeDirectory($path, 0755, TRUE, TRUE);
         }
     }
 
-    private static function prepareContentHtml()
+    private function prepareContentHtml()
     {
-        abort_if(blank(self::getContentTemplate()) && blank(self::$contentView), 500, 'Content view or data must be provided to generate PDF.');
+        abort_if(blank($this->getContentTemplate()) && blank($this->contentView), 500, 'Content view or data must be provided to generate PDF.');
 
-        return self::getContentTemplate() ?: view(self::$contentView, self::getContentData())->render();
+        return $this->getContentTemplate() ?: view($this->contentView, $this->getContentData())->render();
     }
 
-    private static function prepareHeaderHtml()
+    private function prepareHeaderHtml()
     {
-        if (self::getDisableHeaderTemplate() || (blank(self::getHeaderTemplate()) && blank(self::$headerView))) {
+        if ($this->getDisableHeaderTemplate() || (blank($this->getHeaderTemplate()) && blank($this->headerView))) {
             return NULL;
         }
 
-        return self::getHeaderTemplate() ?: view(self::$headerView, self::getHeaderData())->render();
+        return $this->getHeaderTemplate() ?: view($this->headerView, $this->getHeaderData())->render();
     }
 
-    private static function prepareFooterHtml()
+    private function prepareFooterHtml()
     {
-        if (self::getDisabledFooterTemplate() || (blank(self::getFooterTemplate()) && blank(self::$footerView))) {
+        if ($this->getDisabledFooterTemplate() || (blank($this->getFooterTemplate()) && blank($this->footerView))) {
             return NULL;
         }
 
-        return self::getFooterTemplate() ?: view(self::$footerView, self::getFooterData())->render();
+        return $this->getFooterTemplate() ?: view($this->footerView, $this->getFooterData())->render();
     }
 
-    private static function getContentData()
+    private function getContentData()
     {
-        return array_merge(self::$contentData, self::getTemplateDefaultData());
+        return array_merge($this->contentData, $this->getTemplateDefaultData());
     }
 
-    private static function getHeaderData()
+    private function getHeaderData()
     {
-        return array_merge(self::$headerData, self::getTemplateDefaultData());
+        return array_merge($this->headerData, $this->getTemplateDefaultData());
     }
 
-    private static function getFooterData()
+    private function getFooterData()
     {
-        return array_merge(self::$footerData, self::getTemplateDefaultData());
+        return array_merge($this->footerData, $this->getTemplateDefaultData());
     }
 
-    private static function getTemplateDefaultData()
+    private function getTemplateDefaultData()
     {
-        $template = self::getTemplate();
+        $template = $this->getTemplate();
 
         return [
             'marginTop' => $template->margin_top,
@@ -309,9 +311,9 @@ trait SnappyOperations
         ];
     }
 
-    private static function getContentTitle()
+    private function getContentTitle()
     {
-        if (preg_match('/<title[^>]*>(.*?)<\/title>/is', self::$contentHtml, $matches)) {
+        if (preg_match('/<title[^>]*>(.*?)<\/title>/is', $this->contentHtml, $matches)) {
             $title = html_entity_decode(strip_tags($matches[1]), ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
             return preg_replace('/[^\p{L}\p{N}\s_-]+/u', '', mb_trim($title));
@@ -320,7 +322,7 @@ trait SnappyOperations
         return NULL;
     }
 
-    private static function extractTitleFromHtml(string $html): ?string
+    private function extractTitleFromHtml(string $html): ?string
     {
         preg_match('/<title>(.*?)<\/title>/i', $html, $matches);
 

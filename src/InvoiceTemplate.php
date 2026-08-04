@@ -2,6 +2,7 @@
 
 namespace Snawbar\InvoiceTemplate;
 
+use Illuminate\Support\Traits\Conditionable;
 use Snawbar\InvoiceTemplate\Traits\BladeOperations;
 use Snawbar\InvoiceTemplate\Traits\DatabaseOperations;
 use Snawbar\InvoiceTemplate\Traits\SnappyOperations;
@@ -9,20 +10,28 @@ use Snawbar\InvoiceTemplate\Traits\SnappyOperations;
 class InvoiceTemplate
 {
     use BladeOperations;
+    use Conditionable;
     use DatabaseOperations;
     use SnappyOperations;
 
-    private static $template;
+    private $template;
 
     public static function make($template = '*')
     {
-        self::$template = self::getTemplateFromDatabase($template);
+        $instance = static::newInstance();
 
+        $instance->template = $instance->getTemplateFromDatabase($template);
+
+        return $instance;
+    }
+
+    protected static function newInstance(): static
+    {
         return new static;
     }
 
-    private static function getTemplate()
+    private function getTemplate()
     {
-        return self::$template;
+        return $this->template;
     }
 }

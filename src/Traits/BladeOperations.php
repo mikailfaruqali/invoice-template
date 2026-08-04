@@ -6,59 +6,61 @@ use Illuminate\Support\Facades\Blade;
 
 trait BladeOperations
 {
-    private static $headerTemplate;
+    private $headerTemplate;
 
-    private static $contentTemplate;
+    private $contentTemplate;
 
-    private static $footerTemplate;
+    private $footerTemplate;
 
-    private static $disableHeaderTemplate;
+    private $disableHeaderTemplate;
 
-    private static $disabledFooterTemplate;
+    private $disabledFooterTemplate;
 
     public static function directPrint($templateName, $fallbackView, $data = [])
     {
-        return self::renderTemplate(optional(self::getTemplateFromDatabase($templateName))->content ?: $fallbackView, $data);
+        $instance = static::newInstance();
+
+        return $instance->renderTemplate(optional($instance->getTemplateFromDatabase($templateName))->content ?: $fallbackView, $data);
     }
 
-    private static function getDisableHeaderTemplate()
+    private function getDisableHeaderTemplate()
     {
-        return self::$disableHeaderTemplate;
+        return $this->disableHeaderTemplate;
     }
 
-    private static function getHeaderTemplate()
+    private function getHeaderTemplate()
     {
-        return self::$headerTemplate;
+        return $this->headerTemplate;
     }
 
-    private static function getContentTemplate()
+    private function getContentTemplate()
     {
-        return self::$contentTemplate;
+        return $this->contentTemplate;
     }
 
-    private static function getDisabledFooterTemplate()
+    private function getDisabledFooterTemplate()
     {
-        return self::$disabledFooterTemplate;
+        return $this->disabledFooterTemplate;
     }
 
-    private static function getFooterTemplate()
+    private function getFooterTemplate()
     {
-        return self::$footerTemplate;
+        return $this->footerTemplate;
     }
 
-    private static function loadTemplate()
+    private function loadTemplate()
     {
-        $template = self::getTemplate();
+        $template = $this->getTemplate();
 
-        self::$disableHeaderTemplate = $template->disable_header;
-        self::$disabledFooterTemplate = $template->disable_footer;
+        $this->disableHeaderTemplate = $template->disable_header;
+        $this->disabledFooterTemplate = $template->disable_footer;
 
-        self::$headerTemplate = self::renderTemplate($template->header, self::getHeaderData());
-        self::$contentTemplate = self::renderTemplate($template->content, self::getContentData());
-        self::$footerTemplate = self::renderTemplate($template->footer, self::getFooterData());
+        $this->headerTemplate = $this->renderTemplate($template->header, $this->getHeaderData());
+        $this->contentTemplate = $this->renderTemplate($template->content, $this->getContentData());
+        $this->footerTemplate = $this->renderTemplate($template->footer, $this->getFooterData());
     }
 
-    private static function renderTemplate($template, $data = [])
+    private function renderTemplate($template, $data = [])
     {
         return Blade::render($template, $data);
     }

@@ -9,11 +9,13 @@ trait DatabaseOperations
 {
     public static function create(Request $request, $templateId = NULL)
     {
-        return DB::table(self::getTableName())->updateOrInsert(['id' => $templateId], [
+        $instance = static::newInstance();
+
+        return DB::table($instance->getTableName())->updateOrInsert(['id' => $templateId], [
             'disabled_smart_shrinking' => $request->boolean('disabled_smart_shrinking', FALSE),
             'disable_header' => $request->boolean('disable_header', FALSE),
             'disable_footer' => $request->boolean('disable_footer', FALSE),
-            'page' => self::encodePages($request->page),
+            'page' => $instance->encodePages($request->page),
             'lang' => $request->lang,
             'header' => $request->header,
             'content' => $request->content,
@@ -31,8 +33,10 @@ trait DatabaseOperations
 
     public static function createDefault($page = ['*'], $options = [])
     {
-        return DB::table(self::getTableName())->insert(array_merge([
-            'page' => self::encodePages($page),
+        $instance = static::newInstance();
+
+        return DB::table($instance->getTableName())->insert(array_merge([
+            'page' => $instance->encodePages($page),
             'disabled_smart_shrinking' => TRUE,
             'disable_header' => FALSE,
             'disable_footer' => FALSE,
@@ -51,30 +55,30 @@ trait DatabaseOperations
 
     public static function deleteTemplate($templateId)
     {
-        return DB::table(self::getTableName())
+        return DB::table(static::newInstance()->getTableName())
             ->where('id', $templateId)
             ->delete();
     }
 
     public static function getTemplateById($templateId)
     {
-        return DB::table(self::getTableName())
+        return DB::table(static::newInstance()->getTableName())
             ->where('id', $templateId)
             ->firstOrFail();
     }
 
     public static function getAllTemplates()
     {
-        return DB::table(self::getTableName())
+        return DB::table(static::newInstance()->getTableName())
             ->orderByDesc('id')
             ->get();
     }
 
-    private static function getTemplateFromDatabase($page = '*')
+    private function getTemplateFromDatabase($page = '*')
     {
         $locale = app()->getLocale();
 
-        $builder = DB::table(self::getTableName())->where('is_active', TRUE)->orderByDesc('id');
+        $builder = DB::table($this->getTableName())->where('is_active', TRUE)->orderByDesc('id');
 
         return $builder->clone()->whereJsonContains('page', $page)->where('lang', $locale)->first()
             ?? $builder->clone()->whereJsonContains('page', $page)->where('lang', '*')->first()
@@ -82,14 +86,14 @@ trait DatabaseOperations
             ?? $builder->clone()->whereJsonContains('page', '*')->where('lang', '*')->firstOrFail();
     }
 
-    private static function getTableName()
+    private function getTableName()
     {
         return config('snawbar-invoice-template.table');
     }
 
-    private static function encodePages($pages)
+    private function encodePages($pages)
     {
-        if (self::isJson($pages)) {
+        if ($this->isJson($pages)) {
             return $pages;
         }
 
@@ -100,7 +104,7 @@ trait DatabaseOperations
         return json_encode([$pages]);
     }
 
-    private static function isJson($string): bool
+    private function isJson($string): bool
     {
         if (! is_string($string)) {
             return FALSE;
