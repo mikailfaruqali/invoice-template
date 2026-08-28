@@ -25,7 +25,7 @@
         body {
             height: 100vh;
             overflow: hidden;
-            font-family: '{{ $fontFamily }}', system-ui, sans-serif;
+            font-family: {{ $fontStack }};
             background: #1e1e1e;
         }
 

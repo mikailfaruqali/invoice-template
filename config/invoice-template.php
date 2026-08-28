@@ -204,32 +204,36 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Font Family Name
+    | Font Family Name / Stack
     |--------------------------------------------------------------------------
-    | The CSS font-family name to declare in @font-face and apply to body.
-    | Use this when the font file name differs from the intended family name.
-    | e.g. file is 'rtl-font.ttf' but family name should be 'NRT'.
+    | The CSS font-family value declared in @font-face and applied to body.
+    | Supports a single name or a full CSS font stack string.
+    | The first name in the stack is used as the @font-face family name.
     |
     | Supported formats:
-    | - String: 'NRT'
+    | - Single name:  'NRT'
+    | - Full stack:   "'NRT', 'Noto Sans Arabic', Tahoma, Arial, sans-serif"
     | - Array per language:
     |     'font-family' => [
-    |         'ckb'     => 'NRT',
-    |         'en'      => 'Outfit',
-    |         'default' => 'NRT',
+    |         'ckb'     => "'NRT', 'Noto Sans Arabic', Tahoma, Arial, sans-serif",
+    |         'en'      => "'Outfit', 'Segoe UI', system-ui, sans-serif",
+    |         'default' => "'NRT', 'Noto Sans Arabic', Tahoma, Arial, sans-serif",
     |     ]
     |
     */
-
     'font-family' => '',
 
     /*
     |--------------------------------------------------------------------------
-    | Locale Direction Key for Session
+    | Locale Direction Key / Resolver
     |--------------------------------------------------------------------------
-    | Session key used for text direction (LTR/RTL support) based on locale
+    | Session key used for text direction (LTR/RTL support) based on locale,
+    | or a Closure/callable returning 'ltr' or 'rtl' (receives current locale).
+    |
+    | Supported formats:
+    | - String (session key): 'direction'
+    | - Closure: fn ($locale) => in_array($locale, ['ar', 'ckb', 'fa', 'he', 'ur']) ? 'rtl' : 'ltr'
     |
     */
-
     'locale-direction-key' => 'direction',
 ];

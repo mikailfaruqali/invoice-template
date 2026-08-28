@@ -185,13 +185,14 @@ trait SnappyOperations
         return $this;
     }
 
-    private function renderViewer(string $pdfBytes, $title)
+    private function renderViewer(string $pdfBytes, $title): mixed
     {
         $fontDetails = $this->resolveFontDetails();
 
         $html = Blade::render('snawbar-invoice-template::pdf-viewer', [
             'font' => $fontDetails['base64'],
             'fontFamily' => $fontDetails['family'],
+            'fontStack' => $fontDetails['stack'],
             'filename' => $this->generateSecureFilename(),
             'base64' => base64_encode($pdfBytes),
             'dir' => $this->getLocaleDirection(),
@@ -258,14 +259,19 @@ trait SnappyOperations
         $fontPath = $this->getFont();
         $fontBase64 = NULL;
 
-        $explicitFamily = $this->resolveFontValue(config('snawbar-invoice-template.font-family'), $locale);
+        $explicitStack = $this->resolveFontValue(config('snawbar-invoice-template.font-family'), $locale);
         $fontVal = $this->resolveFontValue(config('snawbar-invoice-template.font'), $locale);
 
-        $fontFamily = match (TRUE) {
-            filled($explicitFamily) => $explicitFamily,
+        $primaryFamily = match (TRUE) {
+            filled($explicitStack) => trim(explode(',', $explicitStack)[0], " '\""),
             filled($fontPath) => pathinfo($fontPath, PATHINFO_FILENAME),
             is_string($fontVal) && filled($fontVal) => $fontVal,
             default => 'system-ui',
+        };
+
+        $fontStack = match (TRUE) {
+            filled($explicitStack) => $explicitStack,
+            default => sprintf("'%s', system-ui, sans-serif", $primaryFamily),
         };
 
         if (filled($fontPath) && is_file($fontPath) && is_readable($fontPath)) {
@@ -274,7 +280,8 @@ trait SnappyOperations
 
         return [
             'base64' => $fontBase64,
-            'family' => $fontFamily,
+            'family' => $primaryFamily,
+            'stack' => $fontStack,
         ];
     }
 
@@ -306,7 +313,13 @@ trait SnappyOperations
 
     private function getLocaleDirection()
     {
-        return session(config('snawbar-invoice-template.locale-direction-key'));
+        $direction = config('snawbar-invoice-template.locale-direction-key');
+
+        if (is_callable($direction)) {
+            return value($direction, $this->resolveLocale());
+        }
+
+        return session($direction);
     }
 
     private function setBinaryPath()
