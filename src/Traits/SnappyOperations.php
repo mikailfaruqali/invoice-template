@@ -3,6 +3,7 @@
 namespace Snawbar\InvoiceTemplate\Traits;
 
 use Barryvdh\Snappy\Facades\SnappyPdf;
+use Closure;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\File;
 
@@ -311,15 +312,15 @@ trait SnappyOperations
         };
     }
 
-    private function getLocaleDirection()
+    private function getLocaleDirection(): string
     {
         $direction = config('snawbar-invoice-template.locale-direction-key');
 
-        if (is_callable($direction)) {
-            return value($direction, $this->resolveLocale());
+        if ($direction instanceof Closure || is_array($direction)) {
+            return (string) call_user_func($direction, $this->resolveLocale());
         }
 
-        return session($direction);
+        return (string) session($direction, 'ltr');
     }
 
     private function setBinaryPath()
