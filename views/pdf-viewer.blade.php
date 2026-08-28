@@ -4,12 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{{ $title }}</title>
-    <style>
-        @font-face {
-            font-family: 'Vazirmatn';
-            src: url('data:font/truetype;base64,{{ $font }}') format('truetype');
-        }
+    @if (filled($font))
+        <style>
+            @font-face {
+                font-family: '{{ $fontFamily }}';
+                src: url('data:font/truetype;base64,{{ $font }}') format('truetype');
+                font-weight: normal;
+                font-style: normal;
+            }
+        </style>
+    @endif
 
+    <style>
         * {
             margin: 0;
             padding: 0;
@@ -19,7 +25,7 @@
         body {
             height: 100vh;
             overflow: hidden;
-            font-family: 'Vazirmatn', system-ui, sans-serif;
+            font-family: '{{ $fontFamily }}', system-ui, sans-serif;
             background: #1e1e1e;
         }
 

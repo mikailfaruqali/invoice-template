@@ -167,7 +167,17 @@ return [
     |--------------------------------------------------------------------------
     | Font Family Configuration
     |--------------------------------------------------------------------------
-    | Default font family for PDF generation
+    | Default font family name or font file name for PDF generation.
+    |
+    | Supported formats:
+    | - String (font name): 'Cairo', 'Roboto', 'Arial', or file 'vazir.ttf'
+    | - Array per language:
+    |     'font' => [
+    |         'ar' => 'Cairo',
+    |         'en' => 'Roboto',
+    |         'ku' => 'Vazirmatn.ttf',
+    |         'default' => 'Arial',
+    |     ]
     |
     */
 
@@ -177,11 +187,41 @@ return [
     |--------------------------------------------------------------------------
     | Font Directory Path
     |--------------------------------------------------------------------------
-    | Directory path containing custom font files for PDF generation
+    | Directory path containing custom font files for PDF generation (if using font files).
+    |
+    | Supported formats:
+    | - String: resource_path('fonts')
+    | - Array per language:
+    |     'font-dir' => [
+    |         'ar' => resource_path('fonts/ar'),
+    |         'en' => resource_path('fonts/en'),
+    |         'default' => resource_path('fonts'),
+    |     ]
     |
     */
 
     'font-dir' => '',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Font Family Name
+    |--------------------------------------------------------------------------
+    | The CSS font-family name to declare in @font-face and apply to body.
+    | Use this when the font file name differs from the intended family name.
+    | e.g. file is 'rtl-font.ttf' but family name should be 'NRT'.
+    |
+    | Supported formats:
+    | - String: 'NRT'
+    | - Array per language:
+    |     'font-family' => [
+    |         'ckb'     => 'NRT',
+    |         'en'      => 'Outfit',
+    |         'default' => 'NRT',
+    |     ]
+    |
+    */
+
+    'font-family' => '',
 
     /*
     |--------------------------------------------------------------------------

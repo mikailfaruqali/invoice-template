@@ -187,8 +187,11 @@ trait SnappyOperations
 
     private function renderViewer(string $pdfBytes, $title)
     {
+        $fontDetails = $this->resolveFontDetails();
+
         $html = Blade::render('snawbar-invoice-template::pdf-viewer', [
-            'font' => base64_encode(file_get_contents($this->getFont())),
+            'font' => $fontDetails['base64'],
+            'fontFamily' => $fontDetails['family'],
             'filename' => $this->generateSecureFilename(),
             'base64' => base64_encode($pdfBytes),
             'dir' => $this->getLocaleDirection(),
@@ -233,9 +236,72 @@ trait SnappyOperations
         return sprintf('%s_%s.pdf', now()->format('Y-m-d_H-i-s'), $this->getContentTitle() ?: bin2hex(random_bytes(8)));
     }
 
-    private function getFont()
+    private function resolveLocale(): string
     {
-        return $this->normalizePath(sprintf('%s/%s', config('snawbar-invoice-template.font-dir'), config('snawbar-invoice-template.font')));
+        return match (TRUE) {
+            property_exists($this, 'template') && isset($this->template->lang) && $this->template->lang !== '*' => (string) $this->template->lang,
+            default => (string) app()->getLocale(),
+        };
+    }
+
+    private function resolveFontValue($configValue, string $locale)
+    {
+        return match (is_array($configValue)) {
+            TRUE => $configValue[$locale] ?? $configValue['default'] ?? $configValue['*'] ?? NULL,
+            FALSE => $configValue,
+        };
+    }
+
+    private function resolveFontDetails(): array
+    {
+        $locale = $this->resolveLocale();
+        $fontPath = $this->getFont();
+        $fontBase64 = NULL;
+
+        $explicitFamily = $this->resolveFontValue(config('snawbar-invoice-template.font-family'), $locale);
+        $fontVal = $this->resolveFontValue(config('snawbar-invoice-template.font'), $locale);
+
+        $fontFamily = match (TRUE) {
+            filled($explicitFamily) => $explicitFamily,
+            filled($fontPath) => pathinfo($fontPath, PATHINFO_FILENAME),
+            is_string($fontVal) && filled($fontVal) => $fontVal,
+            default => 'system-ui',
+        };
+
+        if (filled($fontPath) && is_file($fontPath) && is_readable($fontPath)) {
+            $fontBase64 = base64_encode(file_get_contents($fontPath));
+        }
+
+        return [
+            'base64' => $fontBase64,
+            'family' => $fontFamily,
+        ];
+    }
+
+    private function getFont(): ?string
+    {
+        $locale = $this->resolveLocale();
+        $fontDir = $this->resolveFontValue(config('snawbar-invoice-template.font-dir'), $locale);
+        $font = $this->resolveFontValue(config('snawbar-invoice-template.font'), $locale);
+
+        if (blank($font)) {
+            return NULL;
+        }
+
+        if (is_string($font) && (is_file($font) || file_exists($font))) {
+            return $this->normalizePath($font);
+        }
+
+        if (blank($fontDir)) {
+            return NULL;
+        }
+
+        $fullPath = $this->normalizePath(sprintf('%s/%s', rtrim((string) $fontDir, '/\\'), ltrim((string) $font, '/\\')));
+
+        return match (is_file($fullPath)) {
+            TRUE => $fullPath,
+            FALSE => NULL,
+        };
     }
 
     private function getLocaleDirection()
