@@ -528,6 +528,7 @@
             initialize: function () {
                 PdfViewer.initialize();
                 ApplicationUI.setupPrintButton();
+                ApplicationUI.setupShareButton();
             },
         };
 
@@ -537,6 +538,22 @@
 
                 if (isMobile) {
                     DocumentElements.btnPrint.style.display = 'none';
+                }
+            },
+
+            setupShareButton: function () {
+                if (!navigator.share || !navigator.canShare) {
+                    DocumentElements.btnShare.style.display = 'none';
+                    return;
+                }
+
+                try {
+                    var testFile = new File([], 'test.pdf', { type: 'application/pdf' });
+                    if (!navigator.canShare({ files: [testFile] })) {
+                        DocumentElements.btnShare.style.display = 'none';
+                    }
+                } catch (e) {
+                    DocumentElements.btnShare.style.display = 'none';
                 }
             },
         };
