@@ -142,23 +142,6 @@
             }
         }
 
-        @keyframes pulse-once {
-            0% {
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6);
-            }
-
-            50% {
-                transform: scale(1.15);
-                box-shadow: 0 0 0 8px rgba(220, 38, 38, 0);
-            }
-
-            100% {
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
-            }
-        }
-
         #pdf-container {
             position: fixed;
             top: 52px;
@@ -194,12 +177,12 @@
 
         .pdf-page {
             display: block;
-            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
             flex-shrink: 0;
             background: #fff;
             max-width: 100%;
-            width: 100%;
             height: auto;
+            border-radius: 2px;
         }
 
         #loading {
@@ -382,37 +365,52 @@
         };
 
         var PdfRenderer = {
-            scale: function () {
+            getDisplayWidth: function () {
+                var container = DocumentElements.container;
+                var availableWidth = (container ? container.clientWidth : window.innerWidth) || window.innerWidth;
                 var isMobile = window.innerWidth < 768;
 
                 if (isMobile) {
-                    var containerWidth = window.innerWidth - 24;
-                    return (containerWidth / 595) * (window.devicePixelRatio || 1);
+                    return Math.max(availableWidth - 24, 280);
                 }
 
-                return 1.5;
+                return Math.min(availableWidth - 48, 880);
             },
 
             renderPage: function (num) {
                 return PdfViewerState.pdfDoc.getPage(num).then(function (page) {
+                    var unscaledViewport = page.getViewport({ scale: 1.0 });
+                    var targetWidth = PdfRenderer.getDisplayWidth();
+                    var cssScale = targetWidth / unscaledViewport.width;
+
                     var dpr = window.devicePixelRatio || 1;
-                    var scale = PdfRenderer.scale();
+                    var renderQualityFactor = Math.max(dpr, 2);
+                    var renderScale = cssScale * renderQualityFactor;
+
                     var viewport = page.getViewport({
-                        scale: scale,
+                        scale: renderScale,
                     });
 
                     var canvas = document.createElement('canvas');
                     canvas.className = 'pdf-page';
-                    canvas.width = viewport.width;
-                    canvas.height = viewport.height;
-                    canvas.style.width = viewport.width / dpr + 'px';
-                    canvas.style.height = viewport.height / dpr + 'px';
+                    canvas.width = Math.round(viewport.width);
+                    canvas.height = Math.round(viewport.height);
+
+                    var cssWidth = Math.round(unscaledViewport.width * cssScale);
+                    var cssHeight = Math.round(unscaledViewport.height * cssScale);
+                    canvas.style.width = cssWidth + 'px';
+                    canvas.style.height = cssHeight + 'px';
 
                     DocumentElements.container.appendChild(canvas);
 
+                    var ctx = canvas.getContext('2d', {
+                        alpha: false,
+                    });
+
                     return page.render({
-                        canvasContext: canvas.getContext('2d'),
+                        canvasContext: ctx,
                         viewport: viewport,
+                        intent: 'display',
                     }).promise;
                 });
             },
@@ -504,7 +502,6 @@
                         cMapUrl: CMAP_URL,
                         cMapPacked: true,
                         standardFontDataUrl: STANDARD_FONT,
-                        disableFontFace: true,
                     })
                     .promise.then(function (pdfDoc) {
                         PdfViewerState.pdfDoc = pdfDoc;
