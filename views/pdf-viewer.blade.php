@@ -502,6 +502,7 @@
                         cMapUrl: CMAP_URL,
                         cMapPacked: true,
                         standardFontDataUrl: STANDARD_FONT,
+                        disableFontFace: true,
                     })
                     .promise.then(function (pdfDoc) {
                         PdfViewerState.pdfDoc = pdfDoc;
