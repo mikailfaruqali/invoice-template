@@ -67,7 +67,7 @@ class InvoiceTemplateController extends Controller
             'paper_size' => ['in:A4,A5,A3'],
         ]);
 
-        $this->validatePasswordForContentChange($request);
+        $this->validatePasswordForContentChange($request, $templateId);
 
         return $this->create($request, $templateId);
     }
@@ -79,7 +79,7 @@ class InvoiceTemplateController extends Controller
 
     private function isContentChanged(Request $request, $templateId = NULL)
     {
-        if (blank($templateId) || blank($original = $this->getTemplate($templateId))) {
+        if (blank($templateId) || blank($original = $this->getTemplateById($templateId))) {
             return $this->hasAnyContent($request);
         }
 
@@ -91,9 +91,9 @@ class InvoiceTemplateController extends Controller
         return collect(['content', 'header', 'footer'])->contains(fn ($field) => filled($request->input($field)));
     }
 
-    private function validatePasswordForContentChange(Request $request)
+    private function validatePasswordForContentChange(Request $request, $templateId = NULL)
     {
-        throw_if($this->isContentChanged($request) && ! $this->isValidPassword($request->password), ValidationException::withMessages([
+        throw_if($this->isContentChanged($request, $templateId) && ! $this->isValidPassword($request->password), ValidationException::withMessages([
             'password' => 'The password is incorrect',
         ]));
     }

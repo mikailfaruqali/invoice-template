@@ -5,20 +5,15 @@ namespace Snawbar\InvoiceTemplate\Traits;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-/**
- * @method static static newInstance()
- */
 trait DatabaseOperations
 {
     public static function create(Request $request, $templateId = NULL)
     {
-        $instance = static::newInstance();
-
-        return DB::table($instance->getTableName())->updateOrInsert(['id' => $templateId], [
+        return DB::table(static::getTableName())->updateOrInsert(['id' => $templateId], [
             'disabled_smart_shrinking' => $request->boolean('disabled_smart_shrinking', FALSE),
             'disable_header' => $request->boolean('disable_header', FALSE),
             'disable_footer' => $request->boolean('disable_footer', FALSE),
-            'page' => $instance->encodePages($request->page),
+            'page' => static::encodePages($request->page),
             'lang' => $request->lang,
             'header' => $request->header,
             'content' => $request->content,
@@ -36,10 +31,8 @@ trait DatabaseOperations
 
     public static function createDefault($page = ['*'], $options = [])
     {
-        $instance = static::newInstance();
-
-        return DB::table($instance->getTableName())->insert(array_merge([
-            'page' => $instance->encodePages($page),
+        return DB::table(static::getTableName())->insert(array_merge([
+            'page' => static::encodePages($page),
             'disabled_smart_shrinking' => TRUE,
             'disable_header' => FALSE,
             'disable_footer' => FALSE,
@@ -58,45 +51,33 @@ trait DatabaseOperations
 
     public static function deleteTemplate($templateId)
     {
-        return DB::table(static::newInstance()->getTableName())
+        return DB::table(static::getTableName())
             ->where('id', $templateId)
             ->delete();
     }
 
     public static function getTemplateById($templateId)
     {
-        return DB::table(static::newInstance()->getTableName())
+        return DB::table(static::getTableName())
             ->where('id', $templateId)
-            ->firstOrFail();
+            ->first();
     }
 
     public static function getAllTemplates()
     {
-        return DB::table(static::newInstance()->getTableName())
+        return DB::table(static::getTableName())
             ->orderByDesc('id')
             ->get();
     }
 
-    private function getTemplateFromDatabase($page = '*')
-    {
-        $locale = app()->getLocale();
-
-        $builder = DB::table($this->getTableName())->where('is_active', TRUE)->orderByDesc('id');
-
-        return $builder->clone()->whereJsonContains('page', $page)->where('lang', $locale)->first()
-            ?? $builder->clone()->whereJsonContains('page', $page)->where('lang', '*')->first()
-            ?? $builder->clone()->whereJsonContains('page', '*')->where('lang', $locale)->first()
-            ?? $builder->clone()->whereJsonContains('page', '*')->where('lang', '*')->firstOrFail();
-    }
-
-    private function getTableName()
+    private static function getTableName()
     {
         return config('snawbar-invoice-template.table');
     }
 
-    private function encodePages($pages)
+    private static function encodePages($pages)
     {
-        if ($this->isJson($pages)) {
+        if (static::isJson($pages)) {
             return $pages;
         }
 
@@ -107,7 +88,7 @@ trait DatabaseOperations
         return json_encode([$pages]);
     }
 
-    private function isJson($string): bool
+    private static function isJson($string): bool
     {
         if (! is_string($string)) {
             return FALSE;
@@ -116,5 +97,17 @@ trait DatabaseOperations
         json_decode($string);
 
         return json_last_error() === JSON_ERROR_NONE;
+    }
+
+    private function getTemplateFromDatabase($page = '*')
+    {
+        $locale = app()->getLocale();
+
+        $builder = DB::table(static::getTableName())->where('is_active', TRUE)->orderByDesc('id');
+
+        return $builder->clone()->whereJsonContains('page', $page)->where('lang', $locale)->first()
+            ?? $builder->clone()->whereJsonContains('page', $page)->where('lang', '*')->first()
+            ?? $builder->clone()->whereJsonContains('page', '*')->where('lang', $locale)->first()
+            ?? $builder->clone()->whereJsonContains('page', '*')->where('lang', '*')->firstOrFail();
     }
 }

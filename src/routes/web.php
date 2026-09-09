@@ -11,6 +11,6 @@ Route::prefix(config('snawbar-invoice-template.route-prefix'))
         Route::get('/', 'index')->name('index');
         Route::get('/get-data', 'getData')->name('data');
         Route::post('/store', 'store')->name('store');
-        Route::put('/update/{id}', 'update')->name('update');
+        Route::match(['post', 'put'], '/update/{id}', 'update')->name('update');
         Route::delete('/delete/{id}', 'destroy')->name('destroy');
     });
