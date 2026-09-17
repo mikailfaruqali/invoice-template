@@ -30,6 +30,8 @@ trait SnappyOperations
 
     protected bool $useDefaultViewer = FALSE;
 
+    protected bool $requiresJavascriptForPageNumbers = FALSE;
+
     public static function raw(string $view, array $data = [], array $options = [])
     {
         $instance = static::newInstance();
@@ -225,6 +227,11 @@ trait SnappyOperations
             $pdfWrapper->setOption($option, $value);
         }
 
+        if ($this->requiresJavascriptForPageNumbers) {
+            $pdfWrapper->setOption('disable-javascript', FALSE);
+            $pdfWrapper->setOption('enable-javascript', TRUE);
+        }
+
         return $pdfWrapper;
     }
 
@@ -372,7 +379,75 @@ trait SnappyOperations
             return NULL;
         }
 
-        return $this->getFooterTemplate() ?: view($this->footerView, $this->getFooterData())->render();
+        $footer = $this->getFooterTemplate() ?: view($this->footerView, $this->getFooterData())->render();
+
+        return $this->applyPageNumberSubstitution($footer);
+    }
+
+    private function applyPageNumberSubstitution($html)
+    {
+        $hasTokens = str_contains($html, '{PAGENO}') || str_contains($html, '{TOPAGE}');
+
+        $html = strtr($html, [
+            '{PAGENO}' => '<span class="page"></span>',
+            '{TOPAGE}' => '<span class="topage"></span>',
+        ]);
+
+        if (! $hasTokens) {
+            return $html;
+        }
+
+        $this->requiresJavascriptForPageNumbers = TRUE;
+
+        $html = $this->injectPageNumberScript($html);
+
+        return $this->injectOnloadHandler($html);
+    }
+
+    private function injectPageNumberScript($html)
+    {
+        $script = <<<'HTML'
+            <script>
+                function snawbarSubstPageNumbers() {
+                    var vars = {};
+                    var query = window.location.search.substring(1).split('&');
+
+                    for (var i = 0; i < query.length; i++) {
+                        var pair = query[i].split('=');
+                        vars[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
+                    }
+
+                    ['page', 'topage'].forEach(function (className) {
+                        var spans = document.getElementsByClassName(className);
+
+                        for (var i = 0; i < spans.length; i++) {
+                            spans[i].textContent = vars[className];
+                        }
+                    });
+                }
+            </script>
+            HTML;
+
+        if (stripos($html, '</head>') !== FALSE) {
+            return preg_replace('/<\/head>/i', $script . '</head>', $html, 1);
+        }
+
+        return $script . $html;
+    }
+
+    private function injectOnloadHandler($html)
+    {
+        if (preg_match('/<body\b[^>]*>/i', $html, $matches)) {
+            $bodyTag = $matches[0];
+
+            if (stripos($bodyTag, 'onload=') !== FALSE) {
+                return preg_replace('/onload=(["\'])(.*?)\1/i', 'onload=$1snawbarSubstPageNumbers();$2$1', $html, 1);
+            }
+
+            return preg_replace('/<body\b([^>]*)>/i', '<body$1 onload="snawbarSubstPageNumbers()">', $html, 1);
+        }
+
+        return sprintf('<body onload="snawbarSubstPageNumbers()">%s</body>', $html);
     }
 
     private function getContentData()
