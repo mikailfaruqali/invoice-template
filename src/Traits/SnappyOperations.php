@@ -200,6 +200,7 @@ trait SnappyOperations
             'base64' => base64_encode($pdfBytes),
             'dir' => $this->getLocaleDirection(),
             'title' => $title,
+            'favicon' => $this->resolveFavicon(),
         ]);
 
         return response($html)->header('Content-Type', 'text/html');
@@ -317,6 +318,17 @@ trait SnappyOperations
             TRUE => $fullPath,
             FALSE => NULL,
         };
+    }
+
+    private function resolveFavicon(): ?string
+    {
+        $favicon = __DIR__ . '/../../assets/favicon.png';
+
+        if (! is_file($favicon) || ! is_readable($favicon)) {
+            return NULL;
+        }
+
+        return sprintf('data:image/png;base64,%s', base64_encode(file_get_contents($favicon)));
     }
 
     private function getLocaleDirection(): string
