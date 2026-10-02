@@ -236,4 +236,19 @@ return [
     |
     */
     'locale-direction-key' => 'direction',
+
+    /*
+    |--------------------------------------------------------------------------
+    | PDF Viewer Favicon
+    |--------------------------------------------------------------------------
+    | Favicon shown in the browser tab of the PDF viewer page.
+    | Local files are embedded as base64, anything else is used as a URL.
+    |
+    | Supported formats:
+    | - File path: public_path('assets/images/favicon.png')
+    | - URL:       'https://example.com/favicon.png'
+    | - Empty:     no favicon
+    |
+    */
+    'favicon' => '',
 ];

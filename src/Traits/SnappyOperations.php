@@ -322,13 +322,24 @@ trait SnappyOperations
 
     private function resolveFavicon(): ?string
     {
-        $favicon = __DIR__ . '/../../assets/favicon.png';
+        $favicon = config('snawbar-invoice-template.favicon');
 
-        if (! is_file($favicon) || ! is_readable($favicon)) {
+        if (blank($favicon)) {
             return NULL;
         }
 
-        return sprintf('data:image/png;base64,%s', base64_encode(file_get_contents($favicon)));
+        if (! is_file($favicon) || ! is_readable($favicon)) {
+            return $favicon;
+        }
+
+        $mime = match (strtolower(pathinfo($favicon, PATHINFO_EXTENSION))) {
+            'ico' => 'image/x-icon',
+            'svg' => 'image/svg+xml',
+            'jpg', 'jpeg' => 'image/jpeg',
+            default => 'image/png',
+        };
+
+        return sprintf('data:%s;base64,%s', $mime, base64_encode(file_get_contents($favicon)));
     }
 
     private function getLocaleDirection(): string
