@@ -97,61 +97,36 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | wkhtmltopdf Binary Path
+    | PDF Engine Binary Path
     |--------------------------------------------------------------------------
-    | This is the path to the wkhtmltopdf binary executable on your system.
-    | Choose the appropriate path based on your operating system.
-    | Windows: Use the 'windows' path
-    | Linux/Unix: Use the 'linux' path
+    | Path to the invoice-pdf engine. Leave it NULL to use the engine installed
+    | by "php artisan invoice-template:install":
+    |   storage/invoice-template/invoice-pdf (invoice-pdf.exe on Windows)
     |
     */
 
-    'binary' => [
-        'windows' => '"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"',
-        'linux' => '/usr/local/bin/wkhtmltopdf',
-    ],
+    'binary' => NULL,
 
     /*
     |--------------------------------------------------------------------------
-    | PDF Generation Options
+    | Chrome Executable Path
     |--------------------------------------------------------------------------
-    | These are the options passed to wkhtmltopdf for generating PDFs.
-    | Configure these settings to control PDF quality and performance.
+    | The engine renders with headless Chrome, Chromium, Edge or Brave and
+    | detects an installed browser automatically. Set a path to override it.
+    |
+    | Example:
+    |   'chrome' => '/usr/bin/chromium',
     |
     */
 
-    'options' => [
-        'encoding' => 'UTF-8',
-        'enable-local-file-access' => TRUE,
-        'disable-javascript' => TRUE,
-        'disable-plugins' => TRUE,
-        'disable-smart-shrinking' => TRUE,
-        'no-pdf-compression' => FALSE,
-        'disable-forms' => TRUE,
-        'disable-internal-links' => TRUE,
-        'disable-external-links' => TRUE,
-        'print-media-type' => TRUE,
-        'no-background' => FALSE,
-        'grayscale' => FALSE,
-        'load-error-handling' => 'ignore',
-        'load-media-error-handling' => 'ignore',
-        'javascript-delay' => 0,
-        'window-status' => '',
-        'minimum-font-size' => 8,
-        'zoom' => 1.0,
-        'viewport-size' => '1024x768',
-        'lowquality' => FALSE,
-        'dpi' => 150,
-        'image-dpi' => 600,
-        'image-quality' => 100,
-    ],
+    'chrome' => NULL,
 
     /*
     |--------------------------------------------------------------------------
     | PDF Generation Timeout
     |--------------------------------------------------------------------------
     |
-    | Maximum time (in seconds) to wait for wkhtmltopdf to generate a PDF.
+    | Maximum time (in seconds) to wait for the engine to generate a PDF.
     | This prevents the process from hanging indefinitely on complex documents
     | or when server resources are limited.
     |

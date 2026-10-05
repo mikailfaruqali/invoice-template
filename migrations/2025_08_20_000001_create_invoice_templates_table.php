@@ -14,6 +14,8 @@ return new class extends Migration
             $blueprint->longText('header')->nullable();
             $blueprint->longText('content')->nullable();
             $blueprint->longText('footer')->nullable();
+            $blueprint->longText('watermark')->nullable();
+            $blueprint->double('watermark_opacity')->default(0.3);
             $blueprint->tinyText('logo')->nullable();
             $blueprint->double('margin_top')->default(0);
             $blueprint->double('margin_bottom')->default(0);
@@ -27,6 +29,7 @@ return new class extends Migration
             $blueprint->boolean('disabled_smart_shrinking')->default(FALSE);
             $blueprint->boolean('disable_header')->default(FALSE);
             $blueprint->boolean('disable_footer')->default(FALSE);
+            $blueprint->boolean('disable_watermark')->default(FALSE);
             $blueprint->boolean('is_active')->default(TRUE);
         });
     }

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Snawbar\InvoiceTemplate;
 
 use Illuminate\Support\ServiceProvider;
+use Snawbar\InvoiceTemplate\Console\CheckCommand;
+use Snawbar\InvoiceTemplate\Console\InstallCommand;
 
 class InvoiceTemplateServiceProvider extends ServiceProvider
 {
@@ -14,6 +16,11 @@ class InvoiceTemplateServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(__DIR__ . '/routes/web.php');
 
         if ($this->app->runningInConsole()) {
+            $this->commands([
+                InstallCommand::class,
+                CheckCommand::class,
+            ]);
+
             $this->publishes([
                 __DIR__ . '/../config/invoice-template.php' => config_path('snawbar-invoice-template.php'),
                 __DIR__ . '/../migrations' => database_path('migrations'),

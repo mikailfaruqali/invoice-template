@@ -5,14 +5,14 @@ namespace Snawbar\InvoiceTemplate;
 use Illuminate\Support\Traits\Conditionable;
 use Snawbar\InvoiceTemplate\Traits\BladeOperations;
 use Snawbar\InvoiceTemplate\Traits\DatabaseOperations;
-use Snawbar\InvoiceTemplate\Traits\SnappyOperations;
+use Snawbar\InvoiceTemplate\Traits\PdfOperations;
 
 class InvoiceTemplate
 {
     use BladeOperations;
     use Conditionable;
     use DatabaseOperations;
-    use SnappyOperations;
+    use PdfOperations;
 
     private object $template;
 

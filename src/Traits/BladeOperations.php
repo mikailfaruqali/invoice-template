@@ -16,9 +16,13 @@ trait BladeOperations
 
     private ?string $footerTemplate = NULL;
 
+    private ?string $watermarkTemplate = NULL;
+
     private bool $disableHeaderTemplate = FALSE;
 
     private bool $disabledFooterTemplate = FALSE;
+
+    private bool $disabledWatermarkTemplate = FALSE;
 
     public static function directPrint($templateName, $fallbackView, $data = [])
     {
@@ -52,16 +56,28 @@ trait BladeOperations
         return $this->footerTemplate;
     }
 
+    private function getDisabledWatermarkTemplate()
+    {
+        return $this->disabledWatermarkTemplate;
+    }
+
+    private function getWatermarkTemplate()
+    {
+        return $this->watermarkTemplate;
+    }
+
     private function loadTemplate()
     {
         $template = $this->getTemplate();
 
         $this->disableHeaderTemplate = $template->disable_header;
         $this->disabledFooterTemplate = $template->disable_footer;
+        $this->disabledWatermarkTemplate = (bool) data_get($template, 'disable_watermark', FALSE);
 
         $this->headerTemplate = $this->renderTemplate($template->header, $this->getHeaderData());
         $this->contentTemplate = $this->renderTemplate($template->content, $this->getContentData());
         $this->footerTemplate = $this->renderTemplate($template->footer, $this->getFooterData());
+        $this->watermarkTemplate = $this->renderTemplate(data_get($template, 'watermark'), $this->getContentData());
     }
 
     private function renderTemplate($template, $data = [])

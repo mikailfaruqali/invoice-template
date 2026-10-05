@@ -4,7 +4,7 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/mikailfaruqali/invoice-template.svg?style=flat-square)](https://packagist.org/packages/mikailfaruqali/invoice-template)
 [![License](https://img.shields.io/packagist/l/mikailfaruqali/invoice-template.svg?style=flat-square)](https://packagist.org/packages/mikailfaruqali/invoice-template)
 
-A powerful Laravel package for generating professional PDF invoices with customizable templates. Features advanced header/footer support, multi-language capabilities, and a comprehensive template management system powered by wkhtmltopdf via Snappy PDF generator.
+A powerful Laravel package for generating professional PDF invoices with customizable templates. Features advanced header/footer support, multi-language capabilities, and a comprehensive template management system powered by a fast Go engine that renders with headless Chrome.
 
 ## Features
 
@@ -16,7 +16,9 @@ A powerful Laravel package for generating professional PDF invoices with customi
 - **Password-protected content editing** for security
 
 ### 📄 **PDF Generation**
-- **Professional PDF output** using wkhtmltopdf engine
+- **Professional PDF output** using a bundled Go engine and headless Chrome
+- **Watermarks** stamped over every page with adjustable opacity
+- **Page numbers** with `{PAGENO}` and `{TOPAGE}` in headers and footers
 - **Customizable headers and footers** with Blade template support
 - **Multiple paper sizes** (A4, A5, A3, Letter, Legal)
 - **Portrait and landscape orientations**
@@ -30,11 +32,11 @@ A powerful Laravel package for generating professional PDF invoices with customi
 - **Session-based direction configuration**
 
 ### ⚙️ **Advanced Configuration**
-- **Comprehensive PDF options** (DPI, image quality, compression, etc.)
+- **Lossless images** and modern CSS (flexbox, grid, web fonts)
 - **Custom font support** with font directory configuration
 - **Flexible middleware** for route protection
 - **Configurable table names** and route prefixes
-- **Cross-platform binary support** (Windows/Linux)
+- **Cross-platform engine** (Windows, Linux, macOS on amd64 and arm64)
 
 ### 🔒 **Security**
 - **Password protection** for template content modifications
@@ -48,7 +50,7 @@ A powerful Laravel package for generating professional PDF invoices with customi
 
 - PHP >= 7.4
 - Laravel >= 5.0
-- wkhtmltopdf binary installed on your system
+- Google Chrome, Chromium, Microsoft Edge or Brave installed on the server
 
 ### Step 1: Install the Package
 
@@ -56,20 +58,36 @@ A powerful Laravel package for generating professional PDF invoices with customi
 composer require mikailfaruqali/invoice-template
 ```
 
-### Step 2: Install wkhtmltopdf
+### Step 2: Install the PDF Engine
 
-#### Windows
-Download and install wkhtmltopdf from [official website](https://wkhtmltopdf.org/downloads.html)
+Download the engine for your operating system and architecture:
 
-#### Ubuntu/Debian
 ```bash
-sudo apt-get update
-sudo apt-get install wkhtmltopdf
+php artisan invoice-template:install
 ```
 
-#### CentOS/RHEL
+It is saved to `storage/invoice-template/invoice-pdf` (`invoice-pdf.exe` on Windows). Use `--force` to reinstall it, or `--tag=` to install a specific release.
+
+Without internet access, install it offline instead:
+
 ```bash
-sudo yum install wkhtmltopdf
+# from a release archive or binary copied to the server
+php artisan invoice-template:install --path=/path/to/invoice-pdf_linux_amd64.tar.gz
+
+# or build it from the package source (requires Go 1.23+)
+php artisan invoice-template:install --build
+```
+
+Then verify the engine and the browser it will use:
+
+```bash
+php artisan invoice-template:check
+```
+
+On a Linux server without a browser, install Chromium first, for example:
+
+```bash
+sudo apt-get install chromium
 ```
 
 ### Step 3: Publish Assets
@@ -88,15 +106,14 @@ This will publish:
 php artisan migrate
 ```
 
-### Step 5: Configure wkhtmltopdf Binary Path
+### Step 5: Configure the Engine (optional)
 
-Edit `config/snawbar-invoice-template.php`:
+The engine and browser are detected automatically. Override them in `config/snawbar-invoice-template.php` when needed:
 
 ```php
-'binary' => [
-    'windows' => '"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"',
-    'linux' => '/usr/local/bin/wkhtmltopdf',  // Adjust path as needed
-],
+'binary' => NULL,                 // NULL uses storage/invoice-template/invoice-pdf
+'chrome' => '/usr/bin/chromium',  // NULL auto-detects Chrome, Chromium, Edge or Brave
+'timeout' => 300,
 ```
 
 ## Configuration
@@ -120,35 +137,11 @@ return [
     // Database table name
     'table' => 'invoice_templates',
     
-    // PDF generation options
-    'options' => [
-        'encoding' => 'UTF-8',
-        'enable-local-file-access' => true,
-        'dpi' => 150,
-        'image-quality' => 75,
-        // ... more options
-    ],
+    // PDF engine
+    'binary' => NULL,
+    'chrome' => NULL,
+    'timeout' => 300,
 ];
-```
-
-### Advanced PDF Options
-
-```php
-'options' => [
-    'encoding' => 'UTF-8',
-    'enable-local-file-access' => true,
-    'disable-javascript' => true,
-    'disable-plugins' => true,
-    'print-media-type' => true,
-    'no-background' => false,
-    'grayscale' => false,
-    'dpi' => 150,
-    'image-dpi' => 150,
-    'image-quality' => 75,
-    'minimum-font-size' => 8,
-    'zoom' => 1.0,
-    'viewport-size' => '1024x768',
-],
 ```
 
 ## Usage
@@ -211,8 +204,6 @@ $pdf = InvoiceTemplate::make('invoice')
     ->headerData(['company' => $company])
     ->renderFooter('invoices.footer')
     ->footerData(['terms' => $terms])
-    ->setOption('margin-top', 60)
-    ->setOption('margin-bottom', 40)
     ->inline();
 ```
 
@@ -226,10 +217,24 @@ $pdf = InvoiceTemplate::make()
         'orientation' => 'portrait',
         'margin-top' => 50,
         'margin-bottom' => 30,
-        'dpi' => 300
+        'zoom' => 0.9,
     ])
     ->inline();
 ```
+
+Supported options: `page-size`, `page-width`, `page-height`, `orientation`, `margin-top`, `margin-bottom`, `margin-left`, `margin-right`, `header-spacing`, `footer-spacing`, `disable-smart-shrinking`, `zoom` and `watermark-opacity`. The template's own settings take priority over these.
+
+### Watermarks
+
+Each template has a **Watermark Content** field and an **Opacity** (0 – 1) in the template editor. The watermark is Blade HTML rendered with the content data and stamped over every page:
+
+```blade
+<div style="display:flex;align-items:center;justify-content:center;height:100vh">
+    <div style="font-size:110px;color:#c00;transform:rotate(-35deg)">{{ $invoice->status }}</div>
+</div>
+```
+
+Leave it empty for no watermark, or tick **Disable Watermark** (`disable_watermark` column) to turn it off while keeping its content.
 
 ### Working with Multiple Languages
 
@@ -396,6 +401,8 @@ CREATE TABLE `invoice_templates` (
   `header` longtext,                       -- Header template content
   `content` longtext,                      -- Main content template
   `footer` longtext,                       -- Footer template content
+  `watermark` longtext,                    -- Watermark template content
+  `watermark_opacity` double DEFAULT 0.3,  -- Watermark opacity (0 - 1)
   `logo` text,                            -- Logo path/URL
   `margin_top` double DEFAULT 0,          -- Top margin (mm)
   `margin_bottom` double DEFAULT 0,       -- Bottom margin (mm)
@@ -409,6 +416,7 @@ CREATE TABLE `invoice_templates` (
   `disabled_smart_shrinking` tinyint(1) DEFAULT 0,
   `disable_header` tinyint(1) DEFAULT 0,  -- Disable header rendering
   `disable_footer` tinyint(1) DEFAULT 0,  -- Disable footer rendering
+  `disable_watermark` tinyint(1) DEFAULT 0, -- Disable watermark rendering
   `is_active` tinyint(1) DEFAULT 1,       -- Template active status
   PRIMARY KEY (`id`)
 );
@@ -418,11 +426,13 @@ CREATE TABLE `invoice_templates` (
 
 ### Common Issues
 
-#### 1. wkhtmltopdf not found
+#### 1. PDF engine not found
 ```
-Error: The exit code was not zero: 127
+PDF engine not found at [.../storage/invoice-template/invoice-pdf]
 ```
-**Solution:** Ensure wkhtmltopdf is installed and the binary path is correctly configured.
+**Solution:** Run `php artisan invoice-template:install`, then `php artisan invoice-template:check`.
+
+If the check cannot find a browser, install Chrome or Chromium, or set its path in the `chrome` config key.
 
 #### 2. Permission denied when saving PDFs
 ```
@@ -454,7 +464,7 @@ axios.defaults.headers.common['X-CSRF-TOKEN'] =
 1. **Use template caching** for frequently used templates
 2. **Optimize images** before including in templates
 3. **Minimize CSS and HTML** in templates
-4. **Use appropriate DPI settings** based on your needs
+4. **Reference local images and fonts by absolute path** (for example `public_path(...)`); the engine serves them to Chrome without a web request
 
 ## Security Considerations
 

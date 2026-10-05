@@ -1,13 +1,13 @@
 {
     "name": "mikailfaruqali/invoice-template",
-    "description": "A powerful Laravel package for generating professional PDF invoices with customizable templates. Features advanced header/footer support, multi-language capabilities, and a comprehensive template management system powered by wkhtmltopdf via Snappy PDF generator.",
+    "description": "A powerful Laravel package for generating professional PDF invoices with customizable templates. Features advanced header/footer support, multi-language capabilities, and a comprehensive template management system powered by a fast Go engine that renders with headless Chrome.",
     "keywords": [
         "laravel",
         "invoice",
         "pdf",
         "template",
-        "snappy",
-        "wkhtmltopdf",
+        "chrome",
+        "headless-chrome",
         "invoice-generator",
         "pdf-generation"
     ],
@@ -22,8 +22,8 @@
     ],
     "require": {
         "php": ">=7.4",
-        "barryvdh/laravel-snappy": "^1.0",
-        "illuminate/contracts": ">=5.0"
+        "illuminate/contracts": ">=5.0",
+        "symfony/process": ">=5.0"
     },
     "require-dev": {
         "laravel/pint": "^1.14",

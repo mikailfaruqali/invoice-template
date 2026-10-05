@@ -18,3 +18,7 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+
+/dist
+/bin/invoice-pdf
+/bin/invoice-pdf.exe

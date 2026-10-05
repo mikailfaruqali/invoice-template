@@ -2,15 +2,17 @@
 
 namespace Snawbar\InvoiceTemplate\Traits;
 
-use Barryvdh\Snappy\Facades\SnappyPdf;
 use Closure;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\File;
+use RuntimeException;
+use Symfony\Component\Process\Process;
 
 /**
  * @method static static newInstance()
  */
-trait SnappyOperations
+trait PdfOperations
 {
     protected array $options = [];
 
@@ -30,14 +32,9 @@ trait SnappyOperations
 
     protected bool $useDefaultViewer = FALSE;
 
-    protected bool $requiresJavascriptForPageNumbers = FALSE;
-
     public static function raw(string $view, array $data = [], array $options = [])
     {
         $instance = static::newInstance();
-
-        $instance->setTimeout();
-        $instance->setBinaryPath();
 
         $config = (object) array_merge([
             'disabled_smart_shrinking' => TRUE,
@@ -54,73 +51,87 @@ trait SnappyOperations
         $view = Blade::render($view, $data);
         $contentTitle = $instance->extractTitleFromHtml($view);
 
-        $pdfWrapper = SnappyPdf::loadHTML($view)
-            ->setOption('disable-smart-shrinking', (bool) $config->disabled_smart_shrinking)
-            ->setOption('margin-top', $config->margin_top)
-            ->setOption('margin-right', $config->margin_right)
-            ->setOption('margin-left', $config->margin_left)
-            ->setOption('margin-bottom', $config->margin_bottom)
-            ->setOption('orientation', $config->orientation);
+        $pdf = $instance->generatePdf(['content' => $view], [
+            'disable-smart-shrinking' => (bool) $config->disabled_smart_shrinking,
+            'margin-top' => $config->margin_top,
+            'margin-right' => $config->margin_right,
+            'margin-left' => $config->margin_left,
+            'margin-bottom' => $config->margin_bottom,
+            'orientation' => $config->orientation,
+            ...($config->page_width
+                ? ['page-width' => $config->page_width, 'page-height' => $config->page_height]
+                : ['page-size' => $config->paper_size]),
+        ]);
 
-        when(
-            condition: $config->page_width,
-            value: function () use ($pdfWrapper, $config) {
-                $pdfWrapper->setOption('page-width', $config->page_width);
-                $pdfWrapper->setOption('page-height', $config->page_height);
-            },
-            default: function () use ($pdfWrapper, $config) {
-                $pdfWrapper->setOption('page-size', $config->paper_size);
-            },
-        );
+        return $instance->renderViewer($pdf, $contentTitle);
+    }
 
-        return $instance->renderViewer($pdfWrapper->output(), $contentTitle);
+    public static function binaryPath(): string
+    {
+        $binary = config('snawbar-invoice-template.binary');
+
+        return match (TRUE) {
+            is_string($binary) && filled($binary) => $binary,
+            default => storage_path(sprintf('invoice-template/%s', PHP_OS_FAMILY === 'Windows' ? 'invoice-pdf.exe' : 'invoice-pdf')),
+        };
+    }
+
+    public static function theme(): string
+    {
+        $theme = config('snawbar-invoice-template.theme', 'dark');
+
+        if ($theme instanceof Closure || is_array($theme)) {
+            $theme = call_user_func($theme, auth()->user());
+        }
+
+        return match (TRUE) {
+            $theme === TRUE, $theme === 'dark' => 'dark',
+            default => 'light',
+        };
+    }
+
+    public static function favicon(): ?string
+    {
+        $favicon = config('snawbar-invoice-template.favicon');
+
+        if (blank($favicon)) {
+            return NULL;
+        }
+
+        if (! is_file($favicon) || ! is_readable($favicon)) {
+            return $favicon;
+        }
+
+        $mime = match (strtolower(pathinfo($favicon, PATHINFO_EXTENSION))) {
+            'ico' => 'image/x-icon',
+            'svg' => 'image/svg+xml',
+            'jpg', 'jpeg' => 'image/jpeg',
+            default => 'image/png',
+        };
+
+        return sprintf('data:%s;base64,%s', $mime, base64_encode(file_get_contents($favicon)));
     }
 
     public function inline()
     {
-        $template = $this->getTemplate();
-
-        $orientation = request()->input('orientation', $template->orientation);
-
-        $pdf = $this->render()
-            ->setOption('disable-smart-shrinking', (bool) $template->disabled_smart_shrinking)
-            ->setOption('margin-top', $template->margin_top)
-            ->setOption('margin-right', $template->margin_right)
-            ->setOption('margin-left', $template->margin_left)
-            ->setOption('header-spacing', $template->header_space)
-            ->setOption('footer-spacing', $template->footer_space)
-            ->setOption('margin-bottom', $template->margin_bottom)
-            ->setOption('page-size', $template->paper_size)
-            ->setOption('orientation', $orientation);
+        $pdf = $this->render();
 
         if ($this->useDefaultViewer) {
-            return $pdf->inline($this->generateSecureFilename());
+            return response($pdf)
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', sprintf('inline; filename="%s"', $this->generateSecureFilename()));
         }
 
-        return $this->renderViewer($pdf->output(), $this->getContentTitle());
+        return $this->renderViewer($pdf, $this->getContentTitle());
     }
 
     public function save()
     {
         $this->ensureDirectoryExist($this->generatePath());
 
-        $template = $this->getTemplate();
-
-        $orientation = request()->input('orientation', $template->orientation);
-
         $fullPath = sprintf('%s/%s', $this->generatePath(), $this->generateSecureFilename());
 
-        $this->render()
-            ->setOption('disable-smart-shrinking', (bool) $template->disabled_smart_shrinking)
-            ->setOption('margin-top', $template->margin_top)
-            ->setOption('margin-right', $template->margin_right)
-            ->setOption('margin-left', $template->margin_left)
-            ->setOption('header-spacing', $template->header_space)
-            ->setOption('footer-spacing', $template->footer_space)
-            ->setOption('margin-bottom', $template->margin_bottom)
-            ->setOption('page-size', $template->paper_size)
-            ->setOption('orientation', $orientation)
-            ->save($fullPath);
+        File::put($fullPath, $this->render());
 
         return $fullPath;
     }
@@ -200,8 +211,8 @@ trait SnappyOperations
             'base64' => base64_encode($pdfBytes),
             'dir' => $this->getLocaleDirection(),
             'title' => $title,
-            'favicon' => $this->resolveFavicon(),
-            'theme' => $this->resolveTheme(),
+            'favicon' => static::favicon(),
+            'theme' => static::theme(),
         ]);
 
         return response($html)->header('Content-Type', 'text/html');
@@ -209,32 +220,121 @@ trait SnappyOperations
 
     private function render()
     {
-        $this->setTimeout();
-        $this->setBinaryPath();
         $this->loadTemplate();
 
         $this->contentHtml = $this->prepareContentHtml();
 
-        $pdfWrapper = SnappyPdf::loadHTML($this->contentHtml);
+        $template = $this->getTemplate();
 
-        if ($headerTemplate = $this->prepareHeaderHtml()) {
-            $pdfWrapper->setOption('header-html', $headerTemplate);
+        return $this->generatePdf([
+            'content' => $this->contentHtml,
+            'header-html' => $this->prepareHeaderHtml(),
+            'footer-html' => $this->prepareFooterHtml(),
+            'watermark-html' => $this->prepareWatermarkHtml(),
+        ], array_merge($this->options, [
+            'disable-smart-shrinking' => (bool) $template->disabled_smart_shrinking,
+            'margin-top' => $template->margin_top,
+            'margin-right' => $template->margin_right,
+            'margin-left' => $template->margin_left,
+            'header-spacing' => $template->header_space,
+            'footer-spacing' => $template->footer_space,
+            'margin-bottom' => $template->margin_bottom,
+            'page-size' => $template->paper_size,
+            'orientation' => request()->input('orientation', $template->orientation),
+            'watermark-opacity' => data_get($template, 'watermark_opacity'),
+        ]));
+    }
+
+    private function generatePdf(array $documents, array $options): string
+    {
+        $temporaryFiles = [];
+
+        try {
+            $command = [$this->resolveBinaryPath(), '--output', '-', '--quiet'];
+
+            if (filled($timeout = $this->getTimeout())) {
+                $command[] = '--timeout';
+                $command[] = (string) $timeout;
+            }
+
+            if (filled($chrome = config('snawbar-invoice-template.chrome'))) {
+                $command[] = '--chrome';
+                $command[] = $chrome;
+            }
+
+            foreach (array_filter($documents, 'filled') as $document => $html) {
+                $temporaryFiles[] = $path = $this->createTemporaryFile($html);
+                $command[] = sprintf('--%s', $document);
+                $command[] = $path;
+            }
+
+            foreach (Arr::only($options, $this->engineOptions()) as $option => $value) {
+                if (is_bool($value)) {
+                    if ($value) {
+                        $command[] = sprintf('--%s', $option);
+                    }
+
+                    continue;
+                }
+
+                if (filled($value)) {
+                    $command[] = sprintf('--%s', $option);
+                    $command[] = (string) $value;
+                }
+            }
+
+            $process = new Process($command);
+            $process->setTimeout($timeout);
+            $process->run();
+
+            throw_unless($process->isSuccessful(), RuntimeException::class, sprintf('Failed to generate PDF: %s', mb_trim($process->getErrorOutput())));
+
+            return $process->getOutput();
+        } finally {
+            File::delete($temporaryFiles);
         }
+    }
 
-        if ($footerTemplate = $this->prepareFooterHtml()) {
-            $pdfWrapper->setOption('footer-html', $footerTemplate);
-        }
+    private function engineOptions(): array
+    {
+        return [
+            'page-size',
+            'page-width',
+            'page-height',
+            'orientation',
+            'margin-top',
+            'margin-bottom',
+            'margin-left',
+            'margin-right',
+            'header-spacing',
+            'footer-spacing',
+            'disable-smart-shrinking',
+            'zoom',
+            'watermark-opacity',
+        ];
+    }
 
-        foreach ($this->configureOptions() as $option => $value) {
-            $pdfWrapper->setOption($option, $value);
-        }
+    private function resolveBinaryPath(): string
+    {
+        $binary = static::binaryPath();
 
-        if ($this->requiresJavascriptForPageNumbers) {
-            $pdfWrapper->setOption('disable-javascript', FALSE);
-            $pdfWrapper->setOption('enable-javascript', TRUE);
-        }
+        throw_unless(is_file($binary), RuntimeException::class, sprintf('PDF engine not found at [%s]. Run "php artisan invoice-template:install".', $binary));
 
-        return $pdfWrapper;
+        return $binary;
+    }
+
+    private function createTemporaryFile(string $html): string
+    {
+        $path = tempnam(sys_get_temp_dir(), 'invoice-template-');
+
+        File::put($path, $html);
+
+        return $path;
+    }
+
+    private function getTimeout()
+    {
+        return config('snawbar-invoice-template.timeout', 300);
     }
 
     private function generatePath()
@@ -321,42 +421,6 @@ trait SnappyOperations
         };
     }
 
-    private function resolveFavicon(): ?string
-    {
-        $favicon = config('snawbar-invoice-template.favicon');
-
-        if (blank($favicon)) {
-            return NULL;
-        }
-
-        if (! is_file($favicon) || ! is_readable($favicon)) {
-            return $favicon;
-        }
-
-        $mime = match (strtolower(pathinfo($favicon, PATHINFO_EXTENSION))) {
-            'ico' => 'image/x-icon',
-            'svg' => 'image/svg+xml',
-            'jpg', 'jpeg' => 'image/jpeg',
-            default => 'image/png',
-        };
-
-        return sprintf('data:%s;base64,%s', $mime, base64_encode(file_get_contents($favicon)));
-    }
-
-    private function resolveTheme(): string
-    {
-        $theme = config('snawbar-invoice-template.theme', 'dark');
-
-        if ($theme instanceof Closure || is_array($theme)) {
-            $theme = call_user_func($theme, auth()->user());
-        }
-
-        return match (TRUE) {
-            $theme === TRUE, $theme === 'dark' => 'dark',
-            default => 'light',
-        };
-    }
-
     private function getLocaleDirection(): string
     {
         $direction = config('snawbar-invoice-template.locale-direction-key');
@@ -366,21 +430,6 @@ trait SnappyOperations
         }
 
         return (string) session($direction, 'ltr');
-    }
-
-    private function setBinaryPath()
-    {
-        config(['snappy.pdf.binary' => config('snawbar-invoice-template.binary')[PHP_OS_FAMILY === 'Windows' ? 'windows' : 'linux']]);
-    }
-
-    private function setTimeout()
-    {
-        config(['snappy.pdf.timeout' => config('snawbar-invoice-template.timeout', 300)]);
-    }
-
-    private function configureOptions()
-    {
-        return array_merge($this->options, config('snawbar-invoice-template.options'));
     }
 
     private function normalizePath($path)
@@ -417,75 +466,16 @@ trait SnappyOperations
             return NULL;
         }
 
-        $footer = $this->getFooterTemplate() ?: view($this->footerView, $this->getFooterData())->render();
-
-        return $this->applyPageNumberSubstitution($footer);
+        return $this->getFooterTemplate() ?: view($this->footerView, $this->getFooterData())->render();
     }
 
-    private function applyPageNumberSubstitution($html)
+    private function prepareWatermarkHtml()
     {
-        $hasTokens = str_contains($html, '{PAGENO}') || str_contains($html, '{TOPAGE}');
-
-        $html = strtr($html, [
-            '{PAGENO}' => '<span class="page"></span>',
-            '{TOPAGE}' => '<span class="topage"></span>',
-        ]);
-
-        if (! $hasTokens) {
-            return $html;
+        if ($this->getDisabledWatermarkTemplate()) {
+            return NULL;
         }
 
-        $this->requiresJavascriptForPageNumbers = TRUE;
-
-        $html = $this->injectPageNumberScript($html);
-
-        return $this->injectOnloadHandler($html);
-    }
-
-    private function injectPageNumberScript($html)
-    {
-        $script = <<<'HTML'
-            <script>
-                function snawbarSubstPageNumbers() {
-                    var vars = {};
-                    var query = window.location.search.substring(1).split('&');
-
-                    for (var i = 0; i < query.length; i++) {
-                        var pair = query[i].split('=');
-                        vars[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
-                    }
-
-                    ['page', 'topage'].forEach(function (className) {
-                        var spans = document.getElementsByClassName(className);
-
-                        for (var i = 0; i < spans.length; i++) {
-                            spans[i].textContent = vars[className];
-                        }
-                    });
-                }
-            </script>
-            HTML;
-
-        if (stripos($html, '</head>') !== FALSE) {
-            return preg_replace('/<\/head>/i', $script . '</head>', $html, 1);
-        }
-
-        return $script . $html;
-    }
-
-    private function injectOnloadHandler($html)
-    {
-        if (preg_match('/<body\b[^>]*>/i', $html, $matches)) {
-            $bodyTag = $matches[0];
-
-            if (stripos($bodyTag, 'onload=') !== FALSE) {
-                return preg_replace('/onload=(["\'])(.*?)\1/i', 'onload=$1snawbarSubstPageNumbers();$2$1', $html, 1);
-            }
-
-            return preg_replace('/<body\b([^>]*)>/i', '<body$1 onload="snawbarSubstPageNumbers()">', $html, 1);
-        }
-
-        return sprintf('<body onload="snawbarSubstPageNumbers()">%s</body>', $html);
+        return $this->getWatermarkTemplate();
     }
 
     private function getContentData()
