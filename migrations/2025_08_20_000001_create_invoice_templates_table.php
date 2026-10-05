@@ -30,6 +30,8 @@ return new class extends Migration
             $blueprint->boolean('disable_header')->default(FALSE);
             $blueprint->boolean('disable_footer')->default(FALSE);
             $blueprint->boolean('disable_watermark')->default(FALSE);
+            $blueprint->boolean('header_first_page_only')->default(FALSE);
+            $blueprint->boolean('footer_last_page_only')->default(FALSE);
             $blueprint->boolean('is_active')->default(TRUE);
         });
     }

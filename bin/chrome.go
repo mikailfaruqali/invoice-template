@@ -350,6 +350,10 @@ func (cr *ChromeRenderer) renderPDF(htmlContent string, opts RenderOptions, page
 			return nil
 		}),
 		chromedp.ActionFunc(func(ctx context.Context) error {
+			script := fmt.Sprintf(`document.querySelectorAll('[data-band-spacer]').forEach((el) => { el.style.height = (parseFloat(el.dataset.bandSpacer) / %f) + 'in'; })`, scale)
+			return chromedp.Evaluate(script, nil).Do(ctx)
+		}),
+		chromedp.ActionFunc(func(ctx context.Context) error {
 			data, stream, err := page.PrintToPDF().
 				WithPrintBackground(true).
 				WithPaperWidth(opts.PaperWidthInches).

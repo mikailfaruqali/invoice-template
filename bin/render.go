@@ -7,6 +7,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/pdfcpu/pdfcpu/pkg/pdfcpu/types"
 )
 
 type geometry struct {
@@ -179,11 +181,13 @@ func (j *job) build(contentHTML, headerHTML, footerHTML, watermarkHTML string) (
 		name:      "header",
 		height:    g.headerHeight(),
 		placement: StampPlacement{Pos: "tc"},
+		onlyFirst: j.cfg.headerFirstPageOnly,
 	})
 	startBand(footerHTML, bandSpec{
 		name:      "footer",
 		height:    g.footerHeight(),
 		placement: StampPlacement{Pos: "bc"},
+		onlyLast:  j.cfg.footerLastPageOnly,
 	})
 
 	go func() {
@@ -194,12 +198,22 @@ func (j *job) build(contentHTML, headerHTML, footerHTML, watermarkHTML string) (
 		close(bandTotals)
 	}()
 
+	contentTop, contentBottom := g.marginTop, g.marginBottom
+	topSpacer, bottomSpacer := 0.0, 0.0
+
+	if headerHTML != "" && j.cfg.headerFirstPageOnly {
+		contentTop, topSpacer = g.headerSpacing, g.headerHeight()
+	}
+	if footerHTML != "" && j.cfg.footerLastPageOnly {
+		contentBottom, bottomSpacer = g.footerSpacing, g.footerHeight()
+	}
+
 	j.log("Rendering content... ")
-	contentBytes, err := j.renderer.RenderHTMLToPDFBytesCounted(contentHTML, RenderOptions{
+	contentBytes, err := j.renderer.RenderHTMLToPDFBytesCounted(insertBandSpacers(contentHTML, topSpacer, bottomSpacer), RenderOptions{
 		PaperWidthInches:   g.paperWidth,
 		PaperHeightInches:  g.paperHeight,
-		MarginTopInches:    g.marginTop,
-		MarginBottomInches: g.marginBottom,
+		MarginTopInches:    contentTop,
+		MarginBottomInches: contentBottom,
 		MarginLeftInches:   g.marginLeft,
 		MarginRightInches:  g.marginRight,
 		Scale:              j.cfg.zoom,
@@ -234,7 +248,7 @@ func (j *job) build(contentHTML, headerHTML, footerHTML, watermarkHTML string) (
 			return nil, 0, fmt.Errorf("%s produced %d pages for a %d page document; reduce the %s content or increase its margin",
 				b.spec.name, b.pages, totalPages, b.spec.name)
 		}
-		if err := comp.StampBandBytes(b.data, b.spec.placement, b.multi); err != nil {
+		if err := comp.StampBandBytes(b.data, b.spec.placement, b.multi, b.spec.pages(totalPages)); err != nil {
 			return nil, 0, err
 		}
 	}
@@ -268,6 +282,8 @@ var (
 	htmlBodyTagRe = regexp.MustCompile(`(?i)(^|[\s,(])(html|body)([\s,.:#\[>~+)]|$)`)
 	headOpenRe    = regexp.MustCompile(`(?i)<head[^>]*>`)
 	htmlOpenRe    = regexp.MustCompile(`(?i)<html[^>]*>`)
+	bodyOpenRe    = regexp.MustCompile(`(?i)<body\b[^>]*>`)
+	bodyCloseRe   = regexp.MustCompile(`(?i)</body\s*>`)
 )
 
 func rewriteHtmlBodySelectors(headHTML string) string {
@@ -348,6 +364,19 @@ type bandSpec struct {
 	name      string
 	height    float64
 	placement StampPlacement
+	onlyFirst bool
+	onlyLast  bool
+}
+
+func (spec bandSpec) pages(totalPages int) types.IntSet {
+	switch {
+	case spec.onlyFirst:
+		return types.IntSet{1: true}
+	case spec.onlyLast:
+		return types.IntSet{totalPages: true}
+	default:
+		return nil
+	}
 }
 
 type band struct {
@@ -384,6 +413,29 @@ func (j *job) renderBand(templateHTML string, totalPages int, spec bandSpec) (*b
 	j.log("Rendering %s... done\n", spec.name)
 
 	return &band{spec: spec, data: data, multi: multi, pages: pages}, nil
+}
+
+func insertBandSpacers(html string, top, bottom float64) string {
+	if top > 0 {
+		spacer := fmt.Sprintf(`<div data-band-spacer="%.4f" style="display:block;height:%.4fin;margin:0;padding:0;border:0"></div>`, top, top)
+		if loc := bodyOpenRe.FindStringIndex(html); loc != nil {
+			html = html[:loc[1]] + spacer + html[loc[1]:]
+		} else {
+			html = spacer + html
+		}
+	}
+
+	if bottom > 0 {
+		spacer := fmt.Sprintf(`<div data-band-spacer="%.4f" style="display:block;height:%.4fin;margin:0;padding:0;border:0;break-inside:avoid;page-break-inside:avoid"></div>`, bottom, bottom)
+		if locs := bodyCloseRe.FindAllStringIndex(html, -1); len(locs) > 0 {
+			last := locs[len(locs)-1]
+			html = html[:last[0]] + spacer + html[last[0]:]
+		} else {
+			html += spacer
+		}
+	}
+
+	return html
 }
 
 func buildWatermarkHTML(html string, opacity float64) string {

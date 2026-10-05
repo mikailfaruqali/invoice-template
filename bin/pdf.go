@@ -36,7 +36,7 @@ func NewComposerFromBytes(data []byte) (*Composer, error) {
 
 func (c *Composer) PageCount() int { return c.ctx.PageCount }
 
-func (c *Composer) StampBandBytes(bandBytes []byte, placement StampPlacement, multi bool) error {
+func (c *Composer) StampBandBytes(bandBytes []byte, placement StampPlacement, multi bool, pages types.IntSet) error {
 	desc := fmt.Sprintf("pos:%s, scale:1.0 abs, rot:0, off:%.2f %.2f",
 		placement.Pos, placement.OffsetX, placement.OffsetY)
 
@@ -54,7 +54,7 @@ func (c *Composer) StampBandBytes(bandBytes []byte, placement StampPlacement, mu
 		wm.PdfPageNrSrc = 1
 	}
 
-	if err := pdfcpu.AddWatermarks(c.ctx, nil, wm); err != nil {
+	if err := pdfcpu.AddWatermarks(c.ctx, pages, wm); err != nil {
 		return fmt.Errorf("failed to apply stamp: %w", err)
 	}
 	return nil

@@ -222,7 +222,7 @@ $pdf = InvoiceTemplate::make()
     ->inline();
 ```
 
-Supported options: `page-size`, `page-width`, `page-height`, `orientation`, `margin-top`, `margin-bottom`, `margin-left`, `margin-right`, `header-spacing`, `footer-spacing`, `disable-smart-shrinking`, `zoom` and `watermark-opacity`. The template's own settings take priority over these.
+Supported options: `page-size`, `page-width`, `page-height`, `orientation`, `margin-top`, `margin-bottom`, `margin-left`, `margin-right`, `header-spacing`, `footer-spacing`, `disable-smart-shrinking`, `zoom`, `watermark-opacity`, `header-first-page-only` and `footer-last-page-only`. The template's own settings take priority over these.
 
 ### Shared CSS Files
 
@@ -458,6 +458,8 @@ CREATE TABLE `invoice_templates` (
   `disable_header` tinyint(1) DEFAULT 0,  -- Disable header rendering
   `disable_footer` tinyint(1) DEFAULT 0,  -- Disable footer rendering
   `disable_watermark` tinyint(1) DEFAULT 0, -- Disable watermark rendering
+  `header_first_page_only` tinyint(1) DEFAULT 0, -- Draw the header on the first page only
+  `footer_last_page_only` tinyint(1) DEFAULT 0,  -- Draw the footer on the last page only
   `is_active` tinyint(1) DEFAULT 1,       -- Template active status
   PRIMARY KEY (`id`)
 );

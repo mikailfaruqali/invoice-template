@@ -22,6 +22,8 @@ Input / output:
   --header-html <path>           Header HTML, drawn inside the top margin of every page
   --footer-html <path>           Footer HTML, drawn inside the bottom margin of every page
   --watermark-html <path>        Watermark HTML, stamped over every page
+  --header-first-page-only       Draw the header on the first page only
+  --footer-last-page-only        Draw the footer on the last page only
 
 Page setup:
   --page-size <size>             A3, A4, A5, Letter or Legal (default: A4)
@@ -60,6 +62,8 @@ type config struct {
 	marginLeft, marginRight               string
 	headerSpacing, footerSpacing          string
 	disableSmartShrinking                 bool
+	headerFirstPageOnly                   bool
+	footerLastPageOnly                    bool
 	zoom                                  float64
 	watermarkOpacity                      float64
 	chromePath                            string
@@ -98,6 +102,8 @@ func parseFlags(cfg *config) error {
 	fs.StringVar(&cfg.headerSpacing, "header-spacing", "0", "")
 	fs.StringVar(&cfg.footerSpacing, "footer-spacing", "0", "")
 	fs.BoolVar(&cfg.disableSmartShrinking, "disable-smart-shrinking", false, "")
+	fs.BoolVar(&cfg.headerFirstPageOnly, "header-first-page-only", false, "")
+	fs.BoolVar(&cfg.footerLastPageOnly, "footer-last-page-only", false, "")
 	fs.Float64Var(&cfg.zoom, "zoom", 1.0, "")
 	fs.Float64Var(&cfg.watermarkOpacity, "watermark-opacity", 0.3, "")
 	fs.StringVar(&cfg.chromePath, "chrome", "", "")

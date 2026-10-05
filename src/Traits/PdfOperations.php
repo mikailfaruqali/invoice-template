@@ -294,6 +294,8 @@ trait PdfOperations
             'page-size' => $template->paper_size,
             'orientation' => request()->input('orientation', $template->orientation),
             'watermark-opacity' => data_get($template, 'watermark_opacity'),
+            'header-first-page-only' => (bool) data_get($template, 'header_first_page_only', FALSE),
+            'footer-last-page-only' => (bool) data_get($template, 'footer_last_page_only', FALSE),
         ]));
     }
 
@@ -363,6 +365,8 @@ trait PdfOperations
             'disable-smart-shrinking',
             'zoom',
             'watermark-opacity',
+            'header-first-page-only',
+            'footer-last-page-only',
         ];
     }
 

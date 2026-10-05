@@ -1520,21 +1520,25 @@
 
         .toast {
             position: fixed;
-            top: 16px;
-            right: 16px;
+            top: 20px;
+            right: 20px;
             z-index: 80;
-            max-width: min(380px, calc(100vw - 32px));
+            width: max-content;
+            min-width: 340px;
+            max-width: min(460px, calc(100vw - 40px));
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 12px 14px;
-            border-radius: 4px;
+            gap: 14px;
+            padding: 16px 16px 16px 18px;
+            border-radius: 6px;
             border: 1px solid var(--line);
-            border-left: 3px solid var(--primary);
+            border-left: 4px solid var(--primary);
             background: var(--surface);
             color: var(--text);
             box-shadow: var(--overlay-shadow);
-            font-size: 13px;
+            font-size: 15px;
+            font-weight: 500;
+            line-height: 1.45;
             transform: translateY(-12px);
             opacity: 0;
             transition:
@@ -1547,24 +1551,84 @@
             opacity: 1;
         }
 
+        .toast-icon {
+            width: 32px;
+            height: 32px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-soft);
+            color: var(--primary);
+        }
+
+        .toast-icon .icon {
+            width: 18px;
+            height: 18px;
+            stroke-width: 2.4;
+        }
+
         .toast-success {
             border-left-color: var(--success);
+        }
+
+        .toast-success .toast-icon {
+            background: var(--success-soft);
+            color: #10b981;
         }
 
         .toast-error {
             border-left-color: var(--danger);
         }
 
-        .toast-message {
-            flex: 1;
+        .toast-error .toast-icon {
+            background: var(--danger-soft);
+            color: var(--danger);
         }
 
-        .toast button {
+        .toast-message {
+            flex: 1;
+            min-width: 0;
+            overflow-wrap: anywhere;
+        }
+
+        .toast-close {
+            width: 32px;
+            height: 32px;
+            flex-shrink: 0;
             border: none;
+            border-radius: 4px;
             background: transparent;
             color: var(--muted);
             cursor: pointer;
             display: flex;
+            align-items: center;
+            justify-content: center;
+            transition:
+                background 0.15s ease,
+                color 0.15s ease;
+        }
+
+        .toast-close:hover {
+            background: var(--surface-2);
+            color: var(--text);
+        }
+
+        .toast-close .icon {
+            width: 18px;
+            height: 18px;
+        }
+
+        @media (max-width: 767px) {
+            .toast {
+                top: 12px;
+                left: 12px;
+                right: 12px;
+                width: auto;
+                min-width: 0;
+                max-width: none;
+            }
         }
 
         .swal2-popup {
@@ -2009,11 +2073,31 @@
                         </label>
                         <label class="toggle">
                             <span class="toggle-text">
+                                <strong>Header on First Page Only</strong>
+                                <small>Show the header on page 1 and skip it on the rest</small>
+                            </span>
+                            <span class="switch">
+                                <input type="checkbox" id="header-first-page-only" name="header_first_page_only" />
+                                <span class="switch-track"></span>
+                            </span>
+                        </label>
+                        <label class="toggle">
+                            <span class="toggle-text">
                                 <strong>Disable Footer</strong>
                                 <small>Print pages without the footer</small>
                             </span>
                             <span class="switch">
                                 <input type="checkbox" id="disable-footer" name="disable_footer" />
+                                <span class="switch-track"></span>
+                            </span>
+                        </label>
+                        <label class="toggle">
+                            <span class="toggle-text">
+                                <strong>Footer on Last Page Only</strong>
+                                <small>Show the footer on the last page and skip it on the rest</small>
+                            </span>
+                            <span class="switch">
+                                <input type="checkbox" id="footer-last-page-only" name="footer_last_page_only" />
                                 <span class="switch-track"></span>
                             </span>
                         </label>
@@ -2323,18 +2407,25 @@
 
                         toastElement.id = 'modalToast';
                         toastElement.className = 'toast toast-' + (type || 'info');
+                        var toastIcons = {
+                            success: '<polyline points="20 6 9 17 4 12"/>',
+                            error: '<line x1="12" y1="7" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+                            info: '<line x1="12" y1="11" x2="12" y2="17"/><line x1="12" y1="7" x2="12.01" y2="7"/>',
+                        };
+
                         toastElement.innerHTML =
-                            '<span class="toast-message">' +
+                            '<span class="toast-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">' +
+                            (toastIcons[type] || toastIcons.info) +
+                            '</svg></span><span class="toast-message">' +
                             UtilityFunctions.escapeHtml(message) +
-                            '</span><button type="button" aria-label="Close" onclick="this.parentElement.remove()">' +
-                            '<svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+                            '</span><button type="button" class="toast-close" aria-label="Close" onclick="this.parentElement.remove()">' +
+                            '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
                             '</button>';
 
                         document.body.appendChild(toastElement);
 
-                        requestAnimationFrame(function () {
-                            toastElement.classList.add('is-visible');
-                        });
+                        void toastElement.offsetWidth;
+                        toastElement.classList.add('is-visible');
 
                         setTimeout(function () {
                             toastElement.classList.remove('is-visible');
@@ -2720,8 +2811,8 @@
                         }
 
                         var parts = [
-                            ['Header', Number(templateItem.disable_header) !== 1 && templateItem.header],
-                            ['Footer', Number(templateItem.disable_footer) !== 1 && templateItem.footer],
+                            [Number(templateItem.header_first_page_only) === 1 ? 'Header (first page)' : 'Header', Number(templateItem.disable_header) !== 1 && templateItem.header],
+                            [Number(templateItem.footer_last_page_only) === 1 ? 'Footer (last page)' : 'Footer', Number(templateItem.disable_footer) !== 1 && templateItem.footer],
                             ['Watermark', Number(templateItem.disable_watermark) !== 1 && templateItem.watermark],
                         ]
                             .map(function (part) {
@@ -2814,6 +2905,8 @@
                             'disable-header': templateData.disable_header,
                             'disable-footer': templateData.disable_footer,
                             'disable-watermark': templateData.disable_watermark,
+                            'header-first-page-only': templateData.header_first_page_only,
+                            'footer-last-page-only': templateData.footer_last_page_only,
                             marginTop: templateData.margin_top,
                             marginBottom: templateData.margin_bottom,
                             marginLeft: templateData.margin_left,
