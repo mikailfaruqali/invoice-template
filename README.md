@@ -224,6 +224,26 @@ $pdf = InvoiceTemplate::make()
 
 Supported options: `page-size`, `page-width`, `page-height`, `orientation`, `margin-top`, `margin-bottom`, `margin-left`, `margin-right`, `header-spacing`, `footer-spacing`, `disable-smart-shrinking`, `zoom` and `watermark-opacity`. The template's own settings take priority over these.
 
+### Shared CSS Files
+
+Share one stylesheet between the content, header, footer and watermark instead of repeating `<style>` and `@font-face` in every template:
+
+```php
+$pdf = InvoiceTemplate::make('invoice')
+    ->renderContent('invoices.content')
+    ->contentData(['invoice' => $invoice])
+    ->cssFile(public_path('assets/css/print/invoice.css'))
+    ->inline();
+
+// several files at once
+InvoiceTemplate::make()->cssFiles([
+    public_path('assets/css/print/base.css'),
+    public_path('assets/css/print/invoice.css'),
+]);
+```
+
+The files are added at the top of each part's `<head>`, so a template's own styles still override them. Relative `url()` paths inside a CSS file (fonts, images) are resolved from the file's own folder.
+
 ### Watermarks
 
 Each template has a **Watermark Content** field and an **Opacity** (0 – 1) in the template editor. The watermark is Blade HTML rendered with the content data and stamped over every page:

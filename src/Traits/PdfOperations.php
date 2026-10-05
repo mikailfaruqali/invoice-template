@@ -32,6 +32,8 @@ trait PdfOperations
 
     protected bool $useDefaultViewer = FALSE;
 
+    protected array $cssFiles = [];
+
     public static function raw(string $view, array $data = [], array $options = [])
     {
         $instance = static::newInstance();
@@ -199,6 +201,26 @@ trait PdfOperations
         return $this;
     }
 
+    public function cssFile(string $path)
+    {
+        $path = $this->normalizePath($path);
+
+        if (! in_array($path, $this->cssFiles, TRUE)) {
+            $this->cssFiles[] = $path;
+        }
+
+        return $this;
+    }
+
+    public function cssFiles(array $paths)
+    {
+        foreach ($paths as $path) {
+            $this->cssFile($path);
+        }
+
+        return $this;
+    }
+
     private function renderViewer(string $pdfBytes, $title): mixed
     {
         $fontDetails = $this->resolveFontDetails();
@@ -226,12 +248,12 @@ trait PdfOperations
 
         $template = $this->getTemplate();
 
-        return $this->generatePdf([
+        return $this->generatePdf(array_map(fn ($html) => $this->injectSharedCss($html), [
             'content' => $this->contentHtml,
             'header-html' => $this->prepareHeaderHtml(),
             'footer-html' => $this->prepareFooterHtml(),
             'watermark-html' => $this->prepareWatermarkHtml(),
-        ], array_merge($this->options, [
+        ]), array_merge($this->options, [
             'disable-smart-shrinking' => (bool) $template->disabled_smart_shrinking,
             'margin-top' => $template->margin_top,
             'margin-right' => $template->margin_right,
@@ -321,6 +343,38 @@ trait PdfOperations
         throw_unless(is_file($binary), RuntimeException::class, sprintf('PDF engine not found at [%s]. Run "php artisan invoice-template:install".', $binary));
 
         return $binary;
+    }
+
+    private function injectSharedCss($html)
+    {
+        if (blank($html) || blank($this->cssFiles)) {
+            return $html;
+        }
+
+        $style = sprintf('<style>%s</style>', implode("\n", array_map(fn ($path) => $this->readCssFile($path), $this->cssFiles)));
+
+        return match (TRUE) {
+            preg_match('/<head\b[^>]*>/i', $html) === 1 => preg_replace('/<head\b[^>]*>/i', '$0' . addcslashes($style, '\\$'), $html, 1),
+            preg_match('/<html\b[^>]*>/i', $html) === 1 => preg_replace('/<html\b[^>]*>/i', '$0<head>' . addcslashes($style, '\\$') . '</head>', $html, 1),
+            default => $style . $html,
+        };
+    }
+
+    private function readCssFile(string $path): string
+    {
+        throw_unless(is_file($path) && is_readable($path), RuntimeException::class, sprintf('CSS file [%s] does not exist or is not readable.', $path));
+
+        $directory = dirname($path);
+
+        return preg_replace_callback('/url\(\s*([\'"]?)([^\'")]+)\1\s*\)/i', function ($matches) use ($directory) {
+            $url = mb_trim($matches[2]);
+
+            if (preg_match('#^(?:[a-z][a-z0-9+.-]*:|/|\\\\|\#)#i', $url) === 1) {
+                return $matches[0];
+            }
+
+            return sprintf('url("%s/%s")', $directory, preg_replace('#^(\./)+#', '', $url));
+        }, file_get_contents($path));
     }
 
     private function createTemporaryFile(string $html): string
