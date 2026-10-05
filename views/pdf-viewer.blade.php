@@ -183,8 +183,6 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
             flex-shrink: 0;
             background: #fff;
-            max-width: 100%;
-            height: auto;
             border-radius: 2px;
         }
 
@@ -321,6 +319,9 @@
             blob: null,
             url: null,
             pdfDoc: null,
+            renderId: 0,
+            renderedWidth: null,
+            renderedDpr: null,
         };
 
         var DocumentElements = {
@@ -380,27 +381,62 @@
                 return Math.min(availableWidth - 48, 880);
             },
 
-            renderPage: function (num) {
-                return PdfViewerState.pdfDoc.getPage(num).then(function (page) {
-                    var unscaledViewport = page.getViewport({ scale: 1.0 });
-                    var targetWidth = PdfRenderer.getDisplayWidth();
-                    var cssScale = targetWidth / unscaledViewport.width;
+            getDevicePixelRatio: function () {
+                return window.devicePixelRatio || 1;
+            },
 
-                    var dpr = window.devicePixelRatio || 1;
-                    var renderQualityFactor = Math.max(dpr, 2);
-                    var renderScale = cssScale * renderQualityFactor;
+            snapToDevicePixels: function (size, dpr, downOnly) {
+                var base = downOnly ? Math.floor(size) : Math.round(size);
+                var best = base;
+                var bestError = Infinity;
+
+                for (var offset = 0; offset < 8; offset++) {
+                    var candidates = downOnly ? [base - offset] : [base - offset, base + offset];
+
+                    for (var i = 0; i < candidates.length; i++) {
+                        var candidate = candidates[i];
+                        if (candidate <= 0) continue;
+
+                        var device = candidate * dpr;
+                        var error = Math.abs(device - Math.round(device));
+
+                        if (error < bestError - 1e-6) {
+                            best = candidate;
+                            bestError = error;
+                        }
+                    }
+
+                    if (bestError < 0.01) break;
+                }
+
+                return best;
+            },
+
+            renderPage: function (num, renderId) {
+                return PdfViewerState.pdfDoc.getPage(num).then(function (page) {
+                    if (renderId !== PdfViewerState.renderId) return;
+
+                    var dpr = PdfRenderer.getDevicePixelRatio();
+                    var baseViewport = page.getViewport({ scale: 1.0 });
+
+                    var cssWidth = PdfRenderer.snapToDevicePixels(PdfRenderer.getDisplayWidth(), dpr, true);
+                    var cssHeight = PdfRenderer.snapToDevicePixels(
+                        (cssWidth * baseViewport.height) / baseViewport.width,
+                        dpr,
+                        false
+                    );
+
+                    var pixelWidth = Math.round(cssWidth * dpr);
+                    var pixelHeight = Math.round(cssHeight * dpr);
 
                     var viewport = page.getViewport({
-                        scale: renderScale,
+                        scale: cssWidth / baseViewport.width,
                     });
 
                     var canvas = document.createElement('canvas');
                     canvas.className = 'pdf-page';
-                    canvas.width = Math.round(viewport.width);
-                    canvas.height = Math.round(viewport.height);
-
-                    var cssWidth = Math.round(unscaledViewport.width * cssScale);
-                    var cssHeight = Math.round(unscaledViewport.height * cssScale);
+                    canvas.width = pixelWidth;
+                    canvas.height = pixelHeight;
                     canvas.style.width = cssWidth + 'px';
                     canvas.style.height = cssHeight + 'px';
 
@@ -413,6 +449,7 @@
                     return page.render({
                         canvasContext: ctx,
                         viewport: viewport,
+                        transform: [pixelWidth / viewport.width, 0, 0, pixelHeight / viewport.height, 0, 0],
                         intent: 'display',
                     }).promise;
                 });
@@ -420,18 +457,42 @@
 
             renderAll: function () {
                 var total = PdfViewerState.pdfDoc.numPages;
+                var renderId = ++PdfViewerState.renderId;
                 var promise = Promise.resolve();
+
+                PdfViewerState.renderedWidth = PdfRenderer.getDisplayWidth();
+                PdfViewerState.renderedDpr = PdfRenderer.getDevicePixelRatio();
+                DocumentElements.container.innerHTML = '';
 
                 for (var i = 1; i <= total; i++) {
                     (function (num) {
                         promise = promise.then(function () {
+                            if (renderId !== PdfViewerState.renderId) return;
                             DocumentElements.loadingText.textContent = 'Page ' + num + ' of ' + total;
-                            return PdfRenderer.renderPage(num);
+                            return PdfRenderer.renderPage(num, renderId);
                         });
                     })(i);
                 }
 
                 return promise;
+            },
+
+            watchResize: function () {
+                var timer = null;
+
+                window.addEventListener('resize', function () {
+                    clearTimeout(timer);
+                    timer = setTimeout(function () {
+                        if (
+                            PdfRenderer.getDisplayWidth() === PdfViewerState.renderedWidth &&
+                            PdfRenderer.getDevicePixelRatio() === PdfViewerState.renderedDpr
+                        ) {
+                            return;
+                        }
+
+                        PdfRenderer.renderAll();
+                    }, 250);
+                });
             },
         };
 
@@ -513,6 +574,7 @@
                     })
                     .then(function () {
                         DocumentElements.loading.style.display = 'none';
+                        PdfRenderer.watchResize();
                         DocumentElements.btnPrint.addEventListener('click', PdfActions.print);
                         DocumentElements.btnDownload.addEventListener('click', PdfActions.download);
                         DocumentElements.btnShare.addEventListener('click', PdfActions.share);
