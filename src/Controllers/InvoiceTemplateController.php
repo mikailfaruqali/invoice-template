@@ -46,6 +46,7 @@ class InvoiceTemplateController extends Controller
             'margin_right' => ['numeric', 'min:0'],
             'header_space' => ['numeric', 'min:0'],
             'footer_space' => ['numeric', 'min:0'],
+            'page_number_space' => ['numeric', 'min:0'],
             'orientation' => ['in:portrait,landscape'],
             'paper_size' => ['in:A4,A5,A3'],
         ]);
@@ -72,6 +73,7 @@ class InvoiceTemplateController extends Controller
             'margin_right' => ['numeric', 'min:0'],
             'header_space' => ['numeric', 'min:0'],
             'footer_space' => ['numeric', 'min:0'],
+            'page_number_space' => ['numeric', 'min:0'],
             'orientation' => ['in:portrait,landscape'],
             'paper_size' => ['in:A4,A5,A3'],
         ]);

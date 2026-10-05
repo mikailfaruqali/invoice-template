@@ -204,8 +204,12 @@ $pdf = InvoiceTemplate::make('invoice')
     ->headerData(['company' => $company])
     ->renderFooter('invoices.footer')
     ->footerData(['terms' => $terms])
+    ->renderPageNumber('invoices.page-number')
+    ->renderWatermark('invoices.watermark')
     ->inline();
 ```
+
+`renderPageNumber()` / `pageNumberData()` and `renderWatermark()` / `watermarkData()` work like the header and footer: the template's own **Page Number** or **Watermark Content** field wins when it is filled, otherwise the view is used, and the **Disable Page Number** / **Disable Watermark** switches still turn them off. The watermark view receives the content data merged with `watermarkData()`.
 
 ### Custom PDF Options
 
@@ -273,7 +277,7 @@ Each template has a **Page Number** template, separate from the footer, that is 
 <div style="text-align: center; font-size: 11px">{PAGENO} / {TOPAGE}</div>
 ```
 
-It sits inside `margin_bottom` (8 mm by default, change it with `setOption('page-number-height', 10)`), with the footer drawn right above it. Turn it off with **Disable Page Number** (`disable_page_number` column).
+It has its own space below `margin_bottom` (the **Page Number** spacing field, `page_number_space`, 8 mm by default), so the footer keeps its full height and is drawn right above it. Turn it off with **Disable Page Number** (`disable_page_number` column).
 
 ### Watermarks
 
@@ -462,6 +466,7 @@ CREATE TABLE `invoice_templates` (
   `margin_right` double DEFAULT 0,        -- Right margin (mm)
   `header_space` double DEFAULT 0,        -- Header spacing (mm)
   `footer_space` double DEFAULT 0,        -- Footer spacing (mm)
+  `page_number_space` double DEFAULT 8,   -- Page number band height (mm)
   `orientation` enum('portrait','landscape') DEFAULT 'portrait',
   `paper_size` enum('A4','A5','A3','letter','legal') DEFAULT 'A4',
   `lang` varchar(255) DEFAULT 'en',       -- Language code

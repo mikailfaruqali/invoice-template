@@ -24,6 +24,7 @@ return new class extends Migration
             $blueprint->double('margin_right')->default(0);
             $blueprint->double('header_space')->default(0);
             $blueprint->double('footer_space')->default(0);
+            $blueprint->double('page_number_space')->default(8);
             $blueprint->enum('orientation', ['portrait', 'landscape'])->default('portrait');
             $blueprint->enum('paper_size', ['A4', 'A5', 'A3', 'letter', 'legal'])->default('A4');
             $blueprint->string('lang')->default('en');

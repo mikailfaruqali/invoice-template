@@ -2025,6 +2025,20 @@
                                         <span>mm</span>
                                     </div>
                                 </div>
+                                <div class="field">
+                                    <label for="pageNumberSpace">Page Number</label>
+                                    <div class="unit">
+                                        <input
+                                            type="number"
+                                            id="pageNumberSpace"
+                                            name="page_number_space"
+                                            step="0.1"
+                                            value="8"
+                                            class="input"
+                                        />
+                                        <span>mm</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -2949,6 +2963,7 @@
                             marginRight: templateData.margin_right,
                             headerSpace: templateData.header_space,
                             footerSpace: templateData.footer_space,
+                            pageNumberSpace: templateData.page_number_space,
                             header: templateData.header,
                             content: templateData.content,
                             footer: templateData.footer,

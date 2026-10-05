@@ -105,15 +105,15 @@ func (j *job) build(contentHTML, headerHTML, footerHTML, pageNumberHTML, waterma
 
 	pageNumberHeight := 0.0
 	if pageNumberHTML != "" {
-		if g.pageNumberHeight <= 0 || g.pageNumberHeight > g.marginBottom {
-			j.log("Skipping page number: margin-bottom leaves no room for it\n")
+		if g.pageNumberHeight <= 0 {
+			j.log("Skipping page number: page-number-height is 0\n")
 			pageNumberHTML = ""
 		} else {
 			pageNumberHeight = g.pageNumberHeight
 		}
 	}
 
-	footerHeight := g.footerHeight() - pageNumberHeight
+	footerHeight := g.footerHeight()
 
 	if headerHTML != "" && g.headerHeight() <= 0 {
 		j.log("Skipping header: margin-top leaves no room for it\n")
@@ -220,7 +220,7 @@ func (j *job) build(contentHTML, headerHTML, footerHTML, pageNumberHTML, waterma
 		close(bandTotals)
 	}()
 
-	contentTop, contentBottom := g.marginTop, max(g.marginBottom, pageNumberHeight)
+	contentTop, contentBottom := g.marginTop, g.marginBottom+pageNumberHeight
 	topSpacer, bottomSpacer := 0.0, 0.0
 
 	if headerHTML != "" && j.cfg.headerFirstPageOnly {
@@ -228,6 +228,12 @@ func (j *job) build(contentHTML, headerHTML, footerHTML, pageNumberHTML, waterma
 	}
 	if footerHTML != "" && j.cfg.footerLastPageOnly {
 		contentBottom, bottomSpacer = g.footerSpacing+pageNumberHeight, footerHeight
+	}
+
+	if g.paperHeight-contentTop-contentBottom <= 0.2 {
+		close(pageCountCh)
+		bandsWg.Wait()
+		return nil, 0, fmt.Errorf("margins and page number leave no room for content on a %.2fin tall page", g.paperHeight)
 	}
 
 	j.log("Rendering content... ")

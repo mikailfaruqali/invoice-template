@@ -21,7 +21,7 @@ Input / output:
   --output <path>                Output PDF file, or "-" for stdout (required)
   --header-html <path>           Header HTML, drawn inside the top margin of every page
   --footer-html <path>           Footer HTML, drawn inside the bottom margin of every page
-  --page-number-html <path>      Page number HTML, drawn at the very bottom of every page
+  --page-number-html <path>      Page number HTML, drawn in its own band at the bottom of every page
   --watermark-html <path>        Watermark HTML, stamped over every page
   --header-first-page-only       Draw the header on the first page only
   --footer-last-page-only        Draw the footer on the last page only
@@ -37,7 +37,7 @@ Page setup:
   --margin-right <dim>           Right margin (default: 0)
   --header-spacing <dim>         Gap between the header and the content (default: 0)
   --footer-spacing <dim>         Gap between the content and the footer (default: 0)
-  --page-number-height <dim>     Height of the page number band, inside margin-bottom (default: 8mm)
+  --page-number-height <dim>     Height of the page number band, added below margin-bottom (default: 8mm)
   --disable-smart-shrinking      Print at 100% instead of shrinking like wkhtmltopdf
                                  (80%, and down to 50% for content wider than the page)
   --zoom <n>                     Content zoom, 0.1 - 2.0 (default: 1.0)

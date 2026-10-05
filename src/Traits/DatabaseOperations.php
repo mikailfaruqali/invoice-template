@@ -33,6 +33,7 @@ trait DatabaseOperations
             'margin_right' => $request->margin_right,
             'header_space' => $request->header_space,
             'footer_space' => $request->footer_space,
+            'page_number_space' => $request->input('page_number_space', 8),
         ]);
     }
 
@@ -56,6 +57,7 @@ trait DatabaseOperations
             'margin_right' => 0,
             'header_space' => 0,
             'footer_space' => 0,
+            'page_number_space' => 8,
             'is_active' => TRUE,
         ], $options));
     }

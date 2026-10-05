@@ -30,6 +30,14 @@ trait PdfOperations
 
     protected array $footerData = [];
 
+    protected ?string $pageNumberView = NULL;
+
+    protected array $pageNumberData = [];
+
+    protected ?string $watermarkView = NULL;
+
+    protected array $watermarkData = [];
+
     protected bool $useDefaultViewer = FALSE;
 
     protected array $cssFiles = [];
@@ -203,6 +211,34 @@ trait PdfOperations
         return $this;
     }
 
+    public function renderPageNumber($view)
+    {
+        $this->pageNumberView = $view;
+
+        return $this;
+    }
+
+    public function pageNumberData($data = [])
+    {
+        $this->pageNumberData = $data;
+
+        return $this;
+    }
+
+    public function renderWatermark($view)
+    {
+        $this->watermarkView = $view;
+
+        return $this;
+    }
+
+    public function watermarkData($data = [])
+    {
+        $this->watermarkData = $data;
+
+        return $this;
+    }
+
     public function cssFile(string $path)
     {
         $path = $this->normalizePath($path);
@@ -297,6 +333,7 @@ trait PdfOperations
             'watermark-opacity' => data_get($template, 'watermark_opacity'),
             'header-first-page-only' => (bool) data_get($template, 'header_first_page_only', FALSE),
             'footer-last-page-only' => (bool) data_get($template, 'footer_last_page_only', FALSE),
+            'page-number-height' => data_get($template, 'page_number_space', 8),
         ]));
     }
 
@@ -590,20 +627,20 @@ trait PdfOperations
 
     private function preparePageNumberHtml()
     {
-        if ($this->getDisabledPageNumberTemplate()) {
+        if ($this->getDisabledPageNumberTemplate() || (blank($this->getPageNumberTemplate()) && blank($this->pageNumberView))) {
             return NULL;
         }
 
-        return $this->getPageNumberTemplate();
+        return $this->getPageNumberTemplate() ?: view($this->pageNumberView, $this->getPageNumberData())->render();
     }
 
     private function prepareWatermarkHtml()
     {
-        if ($this->getDisabledWatermarkTemplate()) {
+        if ($this->getDisabledWatermarkTemplate() || (blank($this->getWatermarkTemplate()) && blank($this->watermarkView))) {
             return NULL;
         }
 
-        return $this->getWatermarkTemplate();
+        return $this->getWatermarkTemplate() ?: view($this->watermarkView, $this->getWatermarkData())->render();
     }
 
     private function getContentData()
@@ -619,6 +656,16 @@ trait PdfOperations
     private function getFooterData()
     {
         return array_merge($this->footerData, $this->getTemplateDefaultData());
+    }
+
+    private function getPageNumberData()
+    {
+        return array_merge($this->pageNumberData, $this->getTemplateDefaultData());
+    }
+
+    private function getWatermarkData()
+    {
+        return array_merge($this->contentData, $this->watermarkData, $this->getTemplateDefaultData());
     }
 
     private function getTemplateDefaultData()
