@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"math"
 	"net"
 	"net/http"
 	"net/url"
@@ -341,9 +342,11 @@ func (cr *ChromeRenderer) renderPDF(htmlContent string, opts RenderOptions, page
 			if !opts.SmartShrink {
 				return nil
 			}
-			if factor, err := smartShrinkFactor(ctx, opts); err == nil {
-				scale *= factor
+			factor, err := smartShrinkFactor(ctx, opts)
+			if err != nil {
+				return err
 			}
+			scale = min(max(scale*factor, 0.1), 2.0)
 			return nil
 		}),
 		chromedp.ActionFunc(func(ctx context.Context) error {
@@ -424,32 +427,33 @@ func readStream(ctx context.Context, handle cdpio.StreamHandle) ([]byte, error) 
 
 const cssPixelsPerInch = 96.0
 
-const minSmartShrinkScale = 0.5
+const (
+	minSmartShrinkFactor = 1.25
+	maxSmartShrinkFactor = 2.0
+)
 
 func smartShrinkFactor(ctx context.Context, opts RenderOptions) (float64, error) {
-	paperWidth := opts.PaperWidthInches
-	if opts.Landscape {
-		paperWidth = opts.PaperHeightInches
-	}
-
-	printableInches := paperWidth - opts.MarginLeftInches - opts.MarginRightInches
-	if printableInches <= 0 {
+	printablePx := (opts.PaperWidthInches - opts.MarginLeftInches - opts.MarginRightInches) * cssPixelsPerInch
+	if printablePx <= 0 {
 		return 1.0, nil
 	}
-	printablePx := printableInches * cssPixelsPerInch
+
+	minWidth := printablePx * minSmartShrinkFactor
+	maxWidth := printablePx * maxSmartShrinkFactor
+	height := int64(math.Round(opts.PaperHeightInches * cssPixelsPerInch))
+
+	if err := emulation.SetDeviceMetricsOverride(int64(math.Round(minWidth)), height, 1, false).Do(ctx); err != nil {
+		return 1.0, err
+	}
+	defer emulation.ClearDeviceMetricsOverride().Do(ctx)
 
 	const script = `(() => {
-  const roots = [document.documentElement, document.body].filter(Boolean);
-  let widest = 0;
-  for (const r of roots) {
-    widest = Math.max(widest, r.scrollWidth || 0);
-  }
+  let widest = Math.max(document.documentElement.scrollWidth || 0, document.body ? document.body.scrollWidth : 0);
   for (const el of document.body ? document.body.querySelectorAll('*') : []) {
     const rect = el.getBoundingClientRect();
-    if (rect.width > 0) {
-      widest = Math.max(widest, rect.right);
+    if (rect.width > 0 && rect.height > 0) {
+      widest = Math.max(widest, rect.right + window.scrollX);
     }
-    widest = Math.max(widest, el.scrollWidth || 0);
   }
   return widest;
 })()`
@@ -458,11 +462,10 @@ func smartShrinkFactor(ctx context.Context, opts RenderOptions) (float64, error)
 	if err := chromedp.Evaluate(script, &widest).Do(ctx); err != nil {
 		return 1.0, err
 	}
-	if widest <= 0 || widest <= printablePx {
-		return 1.0, nil
-	}
 
-	return max(printablePx/widest, minSmartShrinkScale), nil
+	layoutWidth := min(max(widest, minWidth), maxWidth)
+
+	return printablePx / layoutWidth, nil
 }
 
 func waitForAssets(ctx context.Context) error {

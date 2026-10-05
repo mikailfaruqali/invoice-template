@@ -34,7 +34,8 @@ Page setup:
   --margin-right <dim>           Right margin (default: 0)
   --header-spacing <dim>         Gap between the header and the content (default: 0)
   --footer-spacing <dim>         Gap between the content and the footer (default: 0)
-  --disable-smart-shrinking      Do not shrink content that is wider than the page
+  --disable-smart-shrinking      Print at 100% instead of shrinking like wkhtmltopdf
+                                 (80%, and down to 50% for content wider than the page)
   --zoom <n>                     Content zoom, 0.1 - 2.0 (default: 1.0)
   --watermark-opacity <n>        Watermark opacity, 0.0 - 1.0 (default: 0.3)
 
