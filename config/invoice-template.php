@@ -251,4 +251,24 @@ return [
     |
     */
     'favicon' => '',
+
+    /*
+    |--------------------------------------------------------------------------
+    | PDF Viewer Theme
+    |--------------------------------------------------------------------------
+    | Color mode of the PDF viewer page: 'light' or 'dark'.
+    | Can also be a callable that receives the authenticated user (or NULL)
+    | and returns 'light', 'dark' or a boolean (TRUE = dark).
+    |
+    | Supported formats:
+    | - String:   'light' or 'dark'
+    | - Boolean:  TRUE (dark) or FALSE (light)
+    | - Callable: [App\Support\Appearance::class, 'pdfViewerTheme']
+    | - Closure:  fn ($user) => $user?->is_dark ? 'dark' : 'light'
+    |
+    | Prefer the [Class::class, 'method'] form so `php artisan config:cache`
+    | keeps working; closures cannot be cached.
+    |
+    */
+    'theme' => 'dark',
 ];

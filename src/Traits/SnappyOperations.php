@@ -201,6 +201,7 @@ trait SnappyOperations
             'dir' => $this->getLocaleDirection(),
             'title' => $title,
             'favicon' => $this->resolveFavicon(),
+            'theme' => $this->resolveTheme(),
         ]);
 
         return response($html)->header('Content-Type', 'text/html');
@@ -340,6 +341,20 @@ trait SnappyOperations
         };
 
         return sprintf('data:%s;base64,%s', $mime, base64_encode(file_get_contents($favicon)));
+    }
+
+    private function resolveTheme(): string
+    {
+        $theme = config('snawbar-invoice-template.theme', 'dark');
+
+        if ($theme instanceof Closure || is_array($theme)) {
+            $theme = call_user_func($theme, auth()->user());
+        }
+
+        return match (TRUE) {
+            $theme === TRUE, $theme === 'dark' => 'dark',
+            default => 'light',
+        };
     }
 
     private function getLocaleDirection(): string

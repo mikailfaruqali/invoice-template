@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html dir="{{ $dir }}">
+<html dir="{{ $dir }}" data-theme="{{ $theme }}">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="{{ $theme }}" />
     <title>{{ $title }}</title>
     @if (filled($favicon))
         <link rel="icon" href="{{ $favicon }}" />
@@ -19,6 +20,43 @@
     @endif
 
     <style>
+        :root {
+            color-scheme: light;
+            --viewer-bg: #e5e9f2;
+            --toolbar-bg: #ffffff;
+            --toolbar-border: #e5e9f2;
+            --title: #364a63;
+            --muted: #8094ae;
+            --page-shadow: 0 2px 12px rgba(54, 74, 99, 0.14);
+            --scrollbar: #dbdfea;
+            --scrollbar-hover: #b7c2d0;
+            --spinner-track: #dbdfea;
+            --primary: #6576ff;
+            --danger: #e85347;
+            --print-bg: #e6fcf6;
+            --print-fg: #1ee0ac;
+            --download-bg: #eef0ff;
+            --download-fg: #6576ff;
+            --share-bg: #fef8e7;
+            --share-fg: #f4bd0e;
+        }
+
+        :root[data-theme='dark'] {
+            color-scheme: dark;
+            --viewer-bg: #101924;
+            --toolbar-bg: #0d141d;
+            --toolbar-border: #3d444d;
+            --title: #ffffff;
+            --muted: #8094ae;
+            --page-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+            --scrollbar: rgba(139, 148, 158, 0.4);
+            --scrollbar-hover: #3c4d62;
+            --spinner-track: #3d444d;
+            --print-bg: #163a3a;
+            --download-bg: #252847;
+            --share-bg: #363422;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -29,7 +67,7 @@
             height: 100vh;
             overflow: hidden;
             font-family: {!! $fontStack !!};
-            background: #1e1e1e;
+            background: var(--viewer-bg);
         }
 
         #toolbar {
@@ -39,8 +77,8 @@
             right: 0;
             height: 52px;
             z-index: 999;
-            background: #161616;
-            border-bottom: 1px solid #2a2a2a;
+            background: var(--toolbar-bg);
+            border-bottom: 1px solid var(--toolbar-border);
             display: flex;
             align-items: center;
             padding: 0 14px;
@@ -52,11 +90,11 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            color: #666;
+            color: var(--muted);
         }
 
         #doc-title {
-            color: #e8e8e8;
+            color: var(--title);
             font-size: 14px;
             font-weight: 500;
             overflow: hidden;
@@ -108,22 +146,22 @@
         }
 
         .btn-print {
-            background: #2d4a3e;
-            color: #4ade80;
+            background: var(--print-bg);
+            color: var(--print-fg);
         }
 
         .btn-download {
-            background: #1e3a5f;
-            color: #60a5fa;
+            background: var(--download-bg);
+            color: var(--download-fg);
         }
 
         .btn-share {
-            background: #4a2d1e;
-            color: #fb923c;
+            background: var(--share-bg);
+            color: var(--share-fg);
         }
 
         #pdf-viewer-close-btn {
-            background: #dc2626;
+            background: var(--danger);
             color: #fff;
             animation: pulse-once 0.6s ease-out 0.3s both;
         }
@@ -131,17 +169,17 @@
         @keyframes pulse-once {
             0% {
                 transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6);
+                box-shadow: 0 0 0 0 rgba(232, 83, 71, 0.6);
             }
 
             50% {
                 transform: scale(1.15);
-                box-shadow: 0 0 0 8px rgba(220, 38, 38, 0);
+                box-shadow: 0 0 0 8px rgba(232, 83, 71, 0);
             }
 
             100% {
                 transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+                box-shadow: 0 0 0 0 rgba(232, 83, 71, 0);
             }
         }
 
@@ -153,7 +191,7 @@
             bottom: 0;
             overflow-y: auto;
             overflow-x: hidden;
-            background: #1e1e1e;
+            background: var(--viewer-bg);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -170,17 +208,17 @@
         }
 
         #pdf-container::-webkit-scrollbar-thumb {
-            background: #333;
+            background: var(--scrollbar);
             border-radius: 0;
         }
 
         #pdf-container::-webkit-scrollbar-thumb:hover {
-            background: #444;
+            background: var(--scrollbar-hover);
         }
 
         .pdf-page {
             display: block;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            box-shadow: var(--page-shadow);
             flex-shrink: 0;
             background: #fff;
             border-radius: 2px;
@@ -192,7 +230,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: #1e1e1e;
+            background: var(--viewer-bg);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -204,8 +242,8 @@
         #loading-spinner {
             width: 28px;
             height: 28px;
-            border: 2px solid #2a2a2a;
-            border-top-color: #60a5fa;
+            border: 2px solid var(--spinner-track);
+            border-top-color: var(--primary);
             border-radius: 50%;
             animation: spin 0.7s linear infinite;
         }
@@ -217,7 +255,7 @@
         }
 
         #loading-text {
-            color: #555;
+            color: var(--muted);
             font-size: 12px;
             letter-spacing: 0.04em;
         }
@@ -229,12 +267,12 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: #1e1e1e;
+            background: var(--viewer-bg);
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            color: #ef4444;
+            color: var(--danger);
             font-size: 13px;
         }
     </style>
@@ -423,7 +461,7 @@
                     var cssHeight = PdfRenderer.snapToDevicePixels(
                         (cssWidth * baseViewport.height) / baseViewport.width,
                         dpr,
-                        false
+                        false,
                     );
 
                     var pixelWidth = Math.round(cssWidth * dpr);
