@@ -440,7 +440,7 @@ func readStream(ctx context.Context, handle cdpio.StreamHandle) ([]byte, error) 
 const cssPixelsPerInch = 96.0
 
 const (
-	minSmartShrinkFactor = 1.25
+	minSmartShrinkFactor = 1.0
 	maxSmartShrinkFactor = 2.0
 )
 
