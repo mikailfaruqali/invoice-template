@@ -162,7 +162,12 @@
         }
 
         .btn-print {
+            display: none;
             color: var(--print-fg);
+        }
+
+        .btn-print.is-supported {
+            display: inline-flex;
         }
 
         .btn-download {
@@ -666,11 +671,24 @@
 
         var ApplicationUI = {
             setupPrintButton: function () {
-                var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-                if (isMobile) {
-                    DocumentElements.btnPrint.style.display = 'none';
+                if (ApplicationUI.canPrintDirectly()) {
+                    DocumentElements.btnPrint.classList.add('is-supported');
                 }
+            },
+
+            canPrintDirectly: function () {
+                var ua = navigator.userAgent || '';
+                var uaData = navigator.userAgentData;
+
+                if (typeof window.print !== 'function') return false;
+                if (uaData && uaData.mobile) return false;
+                if (/Android|iPhone|iPad|iPod|Mobile|webOS|BlackBerry|IEMobile|Opera Mini|Silk|Kindle|wv\)/i.test(ua)) return false;
+                if (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) return false;
+                if (/^((?!chrome|chromium|crios|fxios|edg|opr|android).)*safari/i.test(ua)) return false;
+                if (navigator.pdfViewerEnabled === false) return false;
+                if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches && !window.matchMedia('(any-pointer: fine)').matches) return false;
+
+                return true;
             },
 
             setupShareButton: function () {
