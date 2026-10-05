@@ -327,9 +327,9 @@ func (cr *ChromeRenderer) renderPDF(htmlContent string, opts RenderOptions, page
 	ctx, cancelTimeout := context.WithTimeout(ctx, timeout)
 	defer cancelTimeout()
 
-	scale := opts.Scale
-	if scale <= 0 {
-		scale = 1.0
+	zoom := opts.Scale
+	if zoom <= 0 {
+		zoom = 1.0
 	}
 
 	var pdfBuf []byte
@@ -346,11 +346,19 @@ func (cr *ChromeRenderer) renderPDF(htmlContent string, opts RenderOptions, page
 			if err != nil {
 				return err
 			}
-			scale = min(max(scale*factor, 0.1), 2.0)
+			zoom = min(max(zoom*factor, 0.1), 2.0)
 			return nil
 		}),
 		chromedp.ActionFunc(func(ctx context.Context) error {
-			script := fmt.Sprintf(`document.querySelectorAll('[data-band-spacer]').forEach((el) => { el.style.height = (parseFloat(el.dataset.bandSpacer) / %f) + 'in'; })`, scale)
+			script := fmt.Sprintf(`(() => {
+  const zoom = %f;
+  if (zoom !== 1) {
+    document.documentElement.style.setProperty('zoom', String(zoom), 'important');
+  }
+  document.querySelectorAll('[data-band-spacer]').forEach((el) => {
+    el.style.height = (parseFloat(el.dataset.bandSpacer) / zoom) + 'in';
+  });
+})()`, zoom)
 			return chromedp.Evaluate(script, nil).Do(ctx)
 		}),
 		chromedp.ActionFunc(func(ctx context.Context) error {
@@ -363,7 +371,7 @@ func (cr *ChromeRenderer) renderPDF(htmlContent string, opts RenderOptions, page
 				WithMarginLeft(opts.MarginLeftInches).
 				WithMarginRight(opts.MarginRightInches).
 				WithLandscape(opts.Landscape).
-				WithScale(scale).
+				WithScale(1).
 				WithDisplayHeaderFooter(false).
 				WithTransferMode(page.PrintToPDFTransferModeReturnAsStream).
 				Do(ctx)
@@ -452,14 +460,16 @@ func smartShrinkFactor(ctx context.Context, opts RenderOptions) (float64, error)
 	defer emulation.ClearDeviceMetricsOverride().Do(ctx)
 
 	const script = `(() => {
-  let widest = Math.max(document.documentElement.scrollWidth || 0, document.body ? document.body.scrollWidth : 0);
+  let left = 0;
+  let right = window.innerWidth;
   for (const el of document.body ? document.body.querySelectorAll('*') : []) {
     const rect = el.getBoundingClientRect();
     if (rect.width > 0 && rect.height > 0) {
-      widest = Math.max(widest, rect.right + window.scrollX);
+      left = Math.min(left, rect.left);
+      right = Math.max(right, rect.right);
     }
   }
-  return widest;
+  return Math.max(right - left, document.documentElement.scrollWidth || 0, document.body ? document.body.scrollWidth : 0);
 })()`
 
 	var widest float64

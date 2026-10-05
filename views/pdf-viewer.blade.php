@@ -459,6 +459,10 @@
                 return window.devicePixelRatio || 1;
             },
 
+            getSupersample: function (dpr) {
+                return dpr < 1.5 && PdfViewerState.pdfDoc.numPages <= 20 ? 2 : 1;
+            },
+
             snapToDevicePixels: function (size, dpr, downOnly) {
                 var base = downOnly ? Math.floor(size) : Math.round(size);
                 var best = base;
@@ -500,8 +504,9 @@
                         false,
                     );
 
-                    var pixelWidth = Math.round(cssWidth * dpr);
-                    var pixelHeight = Math.round(cssHeight * dpr);
+                    var supersample = PdfRenderer.getSupersample(dpr);
+                    var pixelWidth = Math.round(cssWidth * dpr) * supersample;
+                    var pixelHeight = Math.round(cssHeight * dpr) * supersample;
 
                     var viewport = page.getViewport({
                         scale: cssWidth / baseViewport.width,
