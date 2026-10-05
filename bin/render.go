@@ -16,6 +16,7 @@ type geometry struct {
 	marginTop, marginBottom      float64
 	marginLeft, marginRight      float64
 	headerSpacing, footerSpacing float64
+	pageNumberHeight             float64
 }
 
 func (g *geometry) headerHeight() float64 { return g.marginTop - g.headerSpacing }
@@ -59,6 +60,7 @@ func resolveGeometry(cfg *config) (*geometry, error) {
 		{"margin-right", cfg.marginRight, &g.marginRight},
 		{"header-spacing", cfg.headerSpacing, &g.headerSpacing},
 		{"footer-spacing", cfg.footerSpacing, &g.footerSpacing},
+		{"page-number-height", cfg.pageNumberHeight, &g.pageNumberHeight},
 	} {
 		v, err := ParseDimensionToInches(f.src)
 		if err != nil {
@@ -98,14 +100,26 @@ func (j *job) timeout() time.Duration {
 	return time.Duration(j.cfg.timeoutSeconds) * time.Second
 }
 
-func (j *job) build(contentHTML, headerHTML, footerHTML, watermarkHTML string) (*Composer, int, error) {
+func (j *job) build(contentHTML, headerHTML, footerHTML, pageNumberHTML, watermarkHTML string) (*Composer, int, error) {
 	g := j.geo
+
+	pageNumberHeight := 0.0
+	if pageNumberHTML != "" {
+		if g.pageNumberHeight <= 0 || g.pageNumberHeight > g.marginBottom {
+			j.log("Skipping page number: margin-bottom leaves no room for it\n")
+			pageNumberHTML = ""
+		} else {
+			pageNumberHeight = g.pageNumberHeight
+		}
+	}
+
+	footerHeight := g.footerHeight() - pageNumberHeight
 
 	if headerHTML != "" && g.headerHeight() <= 0 {
 		j.log("Skipping header: margin-top leaves no room for it\n")
 		headerHTML = ""
 	}
-	if footerHTML != "" && g.footerHeight() <= 0 {
+	if footerHTML != "" && footerHeight <= 0 {
 		j.log("Skipping footer: margin-bottom leaves no room for it\n")
 		footerHTML = ""
 	}
@@ -115,11 +129,11 @@ func (j *job) build(contentHTML, headerHTML, footerHTML, watermarkHTML string) (
 	}
 
 	var (
-		headerBand, footerBand *band
-		watermarkBytes         []byte
-		errs                   []error
-		mu                     sync.Mutex
-		bandsWg                sync.WaitGroup
+		bands          []*band
+		watermarkBytes []byte
+		errs           []error
+		mu             sync.Mutex
+		bandsWg        sync.WaitGroup
 	)
 
 	fail := func(err error) {
@@ -148,13 +162,37 @@ func (j *job) build(contentHTML, headerHTML, footerHTML, watermarkHTML string) (
 		}()
 	}
 
-	pageCountCh := make(chan int, 1)
-	bandTotals := make(chan int, 2)
+	specs := []struct {
+		html string
+		spec bandSpec
+	}{
+		{headerHTML, bandSpec{
+			name:      "header",
+			height:    g.headerHeight(),
+			placement: StampPlacement{Pos: "tc"},
+			onlyFirst: j.cfg.headerFirstPageOnly,
+		}},
+		{footerHTML, bandSpec{
+			name:      "footer",
+			height:    footerHeight,
+			placement: StampPlacement{Pos: "bc", OffsetY: InchesToPoints(pageNumberHeight)},
+			onlyLast:  j.cfg.footerLastPageOnly,
+		}},
+		{pageNumberHTML, bandSpec{
+			name:      "page number",
+			height:    pageNumberHeight,
+			placement: StampPlacement{Pos: "bc"},
+		}},
+	}
 
-	startBand := func(html string, spec bandSpec) {
-		if html == "" {
-			return
+	pageCountCh := make(chan int, 1)
+	bandTotals := make(chan int, len(specs))
+
+	for _, item := range specs {
+		if item.html == "" {
+			continue
 		}
+		html, spec := item.html, item.spec
 		bandsWg.Add(1)
 		go func() {
 			defer bandsWg.Done()
@@ -168,44 +206,28 @@ func (j *job) build(contentHTML, headerHTML, footerHTML, watermarkHTML string) (
 				return
 			}
 			mu.Lock()
-			if spec.name == "header" {
-				headerBand = b
-			} else {
-				footerBand = b
-			}
+			bands = append(bands, b)
 			mu.Unlock()
 		}()
 	}
 
-	startBand(headerHTML, bandSpec{
-		name:      "header",
-		height:    g.headerHeight(),
-		placement: StampPlacement{Pos: "tc"},
-		onlyFirst: j.cfg.headerFirstPageOnly,
-	})
-	startBand(footerHTML, bandSpec{
-		name:      "footer",
-		height:    g.footerHeight(),
-		placement: StampPlacement{Pos: "bc"},
-		onlyLast:  j.cfg.footerLastPageOnly,
-	})
-
 	go func() {
 		if n, ok := <-pageCountCh; ok {
-			bandTotals <- n
-			bandTotals <- n
+			for range specs {
+				bandTotals <- n
+			}
 		}
 		close(bandTotals)
 	}()
 
-	contentTop, contentBottom := g.marginTop, g.marginBottom
+	contentTop, contentBottom := g.marginTop, max(g.marginBottom, pageNumberHeight)
 	topSpacer, bottomSpacer := 0.0, 0.0
 
 	if headerHTML != "" && j.cfg.headerFirstPageOnly {
 		contentTop, topSpacer = g.headerSpacing, g.headerHeight()
 	}
 	if footerHTML != "" && j.cfg.footerLastPageOnly {
-		contentBottom, bottomSpacer = g.footerSpacing, g.footerHeight()
+		contentBottom, bottomSpacer = g.footerSpacing+pageNumberHeight, footerHeight
 	}
 
 	j.log("Rendering content... ")
@@ -240,10 +262,7 @@ func (j *job) build(contentHTML, headerHTML, footerHTML, watermarkHTML string) (
 		return nil, 0, errs[0]
 	}
 
-	for _, b := range []*band{headerBand, footerBand} {
-		if b == nil {
-			continue
-		}
+	for _, b := range bands {
 		if b.multi && b.pages != totalPages {
 			return nil, 0, fmt.Errorf("%s produced %d pages for a %d page document; reduce the %s content or increase its margin",
 				b.spec.name, b.pages, totalPages, b.spec.name)

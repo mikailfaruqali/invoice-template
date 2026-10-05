@@ -37,6 +37,7 @@ class InvoiceTemplateController extends Controller
             'header' => ['nullable', 'string'],
             'content' => ['nullable', 'string'],
             'footer' => ['nullable', 'string'],
+            'page_number' => ['nullable', 'string'],
             'watermark' => ['nullable', 'string'],
             'watermark_opacity' => ['numeric', 'between:0,1'],
             'margin_top' => ['numeric', 'min:0'],
@@ -62,6 +63,7 @@ class InvoiceTemplateController extends Controller
             'header' => ['nullable', 'string'],
             'content' => ['nullable', 'string'],
             'footer' => ['nullable', 'string'],
+            'page_number' => ['nullable', 'string'],
             'watermark' => ['nullable', 'string'],
             'watermark_opacity' => ['numeric', 'between:0,1'],
             'margin_top' => ['numeric', 'min:0'],
@@ -90,12 +92,12 @@ class InvoiceTemplateController extends Controller
             return $this->hasAnyContent($request);
         }
 
-        return collect(['content', 'header', 'footer', 'watermark'])->contains(fn ($field) => mb_trim($original->{$field}) !== mb_trim($request->input($field)));
+        return collect(['content', 'header', 'footer', 'page_number', 'watermark'])->contains(fn ($field) => mb_trim($original->{$field}) !== mb_trim($request->input($field)));
     }
 
     private function hasAnyContent(Request $request)
     {
-        return collect(['content', 'header', 'footer', 'watermark'])->contains(fn ($field) => filled($request->input($field)));
+        return collect(['content', 'header', 'footer', 'page_number', 'watermark'])->contains(fn ($field) => filled($request->input($field)));
     }
 
     private function validatePasswordForContentChange(Request $request, $templateId = NULL)

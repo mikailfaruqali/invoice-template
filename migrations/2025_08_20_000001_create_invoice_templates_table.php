@@ -14,6 +14,7 @@ return new class extends Migration
             $blueprint->longText('header')->nullable();
             $blueprint->longText('content')->nullable();
             $blueprint->longText('footer')->nullable();
+            $blueprint->longText('page_number')->nullable();
             $blueprint->longText('watermark')->nullable();
             $blueprint->double('watermark_opacity')->default(0.3);
             $blueprint->tinyText('logo')->nullable();
@@ -30,6 +31,7 @@ return new class extends Migration
             $blueprint->boolean('disable_header')->default(FALSE);
             $blueprint->boolean('disable_footer')->default(FALSE);
             $blueprint->boolean('disable_watermark')->default(FALSE);
+            $blueprint->boolean('disable_page_number')->default(FALSE);
             $blueprint->boolean('header_first_page_only')->default(FALSE);
             $blueprint->boolean('footer_last_page_only')->default(FALSE);
             $blueprint->boolean('is_active')->default(TRUE);

@@ -16,6 +16,8 @@ trait BladeOperations
 
     private ?string $footerTemplate = NULL;
 
+    private ?string $pageNumberTemplate = NULL;
+
     private ?string $watermarkTemplate = NULL;
 
     private bool $disableHeaderTemplate = FALSE;
@@ -23,6 +25,8 @@ trait BladeOperations
     private bool $disabledFooterTemplate = FALSE;
 
     private bool $disabledWatermarkTemplate = FALSE;
+
+    private bool $disabledPageNumberTemplate = FALSE;
 
     public static function directPrint($templateName, $fallbackView, $data = [])
     {
@@ -56,6 +60,16 @@ trait BladeOperations
         return $this->footerTemplate;
     }
 
+    private function getDisabledPageNumberTemplate()
+    {
+        return $this->disabledPageNumberTemplate;
+    }
+
+    private function getPageNumberTemplate()
+    {
+        return $this->pageNumberTemplate;
+    }
+
     private function getDisabledWatermarkTemplate()
     {
         return $this->disabledWatermarkTemplate;
@@ -73,10 +87,12 @@ trait BladeOperations
         $this->disableHeaderTemplate = $template->disable_header;
         $this->disabledFooterTemplate = $template->disable_footer;
         $this->disabledWatermarkTemplate = (bool) data_get($template, 'disable_watermark', FALSE);
+        $this->disabledPageNumberTemplate = (bool) data_get($template, 'disable_page_number', FALSE);
 
         $this->headerTemplate = $this->renderTemplate($template->header, $this->getHeaderData());
         $this->contentTemplate = $this->renderTemplate($template->content, $this->getContentData());
         $this->footerTemplate = $this->renderTemplate($template->footer, $this->getFooterData());
+        $this->pageNumberTemplate = $this->renderTemplate(data_get($template, 'page_number'), $this->getFooterData());
         $this->watermarkTemplate = $this->renderTemplate(data_get($template, 'watermark'), $this->getContentData());
     }
 

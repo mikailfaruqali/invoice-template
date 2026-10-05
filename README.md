@@ -222,7 +222,7 @@ $pdf = InvoiceTemplate::make()
     ->inline();
 ```
 
-Supported options: `page-size`, `page-width`, `page-height`, `orientation`, `margin-top`, `margin-bottom`, `margin-left`, `margin-right`, `header-spacing`, `footer-spacing`, `disable-smart-shrinking`, `zoom`, `watermark-opacity`, `header-first-page-only` and `footer-last-page-only`. The template's own settings take priority over these.
+Supported options: `page-size`, `page-width`, `page-height`, `orientation`, `margin-top`, `margin-bottom`, `margin-left`, `margin-right`, `header-spacing`, `footer-spacing`, `disable-smart-shrinking`, `zoom`, `watermark-opacity`, `header-first-page-only`, `footer-last-page-only` and `page-number-height` (default `8` mm). The template's own settings take priority over these.
 
 ### Shared CSS Files
 
@@ -264,6 +264,16 @@ InvoiceTemplate::make('invoice')
 ```
 
 Names work with or without the leading `--`. The values apply to the content, header, footer and watermark, and override any `:root` defaults the templates define. Passing `null` or an empty value removes a variable.
+
+### Page Numbers
+
+Each template has a **Page Number** template, separate from the footer, that is drawn at the very bottom of **every** page, even when the footer is set to the last page only:
+
+```blade
+<div style="text-align: center; font-size: 11px">{PAGENO} / {TOPAGE}</div>
+```
+
+It sits inside `margin_bottom` (8 mm by default, change it with `setOption('page-number-height', 10)`), with the footer drawn right above it. Turn it off with **Disable Page Number** (`disable_page_number` column).
 
 ### Watermarks
 
@@ -442,6 +452,7 @@ CREATE TABLE `invoice_templates` (
   `header` longtext,                       -- Header template content
   `content` longtext,                      -- Main content template
   `footer` longtext,                       -- Footer template content
+  `page_number` longtext,                  -- Page number template, drawn on every page
   `watermark` longtext,                    -- Watermark template content
   `watermark_opacity` double DEFAULT 0.3,  -- Watermark opacity (0 - 1)
   `logo` text,                            -- Logo path/URL
@@ -460,6 +471,7 @@ CREATE TABLE `invoice_templates` (
   `disable_watermark` tinyint(1) DEFAULT 0, -- Disable watermark rendering
   `header_first_page_only` tinyint(1) DEFAULT 0, -- Draw the header on the first page only
   `footer_last_page_only` tinyint(1) DEFAULT 0,  -- Draw the footer on the last page only
+  `disable_page_number` tinyint(1) DEFAULT 0,    -- Disable page number rendering
   `is_active` tinyint(1) DEFAULT 1,       -- Template active status
   PRIMARY KEY (`id`)
 );

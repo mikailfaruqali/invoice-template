@@ -2103,6 +2103,16 @@
                         </label>
                         <label class="toggle">
                             <span class="toggle-text">
+                                <strong>Disable Page Number</strong>
+                                <small>Print pages without the page number</small>
+                            </span>
+                            <span class="switch">
+                                <input type="checkbox" id="disable-page-number" name="disable_page_number" />
+                                <span class="switch-track"></span>
+                            </span>
+                        </label>
+                        <label class="toggle">
+                            <span class="toggle-text">
                                 <strong>Disable Watermark</strong>
                                 <small>Keep the watermark but don't print it</small>
                             </span>
@@ -2161,6 +2171,14 @@
                     <button type="button" class="tab" data-tab="footer" onclick="EditorTabs.activate('footer')">
                         Footer
                     </button>
+                    <button
+                        type="button"
+                        class="tab"
+                        data-tab="page_number"
+                        onclick="EditorTabs.activate('page_number')"
+                    >
+                        Page Number
+                    </button>
                     <button type="button" class="tab" data-tab="watermark" onclick="EditorTabs.activate('watermark')">
                         Watermark
                     </button>
@@ -2211,6 +2229,22 @@
                         oninput="FormValidation.showNone('footer')"
                     ></textarea>
                     <div id="footerError" class="field-error"></div>
+                </div>
+
+                <div class="panel" data-panel="page_number">
+                    <div class="panel-bar">
+                        <span>Blade HTML drawn at the very bottom of every page, below the footer</span>
+                        <span><code>{PAGENO}</code> <code>{TOPAGE}</code></span>
+                    </div>
+                    <textarea
+                        id="page_number"
+                        name="page_number"
+                        class="code"
+                        spellcheck="false"
+                        placeholder='<div style="text-align: center">{PAGENO} / {TOPAGE}</div>'
+                        oninput="FormValidation.showNone('page_number')"
+                    ></textarea>
+                    <div id="page_numberError" class="field-error"></div>
                 </div>
 
                 <div class="panel" data-panel="watermark">
@@ -2541,7 +2575,7 @@
                 };
 
                 var CodeEditors = {
-                    fields: ['header', 'content', 'footer', 'watermark'],
+                    fields: ['header', 'content', 'footer', 'page_number', 'watermark'],
                     instances: {},
                     initialize: function () {
                         CodeMirror.defineMode('blade-html', function (config) {
@@ -2813,6 +2847,7 @@
                         var parts = [
                             [Number(templateItem.header_first_page_only) === 1 ? 'Header (first page)' : 'Header', Number(templateItem.disable_header) !== 1 && templateItem.header],
                             [Number(templateItem.footer_last_page_only) === 1 ? 'Footer (last page)' : 'Footer', Number(templateItem.disable_footer) !== 1 && templateItem.footer],
+                            ['Page number', Number(templateItem.disable_page_number) !== 1 && templateItem.page_number],
                             ['Watermark', Number(templateItem.disable_watermark) !== 1 && templateItem.watermark],
                         ]
                             .map(function (part) {
@@ -2905,6 +2940,7 @@
                             'disable-header': templateData.disable_header,
                             'disable-footer': templateData.disable_footer,
                             'disable-watermark': templateData.disable_watermark,
+                            'disable-page-number': templateData.disable_page_number,
                             'header-first-page-only': templateData.header_first_page_only,
                             'footer-last-page-only': templateData.footer_last_page_only,
                             marginTop: templateData.margin_top,
@@ -2916,6 +2952,7 @@
                             header: templateData.header,
                             content: templateData.content,
                             footer: templateData.footer,
+                            page_number: templateData.page_number,
                             watermark: templateData.watermark,
                             watermarkOpacity: templateData.watermark_opacity,
                         };

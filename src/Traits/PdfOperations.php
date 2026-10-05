@@ -282,6 +282,7 @@ trait PdfOperations
             'content' => $this->contentHtml,
             'header-html' => $this->prepareHeaderHtml(),
             'footer-html' => $this->prepareFooterHtml(),
+            'page-number-html' => $this->preparePageNumberHtml(),
             'watermark-html' => $this->prepareWatermarkHtml(),
         ]), array_merge($this->options, [
             'disable-smart-shrinking' => (bool) $template->disabled_smart_shrinking,
@@ -367,6 +368,7 @@ trait PdfOperations
             'watermark-opacity',
             'header-first-page-only',
             'footer-last-page-only',
+            'page-number-height',
         ];
     }
 
@@ -584,6 +586,15 @@ trait PdfOperations
         }
 
         return $this->getFooterTemplate() ?: view($this->footerView, $this->getFooterData())->render();
+    }
+
+    private function preparePageNumberHtml()
+    {
+        if ($this->getDisabledPageNumberTemplate()) {
+            return NULL;
+        }
+
+        return $this->getPageNumberTemplate();
     }
 
     private function prepareWatermarkHtml()

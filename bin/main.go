@@ -21,6 +21,7 @@ Input / output:
   --output <path>                Output PDF file, or "-" for stdout (required)
   --header-html <path>           Header HTML, drawn inside the top margin of every page
   --footer-html <path>           Footer HTML, drawn inside the bottom margin of every page
+  --page-number-html <path>      Page number HTML, drawn at the very bottom of every page
   --watermark-html <path>        Watermark HTML, stamped over every page
   --header-first-page-only       Draw the header on the first page only
   --footer-last-page-only        Draw the footer on the last page only
@@ -36,6 +37,7 @@ Page setup:
   --margin-right <dim>           Right margin (default: 0)
   --header-spacing <dim>         Gap between the header and the content (default: 0)
   --footer-spacing <dim>         Gap between the content and the footer (default: 0)
+  --page-number-height <dim>     Height of the page number band, inside margin-bottom (default: 8mm)
   --disable-smart-shrinking      Print at 100% instead of shrinking like wkhtmltopdf
                                  (80%, and down to 50% for content wider than the page)
   --zoom <n>                     Content zoom, 0.1 - 2.0 (default: 1.0)
@@ -56,6 +58,7 @@ Behaviour:
 type config struct {
 	contentFile, outputFile               string
 	headerFile, footerFile, watermarkFile string
+	pageNumberFile, pageNumberHeight      string
 	pageSize, pageWidth, pageHeight       string
 	orientation                           string
 	marginTop, marginBottom               string
@@ -91,6 +94,8 @@ func parseFlags(cfg *config) error {
 	fs.StringVar(&cfg.headerFile, "header-html", "", "")
 	fs.StringVar(&cfg.footerFile, "footer-html", "", "")
 	fs.StringVar(&cfg.watermarkFile, "watermark-html", "", "")
+	fs.StringVar(&cfg.pageNumberFile, "page-number-html", "", "")
+	fs.StringVar(&cfg.pageNumberHeight, "page-number-height", "8", "")
 	fs.StringVar(&cfg.pageSize, "page-size", "A4", "")
 	fs.StringVar(&cfg.pageWidth, "page-width", "", "")
 	fs.StringVar(&cfg.pageHeight, "page-height", "", "")
@@ -197,8 +202,8 @@ func run() error {
 
 	go renderer.Start()
 
-	html := make([]string, 4)
-	for i, path := range []string{cfg.contentFile, cfg.headerFile, cfg.footerFile, cfg.watermarkFile} {
+	html := make([]string, 5)
+	for i, path := range []string{cfg.contentFile, cfg.headerFile, cfg.footerFile, cfg.pageNumberFile, cfg.watermarkFile} {
 		if html[i], err = readHTMLInput(path); err != nil {
 			return err
 		}
@@ -215,7 +220,7 @@ func run() error {
 
 	j := &job{cfg: &cfg, geo: geo, renderer: renderer, logf: logf}
 
-	comp, totalPages, err := j.build(html[0], html[1], html[2], html[3])
+	comp, totalPages, err := j.build(html[0], html[1], html[2], html[3], html[4])
 	if err != nil {
 		return err
 	}
