@@ -135,6 +135,7 @@ type RenderOptions struct {
 	Scale              float64
 	SmartShrink        bool
 	Timeout            time.Duration
+	ContentHeight      *float64
 }
 
 var (
@@ -362,6 +363,12 @@ func (cr *ChromeRenderer) renderPDF(htmlContent string, opts RenderOptions, page
 			return chromedp.Evaluate(script, nil).Do(ctx)
 		}),
 		chromedp.ActionFunc(func(ctx context.Context) error {
+			if opts.ContentHeight == nil {
+				return nil
+			}
+			return measureContentHeight(ctx, opts)
+		}),
+		chromedp.ActionFunc(func(ctx context.Context) error {
 			data, stream, err := page.PrintToPDF().
 				WithPrintBackground(true).
 				WithPaperWidth(opts.PaperWidthInches).
@@ -480,6 +487,38 @@ func smartShrinkFactor(ctx context.Context, opts RenderOptions) (float64, error)
 	layoutWidth := min(max(widest, minWidth), maxWidth)
 
 	return printablePx / layoutWidth, nil
+}
+
+func measureContentHeight(ctx context.Context, opts RenderOptions) error {
+	printablePx := (opts.PaperWidthInches - opts.MarginLeftInches - opts.MarginRightInches) * cssPixelsPerInch
+	height := int64(math.Round(opts.PaperHeightInches * cssPixelsPerInch))
+
+	if err := emulation.SetDeviceMetricsOverride(int64(math.Round(printablePx)), height, 1, false).Do(ctx); err != nil {
+		return err
+	}
+	defer emulation.ClearDeviceMetricsOverride().Do(ctx)
+
+	var measured float64
+	const script = `(() => {
+  let bottom = 0;
+  for (const el of document.body ? document.body.querySelectorAll('*') : []) {
+    if (getComputedStyle(el).position === 'fixed') {
+      continue;
+    }
+    const rect = el.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) {
+      bottom = Math.max(bottom, rect.bottom + window.scrollY);
+    }
+  }
+  return Math.ceil(bottom);
+})()`
+
+	if err := chromedp.Evaluate(script, &measured).Do(ctx); err != nil {
+		return err
+	}
+
+	*opts.ContentHeight = measured / cssPixelsPerInch
+	return nil
 }
 
 func waitForAssets(ctx context.Context) error {

@@ -42,7 +42,8 @@ Page setup:
                                  (by default it is shrunk just enough to fit, down to 50%)
   --zoom <n>                     Content zoom, 0.1 - 2.0 (default: 1.0)
   --watermark-opacity <n>        Watermark opacity, 0.0 - 1.0 (default: 0.3)
-  --copies <n>                   Place n copies of each page on one sheet when they fit (default: 1)
+  --copies <n>                   Place n copies of each page on one sheet when they fit; a short
+                                 single-page document is stacked on its own paper (default: 1)
   --sheet-size <size>            Sheet the copies are placed on, A3, A4, A5, Letter or Legal (default: A4)
 
   Dimensions accept mm, cm, in, pt or px; a bare number is millimetres.
@@ -224,7 +225,7 @@ func run() error {
 		}
 	}
 
-	j := &job{cfg: &cfg, geo: geo, renderer: renderer, logf: logf}
+	j := &job{cfg: &cfg, geo: geo, renderer: renderer, logf: logf, html: [5]string(html)}
 
 	comp, totalPages, err := j.build(html[0], html[1], html[2], html[3], html[4])
 	if err != nil {

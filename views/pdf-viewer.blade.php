@@ -112,7 +112,14 @@
             flex: 1;
             min-width: 0;
             unicode-bidi: plaintext;
-            text-align: start;
+        }
+
+        [dir='rtl'] #doc-title {
+            text-align: right;
+        }
+
+        [dir='ltr'] #doc-title {
+            text-align: left;
         }
 
         .actions {

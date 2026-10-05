@@ -88,6 +88,12 @@ type job struct {
 	renderer *ChromeRenderer
 	logf     func(string, ...interface{})
 	mu       sync.Mutex
+
+	html          [5]string
+	contentTop    float64
+	contentBottom float64
+	contentHeight float64
+	bottomBands   bool
 }
 
 func (j *job) log(format string, args ...interface{}) {
@@ -236,6 +242,14 @@ func (j *job) build(contentHTML, headerHTML, footerHTML, pageNumberHTML, waterma
 		return nil, 0, fmt.Errorf("margins and page number leave no room for content on a %.2fin tall page", g.paperHeight)
 	}
 
+	j.contentTop, j.contentBottom = contentTop, contentBottom
+	j.bottomBands = footerHTML != "" || pageNumberHTML != ""
+
+	var contentHeight *float64
+	if j.cfg.copies > 1 {
+		contentHeight = &j.contentHeight
+	}
+
 	j.log("Rendering content... ")
 	contentBytes, err := j.renderer.RenderHTMLToPDFBytesCounted(insertBandSpacers(contentHTML, topSpacer, bottomSpacer), RenderOptions{
 		PaperWidthInches:   g.paperWidth,
@@ -247,6 +261,7 @@ func (j *job) build(contentHTML, headerHTML, footerHTML, pageNumberHTML, waterma
 		Scale:              j.cfg.zoom,
 		SmartShrink:        !j.cfg.disableSmartShrinking,
 		Timeout:            j.timeout(),
+		ContentHeight:      contentHeight,
 	}, pageCountCh)
 	if err != nil {
 		j.log("failed\n")

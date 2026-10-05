@@ -299,7 +299,9 @@ InvoiceTemplate::raw('prints.weight-scale', $data, ['page_width' => 100, 'page_h
 | 100 × 140 mm | 4 |
 | 80 × 120 mm | 4 |
 
-The engine picks A4 portrait or landscape, whichever fits more, and never places more copies than fit. A page too big to fit twice prints normally.
+The engine picks A4 portrait or landscape, whichever fits more, and never places more copies than fit.
+
+This also works when the template itself is A4 (or any other size): if a single-page document only fills part of the page, each copy is trimmed to the height it really uses (header area + content + bottom margin) and the copies are stacked on that same paper. A half-page ticket on A4 prints twice on one sheet. If the content is too tall to fit twice, it prints normally.
 
 ### Watermarks
 
