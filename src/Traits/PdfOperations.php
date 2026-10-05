@@ -34,6 +34,8 @@ trait PdfOperations
 
     protected array $cssFiles = [];
 
+    protected array $cssVariables = [];
+
     public static function raw(string $view, array $data = [], array $options = [])
     {
         $instance = static::newInstance();
@@ -221,6 +223,34 @@ trait PdfOperations
         return $this;
     }
 
+    public function cssVariable(string $name, $value)
+    {
+        $name = $this->normalizeCssVariableName($name);
+
+        if (blank($name)) {
+            return $this;
+        }
+
+        if (blank($value)) {
+            unset($this->cssVariables[$name]);
+
+            return $this;
+        }
+
+        $this->cssVariables[$name] = $this->normalizeCssVariableValue((string) $value);
+
+        return $this;
+    }
+
+    public function cssVariables(array $variables)
+    {
+        foreach ($variables as $name => $value) {
+            $this->cssVariable((string) $name, $value);
+        }
+
+        return $this;
+    }
+
     private function renderViewer(string $pdfBytes, $title): mixed
     {
         $fontDetails = $this->resolveFontDetails();
@@ -248,7 +278,7 @@ trait PdfOperations
 
         $template = $this->getTemplate();
 
-        return $this->generatePdf(array_map(fn ($html) => $this->injectSharedCss($html), [
+        return $this->generatePdf(array_map(fn ($html) => $this->injectCssVariables($this->injectSharedCss($html)), [
             'content' => $this->contentHtml,
             'header-html' => $this->prepareHeaderHtml(),
             'footer-html' => $this->prepareFooterHtml(),
@@ -358,6 +388,35 @@ trait PdfOperations
             preg_match('/<html\b[^>]*>/i', $html) === 1 => preg_replace('/<html\b[^>]*>/i', '$0<head>' . addcslashes($style, '\\$') . '</head>', $html, 1),
             default => $style . $html,
         };
+    }
+
+    private function injectCssVariables($html)
+    {
+        if (blank($html) || blank($this->cssVariables)) {
+            return $html;
+        }
+
+        $declarations = collect($this->cssVariables)->map(fn ($value, $name) => sprintf('%s:%s !important;', $name, $value))->implode('');
+
+        $style = sprintf('<style>:root{%1$s}:root:root:root{%1$s}</style>', $declarations);
+
+        return match (TRUE) {
+            preg_match('/<\/body\s*>/i', $html) === 1 => preg_replace('/<\/body\s*>/i', addcslashes($style, '\\$') . '$0', $html, 1),
+            preg_match('/<\/html\s*>/i', $html) === 1 => preg_replace('/<\/html\s*>/i', addcslashes($style, '\\$') . '$0', $html, 1),
+            default => $html . $style,
+        };
+    }
+
+    private function normalizeCssVariableName(string $name): ?string
+    {
+        $name = mb_trim(preg_replace('/[^A-Za-z0-9_-]+/', '-', ltrim(mb_trim($name), '-')), '-');
+
+        return filled($name) ? sprintf('--%s', $name) : NULL;
+    }
+
+    private function normalizeCssVariableValue(string $value): string
+    {
+        return mb_trim(preg_replace('/[\r\n]+/', ' ', str_replace(['</', '{', '}', ';'], '', $value)));
     }
 
     private function readCssFile(string $path): string

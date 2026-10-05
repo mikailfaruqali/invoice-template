@@ -244,6 +244,27 @@ InvoiceTemplate::make()->cssFiles([
 
 The files are added at the top of each part's `<head>`, so a template's own styles still override them. Relative `url()` paths inside a CSS file (fonts, images) are resolved from the file's own folder.
 
+### CSS Variables
+
+Set CSS custom properties at runtime, for example a per-company brand color, and use them with `var()` in templates or shared CSS:
+
+```php
+InvoiceTemplate::make('invoice')
+    ->renderContent('invoices.content')
+    ->cssVariables([
+        'brand' => $company->color,
+        '--table-border' => '#dbdfea',
+    ])
+    ->cssVariable('font-size', '13px')
+    ->inline();
+```
+
+```blade
+<h1 style="color: var(--brand)">{{ $company->name }}</h1>
+```
+
+Names work with or without the leading `--`. The values apply to the content, header, footer and watermark, and override any `:root` defaults the templates define. Passing `null` or an empty value removes a variable.
+
 ### Watermarks
 
 Each template has a **Watermark Content** field and an **Opacity** (0 – 1) in the template editor. The watermark is Blade HTML rendered with the content data and stamped over every page:
