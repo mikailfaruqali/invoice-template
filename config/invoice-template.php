@@ -142,8 +142,8 @@ return [
         'viewport-size' => '1024x768',
         'lowquality' => FALSE,
         'dpi' => 150,
-        'image-dpi' => 150,
-        'image-quality' => 75,
+        'image-dpi' => 600,
+        'image-quality' => 100,
     ],
 
     /*

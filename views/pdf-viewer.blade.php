@@ -125,8 +125,8 @@
 
         .btn {
             position: relative;
-            width: 40px;
-            height: 40px;
+            width: 34px;
+            height: 34px;
             border: 1px solid var(--nav-line);
             border-radius: 50%;
             background: var(--nav-surface);
@@ -154,8 +154,8 @@
         }
 
         .btn svg {
-            width: 19px;
-            height: 19px;
+            width: 16px;
+            height: 16px;
             stroke-width: 1.8;
             display: block;
             pointer-events: none;
@@ -302,13 +302,13 @@
             }
 
             .btn {
-                width: 36px;
-                height: 36px;
+                width: 32px;
+                height: 32px;
             }
 
             .btn svg {
-                width: 17px;
-                height: 17px;
+                width: 15px;
+                height: 15px;
             }
         }
     </style>
