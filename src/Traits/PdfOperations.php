@@ -44,6 +44,8 @@ trait PdfOperations
 
     protected array $cssVariables = [];
 
+    protected int $copies = 1;
+
     public static function raw(string $view, array $data = [], array $options = [])
     {
         $instance = static::newInstance();
@@ -58,6 +60,7 @@ trait PdfOperations
             'page_height' => '297',
             'paper_size' => 'A4',
             'orientation' => 'portrait',
+            'copies' => 1,
         ], $options);
 
         $view = Blade::render($view, $data);
@@ -70,6 +73,7 @@ trait PdfOperations
             'margin-left' => $config->margin_left,
             'margin-bottom' => $config->margin_bottom,
             'orientation' => $config->orientation,
+            'copies' => $config->copies,
             ...($config->page_width
                 ? ['page-width' => $config->page_width, 'page-height' => $config->page_height]
                 : ['page-size' => $config->paper_size]),
@@ -259,6 +263,13 @@ trait PdfOperations
         return $this;
     }
 
+    public function copies(int $copies)
+    {
+        $this->copies = max(1, $copies);
+
+        return $this;
+    }
+
     public function cssVariable(string $name, $value)
     {
         $name = $this->normalizeCssVariableName($name);
@@ -334,6 +345,7 @@ trait PdfOperations
             'header-first-page-only' => (bool) data_get($template, 'header_first_page_only', FALSE),
             'footer-last-page-only' => (bool) data_get($template, 'footer_last_page_only', FALSE),
             'page-number-height' => data_get($template, 'page_number_space', 8),
+            'copies' => $this->copies,
         ]));
     }
 
@@ -406,6 +418,7 @@ trait PdfOperations
             'header-first-page-only',
             'footer-last-page-only',
             'page-number-height',
+            'copies',
         ];
     }
 

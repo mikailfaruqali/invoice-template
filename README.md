@@ -226,7 +226,7 @@ $pdf = InvoiceTemplate::make()
     ->inline();
 ```
 
-Supported options: `page-size`, `page-width`, `page-height`, `orientation`, `margin-top`, `margin-bottom`, `margin-left`, `margin-right`, `header-spacing`, `footer-spacing`, `disable-smart-shrinking`, `zoom`, `watermark-opacity`, `header-first-page-only`, `footer-last-page-only` and `page-number-height` (default `8` mm). The template's own settings take priority over these.
+Supported options: `page-size`, `page-width`, `page-height`, `orientation`, `margin-top`, `margin-bottom`, `margin-left`, `margin-right`, `header-spacing`, `footer-spacing`, `disable-smart-shrinking`, `zoom`, `watermark-opacity`, `header-first-page-only`, `footer-last-page-only`, `page-number-height` (default `8` mm) and `copies`. The template's own settings take priority over these.
 
 ### Shared CSS Files
 
@@ -278,6 +278,28 @@ Each template has a **Page Number** template, separate from the footer, that is 
 ```
 
 It has its own space below `margin_bottom` (the **Page Number** spacing field, `page_number_space`, 8 mm by default), so the footer keeps its full height and is drawn right above it. Turn it off with **Disable Page Number** (`disable_page_number` column).
+
+### Copies per A4 Sheet
+
+For small documents such as weight-scale tickets or A5 invoices, place several copies of each page on one A4 sheet, with dashed cut lines between them:
+
+```php
+InvoiceTemplate::make('weight-scale')
+    ->renderContent('prints.weight-scale')
+    ->contentData(['ticket' => $ticket])
+    ->copies(4)
+    ->inline();
+
+InvoiceTemplate::raw('prints.weight-scale', $data, ['page_width' => 100, 'page_height' => 140, 'copies' => 4]);
+```
+
+| Page size | Copies that fit on A4 |
+|-----------|-----------------------|
+| A5 landscape (210 × 148 mm) | 2 |
+| 100 × 140 mm | 4 |
+| 80 × 120 mm | 4 |
+
+The engine picks A4 portrait or landscape, whichever fits more, and never places more copies than fit. A page too big to fit twice prints normally.
 
 ### Watermarks
 

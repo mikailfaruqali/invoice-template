@@ -37,10 +37,14 @@ func NewComposerFromBytes(data []byte) (*Composer, error) {
 func (c *Composer) PageCount() int { return c.ctx.PageCount }
 
 func (c *Composer) StampBandBytes(bandBytes []byte, placement StampPlacement, multi bool, pages types.IntSet) error {
+	return c.StampPagesBytes(bandBytes, placement, multi, pages, true)
+}
+
+func (c *Composer) StampPagesBytes(bandBytes []byte, placement StampPlacement, multi bool, pages types.IntSet, onTop bool) error {
 	desc := fmt.Sprintf("pos:%s, scale:1.0 abs, rot:0, off:%.2f %.2f",
 		placement.Pos, placement.OffsetX, placement.OffsetY)
 
-	wm, err := api.PDFWatermark("band.pdf", desc, true, false, types.POINTS)
+	wm, err := api.PDFWatermark("band.pdf", desc, onTop, false, types.POINTS)
 	if err != nil {
 		return fmt.Errorf("failed to create stamp: %w", err)
 	}

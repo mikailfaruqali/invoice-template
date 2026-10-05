@@ -42,6 +42,8 @@ Page setup:
                                  (by default it is shrunk just enough to fit, down to 50%)
   --zoom <n>                     Content zoom, 0.1 - 2.0 (default: 1.0)
   --watermark-opacity <n>        Watermark opacity, 0.0 - 1.0 (default: 0.3)
+  --copies <n>                   Place n copies of each page on one sheet when they fit (default: 1)
+  --sheet-size <size>            Sheet the copies are placed on, A3, A4, A5, Letter or Legal (default: A4)
 
   Dimensions accept mm, cm, in, pt or px; a bare number is millimetres.
   {PAGENO} and {TOPAGE} in the header or footer become the page number and page count.
@@ -59,6 +61,8 @@ type config struct {
 	contentFile, outputFile               string
 	headerFile, footerFile, watermarkFile string
 	pageNumberFile, pageNumberHeight      string
+	sheetSize                             string
+	copies                                int
 	pageSize, pageWidth, pageHeight       string
 	orientation                           string
 	marginTop, marginBottom               string
@@ -96,6 +100,8 @@ func parseFlags(cfg *config) error {
 	fs.StringVar(&cfg.watermarkFile, "watermark-html", "", "")
 	fs.StringVar(&cfg.pageNumberFile, "page-number-html", "", "")
 	fs.StringVar(&cfg.pageNumberHeight, "page-number-height", "8", "")
+	fs.IntVar(&cfg.copies, "copies", 1, "")
+	fs.StringVar(&cfg.sheetSize, "sheet-size", "A4", "")
 	fs.StringVar(&cfg.pageSize, "page-size", "A4", "")
 	fs.StringVar(&cfg.pageWidth, "page-width", "", "")
 	fs.StringVar(&cfg.pageHeight, "page-height", "", "")
@@ -223,6 +229,12 @@ func run() error {
 	comp, totalPages, err := j.build(html[0], html[1], html[2], html[3], html[4])
 	if err != nil {
 		return err
+	}
+
+	if cfg.copies > 1 {
+		if comp, err = j.impose(comp, totalPages); err != nil {
+			return err
+		}
 	}
 
 	if err := writeOutput(comp, cfg.outputFile); err != nil {
