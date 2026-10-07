@@ -202,9 +202,13 @@ func (j *job) build(contentHTML, headerHTML, footerHTML, pageNumberHTML, waterma
 		bandsWg.Add(1)
 		go func() {
 			defer bandsWg.Done()
-			total, ok := <-bandTotals
-			if !ok {
-				return
+			total := 0
+			if pageTokenRe.MatchString(html) {
+				n, ok := <-bandTotals
+				if !ok {
+					return
+				}
+				total = n
 			}
 			b, err := j.renderBand(html, total, spec)
 			if err != nil {

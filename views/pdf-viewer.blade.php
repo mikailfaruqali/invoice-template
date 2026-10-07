@@ -403,6 +403,8 @@
             renderId: 0,
             renderedWidth: null,
             renderedDpr: null,
+            observer: null,
+            queue: Promise.resolve(),
         };
 
         var DocumentElements = {
@@ -467,7 +469,7 @@
             },
 
             getSupersample: function (dpr) {
-                return dpr < 1.5 && PdfViewerState.pdfDoc.numPages <= 20 ? 2 : 1;
+                return Math.max(1, Math.round(4 / dpr));
             },
 
             snapToDevicePixels: function (size, dpr, downOnly) {
@@ -497,70 +499,137 @@
                 return best;
             },
 
-            renderPage: function (num, renderId) {
-                return PdfViewerState.pdfDoc.getPage(num).then(function (page) {
-                    if (renderId !== PdfViewerState.renderId) return;
+            createPage: function (page, index) {
+                var dpr = PdfRenderer.getDevicePixelRatio();
+                var baseViewport = page.getViewport({ scale: 1.0 });
 
-                    var dpr = PdfRenderer.getDevicePixelRatio();
-                    var baseViewport = page.getViewport({ scale: 1.0 });
+                var cssWidth = PdfRenderer.snapToDevicePixels(PdfRenderer.getDisplayWidth(), dpr, true);
+                var cssHeight = PdfRenderer.snapToDevicePixels(
+                    (cssWidth * baseViewport.height) / baseViewport.width,
+                    dpr,
+                    false,
+                );
 
-                    var cssWidth = PdfRenderer.snapToDevicePixels(PdfRenderer.getDisplayWidth(), dpr, true);
-                    var cssHeight = PdfRenderer.snapToDevicePixels(
-                        (cssWidth * baseViewport.height) / baseViewport.width,
-                        dpr,
-                        false,
-                    );
+                var canvas = document.createElement('canvas');
+                canvas.className = 'pdf-page';
+                canvas.width = Math.round(cssWidth * dpr);
+                canvas.height = Math.round(cssHeight * dpr);
+                canvas.style.width = cssWidth + 'px';
+                canvas.style.height = cssHeight + 'px';
+                canvas.dataset.index = index;
 
-                    var supersample = PdfRenderer.getSupersample(dpr);
-                    var pixelWidth = Math.round(cssWidth * dpr) * supersample;
-                    var pixelHeight = Math.round(cssHeight * dpr) * supersample;
+                DocumentElements.container.appendChild(canvas);
 
-                    var viewport = page.getViewport({
-                        scale: cssWidth / baseViewport.width,
-                    });
+                return {
+                    page: page,
+                    canvas: canvas,
+                    viewport: page.getViewport({ scale: cssWidth / baseViewport.width }),
+                    supersample: PdfRenderer.getSupersample(dpr),
+                    promise: null,
+                };
+            },
 
-                    var canvas = document.createElement('canvas');
-                    canvas.className = 'pdf-page';
-                    canvas.width = pixelWidth;
-                    canvas.height = pixelHeight;
-                    canvas.style.width = cssWidth + 'px';
-                    canvas.style.height = cssHeight + 'px';
+            paintPage: function (entry) {
+                var canvas = entry.canvas;
+                var viewport = entry.viewport;
+                var source = document.createElement('canvas');
 
-                    DocumentElements.container.appendChild(canvas);
+                source.width = canvas.width * entry.supersample;
+                source.height = canvas.height * entry.supersample;
 
-                    var ctx = canvas.getContext('2d', {
-                        alpha: false,
-                    });
-
-                    return page.render({
-                        canvasContext: ctx,
+                return entry.page
+                    .render({
+                        canvasContext: source.getContext('2d', { alpha: false }),
                         viewport: viewport,
-                        transform: [pixelWidth / viewport.width, 0, 0, pixelHeight / viewport.height, 0, 0],
+                        transform: [source.width / viewport.width, 0, 0, source.height / viewport.height, 0, 0],
                         intent: 'display',
-                    }).promise;
-                });
+                    })
+                    .promise.then(function () {
+                        PdfRenderer.downsample(source, canvas);
+                    });
+            },
+
+            drawScaled: function (source, target) {
+                var ctx = target.getContext('2d', { alpha: false });
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(source, 0, 0, target.width, target.height);
+            },
+
+            downsample: function (source, target) {
+                var current = source;
+
+                while (current.width / 2 >= target.width) {
+                    var next = document.createElement('canvas');
+                    next.width = Math.round(current.width / 2);
+                    next.height = Math.round(current.height / 2);
+                    PdfRenderer.drawScaled(current, next);
+                    current.width = 0;
+                    current.height = 0;
+                    current = next;
+                }
+
+                PdfRenderer.drawScaled(current, target);
+                current.width = 0;
+                current.height = 0;
+            },
+
+            schedule: function (entry, renderId) {
+                if (!entry.promise) {
+                    entry.promise = PdfViewerState.queue.then(function () {
+                        if (renderId !== PdfViewerState.renderId) return;
+                        return PdfRenderer.paintPage(entry);
+                    });
+                    PdfViewerState.queue = entry.promise.catch(function () {});
+                }
+
+                return entry.promise;
             },
 
             renderAll: function () {
-                var total = PdfViewerState.pdfDoc.numPages;
+                var pdfDoc = PdfViewerState.pdfDoc;
                 var renderId = ++PdfViewerState.renderId;
-                var promise = Promise.resolve();
+                var requests = [];
 
-                PdfViewerState.renderedWidth = PdfRenderer.getDisplayWidth();
-                PdfViewerState.renderedDpr = PdfRenderer.getDevicePixelRatio();
-                DocumentElements.container.innerHTML = '';
-
-                for (var i = 1; i <= total; i++) {
-                    (function (num) {
-                        promise = promise.then(function () {
-                            if (renderId !== PdfViewerState.renderId) return;
-                            DocumentElements.loadingText.textContent = 'Page ' + num + ' of ' + total;
-                            return PdfRenderer.renderPage(num, renderId);
-                        });
-                    })(i);
+                for (var i = 1; i <= pdfDoc.numPages; i++) {
+                    requests.push(pdfDoc.getPage(i));
                 }
 
-                return promise;
+                if (PdfViewerState.observer) {
+                    PdfViewerState.observer.disconnect();
+                }
+
+                PdfViewerState.queue = Promise.resolve();
+                PdfViewerState.renderedWidth = PdfRenderer.getDisplayWidth();
+                PdfViewerState.renderedDpr = PdfRenderer.getDevicePixelRatio();
+
+                return Promise.all(requests).then(function (pages) {
+                    if (renderId !== PdfViewerState.renderId) return;
+
+                    DocumentElements.container.innerHTML = '';
+
+                    var entries = pages.map(PdfRenderer.createPage);
+
+                    PdfViewerState.observer = new IntersectionObserver(
+                        function (items) {
+                            items.forEach(function (item) {
+                                if (item.isIntersecting) {
+                                    PdfRenderer.schedule(entries[item.target.dataset.index], renderId);
+                                }
+                            });
+                        },
+                        {
+                            root: DocumentElements.container,
+                            rootMargin: '1500px 0px',
+                        },
+                    );
+
+                    entries.forEach(function (entry) {
+                        PdfViewerState.observer.observe(entry.canvas);
+                    });
+
+                    return PdfRenderer.schedule(entries[0], renderId);
+                });
             },
 
             watchResize: function () {

@@ -343,21 +343,21 @@ func (cr *ChromeRenderer) renderPDF(htmlContent string, opts RenderOptions, page
 			if !opts.SmartShrink {
 				return nil
 			}
-			factor, err := smartShrinkFactor(ctx, opts)
+			factor, err := smartShrinkFactor(ctx, opts, zoom)
 			if err != nil {
 				return err
 			}
-			zoom = min(max(zoom*factor, 0.1), 2.0)
+			zoom *= factor
 			return nil
 		}),
 		chromedp.ActionFunc(func(ctx context.Context) error {
+			zoom = min(max(zoom, 0.1), 2.0)
+			if zoom == 1 {
+				return nil
+			}
 			script := fmt.Sprintf(`(() => {
-  const zoom = %f;
-  if (zoom !== 1) {
-    document.documentElement.style.setProperty('zoom', String(zoom), 'important');
-  }
   document.querySelectorAll('[data-band-spacer]').forEach((el) => {
-    el.style.height = (parseFloat(el.dataset.bandSpacer) / zoom) + 'in';
+    el.style.height = (parseFloat(el.dataset.bandSpacer) / %f) + 'in';
   });
 })()`, zoom)
 			return chromedp.Evaluate(script, nil).Do(ctx)
@@ -366,7 +366,7 @@ func (cr *ChromeRenderer) renderPDF(htmlContent string, opts RenderOptions, page
 			if opts.ContentHeight == nil {
 				return nil
 			}
-			return measureContentHeight(ctx, opts)
+			return measureContentHeight(ctx, opts, zoom)
 		}),
 		chromedp.ActionFunc(func(ctx context.Context) error {
 			data, stream, err := page.PrintToPDF().
@@ -378,7 +378,7 @@ func (cr *ChromeRenderer) renderPDF(htmlContent string, opts RenderOptions, page
 				WithMarginLeft(opts.MarginLeftInches).
 				WithMarginRight(opts.MarginRightInches).
 				WithLandscape(opts.Landscape).
-				WithScale(1).
+				WithScale(zoom).
 				WithDisplayHeaderFooter(false).
 				WithTransferMode(page.PrintToPDFTransferModeReturnAsStream).
 				Do(ctx)
@@ -447,51 +447,82 @@ func readStream(ctx context.Context, handle cdpio.StreamHandle) ([]byte, error) 
 const cssPixelsPerInch = 96.0
 
 const (
-	minSmartShrinkFactor = 1.0
-	maxSmartShrinkFactor = 2.0
+	minSmartShrinkFactor   = 1.0
+	maxSmartShrinkFactor   = 4.0
+	smartShrinkTolerancePx = 1.0
+	smartShrinkPasses      = 6
 )
 
-func smartShrinkFactor(ctx context.Context, opts RenderOptions) (float64, error) {
-	printablePx := (opts.PaperWidthInches - opts.MarginLeftInches - opts.MarginRightInches) * cssPixelsPerInch
+func smartShrinkFactor(ctx context.Context, opts RenderOptions, zoom float64) (float64, error) {
+	printablePx := (opts.PaperWidthInches - opts.MarginLeftInches - opts.MarginRightInches) * cssPixelsPerInch / zoom
 	if printablePx <= 0 {
 		return 1.0, nil
 	}
 
 	minWidth := printablePx * minSmartShrinkFactor
 	maxWidth := printablePx * maxSmartShrinkFactor
-	height := int64(math.Round(opts.PaperHeightInches * cssPixelsPerInch))
+	height := int64(math.Round(opts.PaperHeightInches * cssPixelsPerInch / zoom))
 
-	if err := emulation.SetDeviceMetricsOverride(int64(math.Round(minWidth)), height, 1, false).Do(ctx); err != nil {
-		return 1.0, err
-	}
 	defer emulation.ClearDeviceMetricsOverride().Do(ctx)
 
-	const script = `(() => {
-  let left = 0;
-  let right = window.innerWidth;
-  for (const el of document.body ? document.body.querySelectorAll('*') : []) {
-    const rect = el.getBoundingClientRect();
-    if (rect.width > 0 && rect.height > 0) {
-      left = Math.min(left, rect.left);
-      right = Math.max(right, rect.right);
-    }
-  }
-  return Math.max(right - left, document.documentElement.scrollWidth || 0, document.body ? document.body.scrollWidth : 0);
-})()`
+	layoutWidth := minWidth
+	for i := 0; i < smartShrinkPasses; i++ {
+		if err := emulation.SetDeviceMetricsOverride(int64(math.Ceil(layoutWidth)), height, 1, false).Do(ctx); err != nil {
+			return 1.0, err
+		}
 
-	var widest float64
-	if err := chromedp.Evaluate(script, &widest).Do(ctx); err != nil {
-		return 1.0, err
+		var needed float64
+		if err := chromedp.Evaluate(requiredWidthScript, &needed).Do(ctx); err != nil {
+			return 1.0, err
+		}
+
+		if needed <= layoutWidth+smartShrinkTolerancePx || layoutWidth >= maxWidth {
+			break
+		}
+		layoutWidth = min(math.Ceil(needed), maxWidth)
 	}
 
-	layoutWidth := min(max(widest, minWidth), maxWidth)
+	if layoutWidth <= minWidth+smartShrinkTolerancePx {
+		return 1.0, nil
+	}
 
 	return printablePx / layoutWidth, nil
 }
 
-func measureContentHeight(ctx context.Context, opts RenderOptions) error {
-	printablePx := (opts.PaperWidthInches - opts.MarginLeftInches - opts.MarginRightInches) * cssPixelsPerInch
-	height := int64(math.Round(opts.PaperHeightInches * cssPixelsPerInch))
+const requiredWidthScript = `(() => {
+  const viewport = window.innerWidth;
+  const skipped = new Set(['inline', 'contents', 'none', 'table-column', 'table-column-group']);
+  const containers = /^(block|flow-root|list-item|inline-block|table-cell|table-caption)$/;
+  let left = 0;
+  let right = viewport;
+  let overflow = 0;
+  for (const el of document.body ? document.body.querySelectorAll('*') : []) {
+    const rect = el.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) {
+      continue;
+    }
+    left = Math.min(left, rect.left);
+    right = Math.max(right, rect.right);
+
+    const style = getComputedStyle(el);
+    if (skipped.has(style.display) || style.position === 'absolute' || style.position === 'fixed') {
+      continue;
+    }
+    const parent = el.parentElement;
+    const parentStyle = parent ? getComputedStyle(parent) : null;
+    if (!parentStyle || !containers.test(parentStyle.display) || parentStyle.overflowX !== 'visible') {
+      continue;
+    }
+    const available = parent.clientWidth - parseFloat(parentStyle.paddingLeft) - parseFloat(parentStyle.paddingRight);
+    const outer = rect.width + parseFloat(style.marginLeft) + parseFloat(style.marginRight);
+    overflow = Math.max(overflow, outer - available);
+  }
+  return Math.max(right - left, viewport + overflow, document.documentElement.scrollWidth || 0, document.body ? document.body.scrollWidth : 0);
+})()`
+
+func measureContentHeight(ctx context.Context, opts RenderOptions, zoom float64) error {
+	printablePx := (opts.PaperWidthInches - opts.MarginLeftInches - opts.MarginRightInches) * cssPixelsPerInch / zoom
+	height := int64(math.Round(opts.PaperHeightInches * cssPixelsPerInch / zoom))
 
 	if err := emulation.SetDeviceMetricsOverride(int64(math.Round(printablePx)), height, 1, false).Do(ctx); err != nil {
 		return err
@@ -517,7 +548,7 @@ func measureContentHeight(ctx context.Context, opts RenderOptions) error {
 		return err
 	}
 
-	*opts.ContentHeight = measured / cssPixelsPerInch
+	*opts.ContentHeight = measured * zoom / cssPixelsPerInch
 	return nil
 }
 
