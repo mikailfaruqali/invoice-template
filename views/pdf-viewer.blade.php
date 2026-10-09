@@ -266,17 +266,30 @@
 
         #loading {
             display: flex;
-            gap: 16px;
             z-index: 10;
         }
 
         #loading-spinner {
-            width: 28px;
-            height: 28px;
-            border: 2px solid var(--spinner-track);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
+            width: 40px;
+            height: 40px;
+            animation: spin 1.4s linear infinite;
+        }
+
+        #loading-spinner circle {
+            fill: none;
+            stroke-width: 4;
+        }
+
+        #loading-spinner .spinner-track {
+            stroke: var(--spinner-track);
+        }
+
+        #loading-spinner .spinner-arc {
+            stroke: var(--primary);
+            stroke-linecap: round;
+            stroke-dasharray: 1, 150;
+            stroke-dashoffset: 0;
+            animation: dash 1.4s ease-in-out infinite;
         }
 
         @keyframes spin {
@@ -285,10 +298,28 @@
             }
         }
 
-        #loading-text {
-            color: var(--nav-muted);
-            font-size: 12px;
-            letter-spacing: 0.04em;
+        @keyframes dash {
+            0% {
+                stroke-dasharray: 1, 150;
+                stroke-dashoffset: 0;
+            }
+
+            50% {
+                stroke-dasharray: 90, 150;
+                stroke-dashoffset: -35;
+            }
+
+            100% {
+                stroke-dasharray: 90, 150;
+                stroke-dashoffset: -124;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            #loading-spinner,
+            #loading-spinner .spinner-arc {
+                animation-duration: 2.8s;
+            }
         }
 
         #error-screen {
@@ -379,9 +410,11 @@
         </div>
     </div>
 
-    <div id="loading">
-        <div id="loading-spinner"></div>
-        <div id="loading-text">Loading…</div>
+    <div id="loading" role="status" aria-label="Loading">
+        <svg id="loading-spinner" viewBox="0 0 50 50" aria-hidden="true">
+            <circle class="spinner-track" cx="25" cy="25" r="20" />
+            <circle class="spinner-arc" cx="25" cy="25" r="20" />
+        </svg>
     </div>
 
     <div id="error-screen">Failed to load document.</div>
@@ -413,9 +446,6 @@
             },
             get loading() {
                 return document.getElementById('loading');
-            },
-            get loadingText() {
-                return document.getElementById('loading-text');
             },
             get errorScreen() {
                 return document.getElementById('error-screen');
