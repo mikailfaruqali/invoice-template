@@ -9,7 +9,7 @@ trait DatabaseOperations
 {
     public static function create(Request $request, $templateId = NULL)
     {
-        return DB::table(static::getTableName())->updateOrInsert(['id' => $templateId], [
+        $values = [
             'disabled_smart_shrinking' => $request->boolean('disabled_smart_shrinking', FALSE),
             'disable_header' => $request->boolean('disable_header', FALSE),
             'disable_footer' => $request->boolean('disable_footer', FALSE),
@@ -25,16 +25,24 @@ trait DatabaseOperations
             'page_number' => $request->page_number,
             'watermark' => $request->watermark,
             'watermark_opacity' => $request->input('watermark_opacity', 0.3),
-            'orientation' => $request->orientation,
-            'paper_size' => $request->paper_size,
-            'margin_top' => $request->margin_top,
-            'margin_bottom' => $request->margin_bottom,
-            'margin_left' => $request->margin_left,
-            'margin_right' => $request->margin_right,
-            'header_space' => $request->header_space,
-            'footer_space' => $request->footer_space,
+            'orientation' => $request->input('orientation', 'portrait'),
+            'paper_size' => $request->input('paper_size', 'A4'),
+            'margin_top' => $request->input('margin_top', 0),
+            'margin_bottom' => $request->input('margin_bottom', 0),
+            'margin_left' => $request->input('margin_left', 0),
+            'margin_right' => $request->input('margin_right', 0),
+            'header_space' => $request->input('header_space', 0),
+            'footer_space' => $request->input('footer_space', 0),
             'page_number_space' => $request->input('page_number_space', 8),
-        ]);
+        ];
+
+        if (blank($templateId)) {
+            return DB::table(static::getTableName())->insert($values);
+        }
+
+        return DB::table(static::getTableName())
+            ->where('id', $templateId)
+            ->update($values) >= 0;
     }
 
     public static function createDefault($page = ['*'], $options = [])
