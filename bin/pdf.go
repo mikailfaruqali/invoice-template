@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"sort"
 
 	"github.com/pdfcpu/pdfcpu/pkg/api"
 	"github.com/pdfcpu/pdfcpu/pkg/pdfcpu"
@@ -78,7 +79,62 @@ func (c *Composer) WatermarkBytes(watermarkBytes []byte) error {
 	return nil
 }
 
+func (c *Composer) isolateType3FontDescriptors() error {
+	xRefTable := c.ctx.XRefTable
+
+	objectNumbers := make([]int, 0, len(xRefTable.Table))
+	for objectNumber := range xRefTable.Table {
+		objectNumbers = append(objectNumbers, objectNumber)
+	}
+	sort.Ints(objectNumbers)
+
+	claimedDescriptors := make(map[int]bool)
+
+	for _, objectNumber := range objectNumbers {
+		entry := xRefTable.Table[objectNumber]
+		if entry == nil || entry.Free {
+			continue
+		}
+
+		font, ok := entry.Object.(types.Dict)
+		if !ok || font.Type() == nil || *font.Type() != "Font" || font.Subtype() == nil || *font.Subtype() != "Type3" {
+			continue
+		}
+
+		descriptorRef := font.IndirectRefEntry("FontDescriptor")
+		if descriptorRef == nil {
+			continue
+		}
+
+		descriptorNumber := descriptorRef.ObjectNumber.Value()
+		if !claimedDescriptors[descriptorNumber] {
+			claimedDescriptors[descriptorNumber] = true
+			continue
+		}
+
+		descriptor, err := xRefTable.DereferenceDict(*descriptorRef)
+		if err != nil {
+			return fmt.Errorf("failed to read Type3 font descriptor: %w", err)
+		}
+		if descriptor == nil {
+			continue
+		}
+
+		isolatedRef, err := xRefTable.IndRefForNewObject(descriptor.Clone())
+		if err != nil {
+			return fmt.Errorf("failed to isolate Type3 font descriptor: %w", err)
+		}
+
+		font["FontDescriptor"] = *isolatedRef
+	}
+
+	return nil
+}
+
 func (c *Composer) Write(w io.Writer) error {
+	if err := c.isolateType3FontDescriptors(); err != nil {
+		return err
+	}
 	if err := api.WriteContext(c.ctx, w); err != nil {
 		return fmt.Errorf("failed to write PDF: %w", err)
 	}
